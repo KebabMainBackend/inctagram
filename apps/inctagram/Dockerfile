@@ -22,7 +22,7 @@ COPY --chown=node yarn.lock ./
 
 COPY prisma ./prisma/
 
-COPY --chown=node /libs ./
+#COPY --chown=node /libs ./
 
 RUN yarn install --frozen-lockfile
 
@@ -36,6 +36,6 @@ RUN yarn build:${SERVICE}
 
 EXPOSE ${PORT}
 
-CMD yarn 'migrate:prod'
+#CMD yarn 'migrate:prod'
 
 CMD yarn 'start:inctagram'
