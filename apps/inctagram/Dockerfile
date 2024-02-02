@@ -17,20 +17,25 @@ WORKDIR /home/node/dist/${SERVICE}
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available (npm@5+)
 
-
-
 COPY --chown=node package*.json ./
 COPY --chown=node yarn.lock ./
 
-RUN yarn install
+COPY prisma ./prisma/
+
+COPY --chown=node /libs ./
+
+RUN yarn install --frozen-lockfile
 
 # Bundle app source code
-COPY --chown=node src .
+COPY --chown=node . .
 
 RUN yarn build:${SERVICE}
+
 
 # Bind to all network interfaces so that it can be mapped to the host OS
 
 EXPOSE ${PORT}
+
+CMD yarn 'migrate:prod'
 
 CMD yarn 'start:inctagram'
