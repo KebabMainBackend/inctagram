@@ -40,7 +40,8 @@
     "cookie-parser": "1.4.6",
     "prisma": "5.9.1",
     "reflect-metadata": "0.1.13",
-    "rxjs": "7.8.1"
+    "rxjs": "7.8.1",
+    "wrap-ansi": "^9.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "10.0.0",
@@ -85,5 +86,9 @@
     "roots": [
       "<rootDir>/apps/"
     ]
-  }
+  },
+  "resolutions": {
+    "wrap-ansi": "7.0.0",
+    "string-width": "4.1.0"
+}
 }
