@@ -21,3 +21,14 @@ spec:
            ports:
              - containerPort: PORT_CONTAINER
 
+           env:
+             - name: DIRECT_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: DIRECT_URL
+             - name: DATABASE_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: DATABASE_URL
