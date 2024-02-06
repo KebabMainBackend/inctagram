@@ -36,6 +36,9 @@ export class AuthService {
     );
   }
   async deleteMe() {
-    await this.userRepo.deleteUserByEmail('zhumamedin@gmail.com');
+    const me = await this.userQueryRepo.getUserByEmail('zhumamedin@gmail.com');
+    if (me) {
+      await this.userRepo.deleteUserByEmail('zhumamedin@gmail.com');
+    }
   }
 }
