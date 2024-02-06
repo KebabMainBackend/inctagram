@@ -6,8 +6,8 @@ import {
 import * as cookieParser from 'cookie-parser';
 import { useContainer } from 'class-validator';
 import { AppModule } from './app.module';
-import { ResponseErrorTypes } from './types/main';
-import { HttpExceptionFilter } from './filters/http-exception.filter';
+import { ResponseErrorMessageTypes } from './types/main.types';
+import { HttpExceptionFilter } from './modules/filters/http-exception.filter';
 
 export const appSettings = (app: INestApplication) => {
   app.use(cookieParser());
@@ -19,7 +19,7 @@ export const appSettings = (app: INestApplication) => {
       whitelist: true,
       transform: true,
       exceptionFactory: (errors) => {
-        const respErrors: ResponseErrorTypes[] = [];
+        const respErrors: ResponseErrorMessageTypes[] = [];
         errors.forEach((error) => {
           const keys = Object.keys(error.constraints!);
           keys.forEach((key) => {

@@ -5,7 +5,7 @@ import { appSettings } from './app.settings';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api/v1');
   appSettings(app);
   const config = new DocumentBuilder()
     .setTitle('Inctagram')
@@ -15,7 +15,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('swagger', app, document);
 
   await app.listen(process.env.PORT || 3000);
 }
