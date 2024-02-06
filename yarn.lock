@@ -776,17 +776,6 @@
     jsonc-parser "3.2.0"
     pluralize "8.0.0"
 
-"@nestjs/schematics@^10.0.0":
-  version "10.1.0"
-  resolved "https://registry.yarnpkg.com/@nestjs/schematics/-/schematics-10.1.0.tgz#bf9be846bafad0f45f0ea5ed80aaaf971bb90873"
-  integrity sha512-HQWvD3F7O0Sv3qHS2jineWxPLmBTLlyjT6VdSw2EAIXulitmV+ErxB3TCVQQORlNkl5p5cwRYWyBaOblDbNFIQ==
-  dependencies:
-    "@angular-devkit/core" "17.0.9"
-    "@angular-devkit/schematics" "17.0.9"
-    comment-json "4.2.3"
-    jsonc-parser "3.2.0"
-    pluralize "8.0.0"
-
 "@nestjs/serve-static@^4.0.0":
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@nestjs/serve-static/-/serve-static-4.0.0.tgz#3baeea982f66d64718a59f3d8f67281b74d4dbdd"
