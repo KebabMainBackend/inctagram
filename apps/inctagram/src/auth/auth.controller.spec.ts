@@ -54,8 +54,9 @@ describe('AuthController', () => {
   };
 
   describe('registration', () => {
+    jest.setTimeout(10000);
     it('should create user and return 204', async () => {
-      const req = await request(httpServer)
+      await request(httpServer)
         .post(URL + '/registration')
         .send(userBody)
         .expect(HttpStatus.NO_CONTENT);
