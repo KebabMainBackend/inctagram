@@ -38,6 +38,7 @@ export class AuthService {
   async deleteMe() {
     const me = await this.userQueryRepo.getUserByEmail('zhumamedin@gmail.com');
     if (me) {
+      console.log(me);
       await this.userRepo.deleteUserByEmail('zhumamedin@gmail.com');
     }
   }
