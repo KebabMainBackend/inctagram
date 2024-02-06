@@ -20,7 +20,7 @@ WORKDIR /home/node/dist/${SERVICE}
 COPY --chown=node package*.json ./
 COPY --chown=node yarn.lock ./
 
-COPY prisma ./prisma/
+#COPY prisma ./prisma/
 
 #COPY --chown=node /libs ./
 
