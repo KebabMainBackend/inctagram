@@ -14,6 +14,7 @@ import { AuthService } from './auth.service';
 import { AuthRegisterDto } from './dto/auth-register.dto';
 import {
   ApiBadRequestResponse,
+  ApiExcludeEndpoint,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
@@ -90,6 +91,7 @@ export class AuthController {
     // return await this.authService.register(loginDto);
   }
 
+  @ApiExcludeEndpoint()
   @Delete('delete-me')
   async deleteMe() {
     this.authService.deleteMe();
