@@ -21,7 +21,7 @@ export class EmailService {
 
   async sendMail(
     mailDetails: Mail.Options,
-    callback: (info: SMTPTransport.SentMessageInfo) => void,
+    callback?: (info: SMTPTransport.SentMessageInfo) => void,
   ): Promise<void> {
     try {
       const info = await this.transporter.sendMail(mailDetails);
@@ -52,6 +52,29 @@ export class EmailService {
         console.log('Email is delivered successfully');
         return true;
       });
+    } catch (e) {
+      throw Error('second error');
+    }
+  }
+
+  async sendRecoveryCodeEmail(
+    userEmail: string,
+    message: string,
+    subject: string,
+  ) {
+    const messageTemplate = `
+            <h1>Password recovery</h1>
+            <p>To finish password recovery please follow the link below:
+                <a href='https://it-incubator.onrender.com/password-recovery?recoveryCode=${message}'>recovery password</a>
+            </p>`;
+    const options = {
+      from: 'Johnny <johnny178917@gmail.com>',
+      to: userEmail,
+      subject: subject,
+      html: messageTemplate,
+    };
+    try {
+      await this.sendMail(options);
     } catch (e) {
       throw Error('second error');
     }
