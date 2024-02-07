@@ -4,6 +4,8 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PrismaService } from '../../prisma.service';
 import { EmailService } from '../managers/email.manager';
 import { UsersQueryRepository } from '../db/users.query-repository';
+import { HttpException, HttpStatus } from '@nestjs/common';
+import { createErrorMessage } from '../../utils/create-error-object';
 
 export class PasswordRecoveryCommand {
   constructor(public email: string) {}
@@ -28,7 +30,10 @@ export class PasswordRecoveryHandler
         minutes: 3,
       }),
     };
-
+    if (!userByEmail) {
+      const error = createErrorMessage('incorrect email', 'email');
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
     return this.prisma.$transaction(
       async (tx) => {
         await tx.user.update({
