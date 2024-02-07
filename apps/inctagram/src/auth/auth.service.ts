@@ -6,6 +6,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { RegisterUserCommand } from './commands/register-user.command';
 import { UsersRepository } from './db/users.repository';
 import { UserHashingManager } from './managers/user-hashing.manager';
+import { PasswordRecoveryCommand } from './commands/password-recovery.command';
 // import { ResultNotification } from '../modules/notification';
 
 @Injectable()
@@ -72,6 +73,21 @@ export class AuthService {
       await this.usersRepo.updateUsersConfirmationStatus(user.id);
     }
     return null;
+  }
+  async sendCodeToRecoverPassword(email: string, recaptcha: string) {
+    const secretKey = process.env['back'];
+    const verifyCaptchaBodyString = `secret=${secretKey}&response=${recaptcha}`;
+    const res = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: verifyCaptchaBodyString,
+    });
+    const requestStatus = await res.json();
+    if (requestStatus.status) {
+      return this.commandBus.execute(new PasswordRecoveryCommand(email));
+    }
   }
   async deleteMe() {
     const me = await this.usersQueryRepo.getUserByEmail('zhumamedin@gmail.com');

@@ -12,6 +12,6 @@ export class DeleteDeviceHandler
   constructor(private securityDevicesRepository: SecurityDevicesRepository) {}
 
   async execute({ deviceId }: DeleteDeviceCommand) {
-    return await this.securityDevicesRepository.deleteDeviceById(deviceId);
+    this.securityDevicesRepository.deleteDeviceById(deviceId);
   }
 }

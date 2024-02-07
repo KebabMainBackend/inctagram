@@ -19,6 +19,7 @@ import { SecurityDevicesRepository } from '../features/security-devices/db/secur
 import { SecurityDevicesQueryRepository } from '../features/security-devices/db/security-devices.query-repository';
 import { AddRefreshToBlacklistHandler } from './commands/add-refresh-to-blacklist';
 import { DeleteDeviceHandler } from '../features/security-devices/commands/delete-device.command';
+import { PasswordRecoveryHandler } from './commands/password-recovery.command';
 
 const CommandHandlers = [
   RegisterUserHandler,
@@ -28,6 +29,7 @@ const CommandHandlers = [
   UpdateRefreshTokenHandler,
   AddRefreshToBlacklistHandler,
   DeleteDeviceHandler,
+  PasswordRecoveryHandler,
 ];
 
 @Module({

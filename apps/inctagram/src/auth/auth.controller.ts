@@ -36,6 +36,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { AuthVerifyEmailDto } from './dto/auth-verify-email.dto';
 import { DecodeRefreshTokenCommand } from './commands/decode-refresh-token.command';
 import { DeleteDeviceCommand } from '../features/security-devices/commands/delete-device.command';
+import { AuthPasswordRecoveryDto } from './dto/auth-password-recovery.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -51,7 +52,7 @@ export class AuthController {
   })
   @ApiBadRequestResponse(BadRequestResponseOptions)
   @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
-  @Post('/registration')
+  @Post('registration')
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async register(@Body() registerDTO: AuthRegisterDto) {
@@ -67,7 +68,7 @@ export class AuthController {
   @ApiBadRequestResponse(BadRequestResponseOptions)
   @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
   @ApiUnauthorizedResponse(UnauthorizedRequestResponseOptions)
-  @Post('/login')
+  @Post('login')
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)
   async login(
@@ -93,26 +94,20 @@ export class AuthController {
     return { accessToken };
   }
 
-  @ApiOkResponse({
-    description: 'success',
-    content: {
-      'application/json': { example: { accessToken: 'string' } },
-    },
-  })
+  @ApiNoContentResponse(NoContentResponseOptions)
   @ApiBadRequestResponse(BadRequestResponseOptions)
-  @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
-  @ApiUnauthorizedResponse(UnauthorizedRequestResponseOptions)
-  @Post('/password-recovery')
-  @UseGuards(ThrottlerGuard)
+  @Post('password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async passwordRecovery(@Body() loginDto: AuthLoginDto) {
-    console.log(loginDto);
-    // return await this.authService.register(loginDto);
+  async passwordRecovery(@Body() passwordRecoveryDto: AuthPasswordRecoveryDto) {
+    return await this.authService.sendCodeToRecoverPassword(
+      passwordRecoveryDto.email,
+      passwordRecoveryDto.recaptcha,
+    );
   }
 
   @ApiNoContentResponse(NoContentResponseOptions)
   @ApiUnauthorizedResponse(UnauthorizedRequestResponseOptions)
-  @Post('/logout')
+  @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   async logout(@Req() req: Request) {
     const refreshToken = req.cookies.refreshToken;
@@ -130,6 +125,8 @@ export class AuthController {
 
   @Post('registration-confirmation')
   @ApiNoContentResponse(NoContentResponseOptions)
+  @ApiBadRequestResponse(BadRequestResponseOptions)
+  @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async registrationConfirmation(@Body() body: AuthVerifyEmailDto) {
