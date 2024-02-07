@@ -8,8 +8,9 @@ import {
   HttpException,
   Req,
   Delete,
+  Res,
 } from '@nestjs/common';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { AuthRegisterDto } from './dto/auth-register.dto';
 import {
@@ -29,11 +30,20 @@ import {
   UnauthorizedRequestResponseOptions,
 } from '../utils/swagger-constants';
 import { AuthLoginDto } from './dto/auth-login.dto';
+import { CreateRefreshTokenCommand } from './commands/create-refresh-token.command';
+import { CreateAccessTokenCommand } from './commands/create-access-token.command';
+import { CommandBus } from '@nestjs/cqrs';
+import { AuthVerifyEmailDto } from './dto/auth-verify-email.dto';
+import { DecodeRefreshTokenCommand } from './commands/decode-refresh-token.command';
+import { DeleteDeviceCommand } from '../features/security-devices/commands/delete-device.command';
 
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private commandBus: CommandBus,
+  ) {}
 
   @ApiNoContentResponse({
     description:
@@ -59,10 +69,28 @@ export class AuthController {
   @ApiUnauthorizedResponse(UnauthorizedRequestResponseOptions)
   @Post('/login')
   @UseGuards(ThrottlerGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async login(@Body() loginDto: AuthLoginDto) {
-    console.log(loginDto);
-    // return await this.authService.register(loginDto);
+  @HttpCode(HttpStatus.OK)
+  async login(
+    @Body() loginDto: AuthLoginDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const email = loginDto.email;
+    const password = loginDto.password;
+    const userId = await this.authService.checkCredentials(email, password);
+    const title = req.get('User-Agent') || 'unknown user agent';
+    const ip = req.socket.remoteAddress || '';
+    const refreshToken = await this.commandBus.execute(
+      new CreateRefreshTokenCommand(userId, title, ip),
+    );
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    const accessToken = await this.commandBus.execute(
+      new CreateAccessTokenCommand(userId),
+    );
+    return { accessToken };
   }
 
   @ApiOkResponse({
@@ -88,7 +116,25 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async logout(@Req() req: Request) {
     const refreshToken = req.cookies.refreshToken;
-    // return await this.authService.register(loginDto);
+    if (refreshToken) {
+      const result = await this.commandBus.execute(
+        new DecodeRefreshTokenCommand(refreshToken),
+      );
+      if (result) {
+        await this.commandBus.execute(new DeleteDeviceCommand(result.deviceId));
+        return;
+      }
+    }
+    throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+  }
+
+  @Post('registration-confirmation')
+  @ApiNoContentResponse(NoContentResponseOptions)
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async registrationConfirmation(@Body() body: AuthVerifyEmailDto) {
+    const code = body.confirmationCode;
+    await this.authService.verifyConfirmationCode(code);
   }
 
   @ApiExcludeEndpoint()

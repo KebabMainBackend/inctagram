@@ -11,8 +11,24 @@ import { EmailService } from './managers/email.manager';
 import { JwtModule } from '@nestjs/jwt';
 import { GithubController } from './github.controller';
 import { GoogleController } from './google.controller';
+import { CreateAccessTokenHandler } from './commands/create-access-token.command';
+import { CreateRefreshTokenHandler } from './commands/create-refresh-token.command';
+import { DecodeRefreshTokenHandler } from './commands/decode-refresh-token.command';
+import { UpdateRefreshTokenHandler } from './commands/update-refresh-token.command';
+import { SecurityDevicesRepository } from '../features/security-devices/db/security-devices.repository';
+import { SecurityDevicesQueryRepository } from '../features/security-devices/db/security-devices.query-repository';
+import { AddRefreshToBlacklistHandler } from './commands/add-refresh-to-blacklist';
+import { DeleteDeviceHandler } from '../features/security-devices/commands/delete-device.command';
 
-const CommandHandlers = [RegisterUserHandler];
+const CommandHandlers = [
+  RegisterUserHandler,
+  CreateAccessTokenHandler,
+  CreateRefreshTokenHandler,
+  DecodeRefreshTokenHandler,
+  UpdateRefreshTokenHandler,
+  AddRefreshToBlacklistHandler,
+  DeleteDeviceHandler,
+];
 
 @Module({
   imports: [
@@ -20,7 +36,7 @@ const CommandHandlers = [RegisterUserHandler];
     JwtModule.registerAsync({
       useFactory: async () => ({
         secret: process.env.JWT_SECRET_KEY,
-        signOptions: { expiresIn: '8h' },
+        signOptions: { expiresIn: process.env.JWT_EXPIRATION_TIME },
       }),
     }),
   ],
@@ -32,6 +48,8 @@ const CommandHandlers = [RegisterUserHandler];
     PrismaService,
     UserHashingManager,
     EmailService,
+    SecurityDevicesRepository,
+    SecurityDevicesQueryRepository,
     ...CommandHandlers,
   ],
 })

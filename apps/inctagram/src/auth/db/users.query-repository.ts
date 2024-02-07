@@ -14,4 +14,10 @@ export class UsersQueryRepository {
       where: { username },
     });
   }
+
+  getUserByCode(code: string) {
+    return this.prisma.user.findFirst({
+      where: { confirmationCode: code },
+    });
+  }
 }

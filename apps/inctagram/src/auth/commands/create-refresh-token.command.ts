@@ -23,7 +23,10 @@ export class CreateRefreshTokenHandler
     const currentTime = new Date();
     const token = await this.jwtService.signAsync(
       { userId: userId, deviceId: currentTime.getTime().toString() },
-      { expiresIn: 20, secret: process.env.JWT_REFRESH_KEY },
+      {
+        expiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME,
+        secret: process.env.JWT_REFRESH_KEY,
+      },
     );
     const deviceBody = {
       title: deviceTitle,

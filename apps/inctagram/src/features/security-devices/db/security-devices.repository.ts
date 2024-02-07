@@ -25,6 +25,11 @@ export class SecurityDevicesRepository {
       },
     });
   }
+  deleteDeviceById(deviceId: string) {
+    this.prisma.devices.delete({
+      where: { deviceId },
+    });
+  }
   async addTokenToBlacklist(refreshToken: string) {
     await this.prisma.blacklist.create({
       data: {

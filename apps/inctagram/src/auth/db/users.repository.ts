@@ -10,4 +10,11 @@ export class UsersRepository {
       where: { email },
     });
   }
+
+  async updateUsersConfirmationStatus(userId: number) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { isConfirmed: true },
+    });
+  }
 }
