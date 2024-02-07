@@ -36,6 +36,7 @@ describe('AuthController', () => {
     await app.init();
 
     httpServer = app.getHttpServer();
+
     await request(httpServer).delete(URL + '/delete-me');
   });
 
@@ -50,7 +51,7 @@ describe('AuthController', () => {
     return request(httpServer)
       .post('/auth/login')
       .set('User-Agent', userAgent)
-      .send({ loginOrEmail: data.email, password: data.password });
+      .send({ email: data.email, password: data.password });
   };
 
   describe('registration', () => {
@@ -113,6 +114,40 @@ describe('AuthController', () => {
           login: 'log',
         })
         .expect(HttpStatus.TOO_MANY_REQUESTS);
+    });
+  });
+  describe('login', () => {
+    it('should return error when email is not confirmed', async () => {
+      await request(httpServer)
+        .post(URL + '/login')
+        .send(data)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+    it('should return token when login with default acc', async () => {
+      const token = await request(httpServer)
+        .post(URL + '/login')
+        .send({ email: 'example@gmail.com', password: 'Pa$$w0rd' })
+        .expect(HttpStatus.OK);
+      accesstoken = token.body.accessToken;
+      refreshToken = token.headers['set-cookie'][0];
+      //   .find((cookie: string) =>
+      //   cookie.startsWith('refreshToken='),
+      // );
+      expect(token.body.accessToken).toEqual(expect.any(String));
+    });
+    it('should return error with incorrect data', async () => {
+      await request(httpServer)
+        .post(URL + '/login')
+        .send({ email: 'example@gmail.com', password: 'Pa$$w0rd1' })
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+  });
+  describe('logout', () => {
+    it('should successfully logout user', async () => {
+      await request(httpServer)
+        .post(URL + '/logout')
+        .set('Cookie', refreshToken)
+        .expect(HttpStatus.NO_CONTENT);
     });
   });
   // describe('refresh token', () => {

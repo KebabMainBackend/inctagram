@@ -22,6 +22,7 @@ model User {
   email              String   @unique
   username           String   @unique
   passwordHash       String?
+  passwordSalt       String?
   isConfirmed        Boolean  @default(false)
   confirmationCode   String
   codeExpirationDate DateTime

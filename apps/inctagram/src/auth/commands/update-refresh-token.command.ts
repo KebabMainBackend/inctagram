@@ -3,7 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
 import { SecurityDevicesRepository } from '../../features/security-devices/db/security-devices.repository';
 
-export class RefreshRefreshTokenCommand {
+export class UpdateRefreshTokenCommand {
   constructor(
     public oldRefresh: {
       userId: number;
@@ -12,15 +12,15 @@ export class RefreshRefreshTokenCommand {
   ) {}
 }
 
-@CommandHandler(RefreshRefreshTokenCommand)
-export class RefreshAccessTokenHandler
-  implements ICommandHandler<RefreshRefreshTokenCommand>
+@CommandHandler(UpdateRefreshTokenCommand)
+export class UpdateRefreshTokenHandler
+  implements ICommandHandler<UpdateRefreshTokenCommand>
 {
   constructor(
     private jwtService: JwtService,
     private securityDevicesRepository: SecurityDevicesRepository,
   ) {}
-  async execute({ oldRefresh }: RefreshRefreshTokenCommand) {
+  async execute({ oldRefresh }: UpdateRefreshTokenCommand) {
     const currentTime = new Date();
     const aliveTill = add(currentTime, { minutes: 15 }).toISOString();
     const token = await this.jwtService.signAsync(
@@ -28,7 +28,10 @@ export class RefreshAccessTokenHandler
         userId: oldRefresh.userId,
         deviceId: oldRefresh.deviceId,
       },
-      { expiresIn: 20, secret: process.env.JWT_REFRESH_KEY },
+      {
+        expiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME,
+        secret: process.env.JWT_REFRESH_KEY,
+      },
     );
     await this.securityDevicesRepository.updateLastActiveDateOfDevice(
       oldRefresh.deviceId,
