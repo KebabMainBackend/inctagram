@@ -20,6 +20,8 @@ import { SecurityDevicesQueryRepository } from '../features/security-devices/db/
 import { AddRefreshToBlacklistHandler } from './commands/add-refresh-to-blacklist';
 import { DeleteDeviceHandler } from '../features/security-devices/commands/delete-device.command';
 import { PasswordRecoveryHandler } from './commands/password-recovery.command';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { PassportModule } from '@nestjs/passport';
 
 const CommandHandlers = [
   RegisterUserHandler,
@@ -35,6 +37,7 @@ const CommandHandlers = [
 @Module({
   imports: [
     CqrsModule,
+    PassportModule.register({ session: true }),
     JwtModule.registerAsync({
       useFactory: async () => ({
         secret: process.env.JWT_SECRET_KEY,
@@ -44,6 +47,7 @@ const CommandHandlers = [
   ],
   controllers: [AuthController, GithubController, GoogleController],
   providers: [
+    GoogleStrategy,
     AuthService,
     UsersRepository,
     UsersQueryRepository,

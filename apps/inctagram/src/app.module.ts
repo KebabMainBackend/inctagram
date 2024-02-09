@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { SecurityDevicesModule } from './features/security-devices/security-devices.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { GoogleStrategy } from './auth/strategies/google.strategy';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -17,6 +18,7 @@ import { join } from 'path';
     SecurityDevicesModule,
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['.env', '.env.dev'],
     }),
     ThrottlerModule.forRoot([
       {
