@@ -88,6 +88,8 @@ export class AuthService {
     if (requestStatus.status) {
       return this.commandBus.execute(new PasswordRecoveryCommand(email));
     }
+    const error = createErrorMessage('incorrect recaptcha', 'recaptcha');
+    throw new HttpException(error, HttpStatus.BAD_REQUEST);
   }
   async deleteMe() {
     const me = await this.usersQueryRepo.getUserByEmail('zhumamedin@gmail.com');
