@@ -10,7 +10,7 @@ const userBody = {
   password: 'Pa$$w0rd',
   email: 'zhumamedin@gmail.com',
 };
-const timeout = 15000;
+const timeout = 10000;
 describe('AuthController', () => {
   let app: INestApplication;
   let httpServer;
@@ -21,9 +21,6 @@ describe('AuthController', () => {
     email: 'zhumamedin@gmail.com',
     password: 'Pa$$w0rd',
   };
-
-  const UA1 =
-    'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0';
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -44,18 +41,8 @@ describe('AuthController', () => {
     await app.close();
   });
 
-  const login = async (
-    data: { email: string; password: string },
-    userAgent: string,
-  ) => {
-    return request(httpServer)
-      .post('/auth/login')
-      .set('User-Agent', userAgent)
-      .send({ email: data.email, password: data.password });
-  };
-
   describe('registration', () => {
-    jest.setTimeout(10000);
+    jest.setTimeout(timeout);
     it('should create user and return 204', async () => {
       await request(httpServer)
         .post(URL + '/registration')
@@ -150,54 +137,4 @@ describe('AuthController', () => {
         .expect(HttpStatus.NO_CONTENT);
     });
   });
-  // describe('refresh token', () => {
-  //   it(
-  //     'should return new access token',
-  //     async () => {
-  //       const newAccessReq = await request(httpServer)
-  //         .post(authURL + '/refresh-token')
-  //         .set('Cookie', refreshToken)
-  //         .expect(HttpStatus.OK);
-  //       accesstoken = newAccessReq.body.accessToken;
-  //       newRefreshToken = newAccessReq.headers['set-cookie'].find(
-  //         (cookie: string) => cookie.startsWith('refreshToken='),
-  //       );
-  //     },
-  //     timeout,
-  //   );
-  //   it(
-  //     'should return error with invalid refresh token',
-  //     async () => {
-  //       await request(httpServer)
-  //         .post(authURL + '/refresh-token')
-  //         .set('Cookie', refreshToken)
-  //         .expect(HttpStatus.UNAUTHORIZED);
-  //     },
-  //     timeout,
-  //   );
-  // });
-  // describe('check logout', () => {
-  //   it('should return error on  expired token', async () => {
-  //     await request(httpServer)
-  //       .post(authURL + '/logout')
-  //       .set('Cookie', refreshToken)
-  //       .expect(HttpStatus.UNAUTHORIZED);
-  //   });
-  //   it('should return 204 on valid token', async () => {
-  //     await request(httpServer)
-  //       .post(authURL + '/logout')
-  //       .set('Cookie', newRefreshToken)
-  //       .expect(HttpStatus.NO_CONTENT);
-  //   });
-  //   it('should return error on expired token 2', async () => {
-  //     await request(httpServer)
-  //       .post(authURL + '/logout')
-  //       .set('Cookie', refreshToken)
-  //       .expect(HttpStatus.UNAUTHORIZED);
-  //   });
-  // });
 });
-// accesstoken = await login(data, UA1);
-// refreshToken = accesstoken.headers['set-cookie'].find(
-//   (cookie: string) => cookie.startsWith('refreshToken='),
-// );
