@@ -22,9 +22,6 @@ describe('AuthController', () => {
     password: 'Pa$$w0rd',
   };
 
-  const UA1 =
-    'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0';
-
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -43,16 +40,6 @@ describe('AuthController', () => {
   afterAll(async () => {
     await app.close();
   });
-
-  const login = async (
-    data: { email: string; password: string },
-    userAgent: string,
-  ) => {
-    return request(httpServer)
-      .post('/auth/login')
-      .set('User-Agent', userAgent)
-      .send({ email: data.email, password: data.password });
-  };
 
   describe('registration', () => {
     jest.setTimeout(timeout);
