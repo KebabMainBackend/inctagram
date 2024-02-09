@@ -75,7 +75,7 @@ export class AuthService {
     return null;
   }
   async sendCodeToRecoverPassword(email: string, recaptcha: string) {
-    const secretKey = process.env['back'];
+    const secretKey = process.env['RECAPTCHA_SECRET'];
     const verifyCaptchaBodyString = `secret=${secretKey}&response=${recaptcha}`;
     const res = await fetch('https://www.google.com/recaptcha/api/siteverify', {
       method: 'POST',

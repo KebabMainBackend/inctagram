@@ -27,6 +27,66 @@ spec:
                  secretKeyRef:
                    name: main-service-production-config-secret
                    key: DIRECT_URL
+             - name: PROD_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: PROD_URL
+             - name: GOOGLE_PASSWORD
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: GOOGLE_PASSWORD
+             - name: JWT_SECRET_KEY
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: JWT_SECRET_KEY
+             - name: JWT_REFRESH_KEY
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: JWT_REFRESH_KEY
+             - name: JWT_EXPIRATION_TIME
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: JWT_EXPIRATION_TIME
+             - name: JWT_REFRESH_EXPIRATION_TIME
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: JWT_REFRESH_EXPIRATION_TIME
+             - name: NODE_ENV
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: NODE_ENV
+             - name: RECAPTCHA_SECRET
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: RECAPTCHA_SECRET
+             - name: GOOGLE_CLIENT_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: GOOGLE_CLIENT_ID
+             - name: GOOGLE_CLIENT_SECRET
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: GOOGLE_CLIENT_SECRET
+             - name: GITHUB_CLIENT_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: GITHUB_CLIENT_ID
+             - name: GITHUB_CLIENT_SECRET
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: GITHUB_CLIENT_SECRET
              - name: DATABASE_URL
                valueFrom:
                  secretKeyRef:
