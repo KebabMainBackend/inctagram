@@ -19,7 +19,7 @@ describe('AuthController', () => {
   let accesstoken;
   const data = {
     email: 'zhumamedin@gmail.com',
-    password: 'Pa$$w0rd',
+    password: 'Pa$$w0rD',
   };
 
   beforeAll(async () => {
