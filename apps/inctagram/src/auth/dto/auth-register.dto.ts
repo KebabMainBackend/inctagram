@@ -34,7 +34,7 @@ export class AuthRegisterDto {
   @MaxLength(20)
   @ApiProperty({
     description: 'password: password for create/registration User',
-    example: 'Pa$$w0rD',
+    example: 'Pa$$w0rd',
   })
   @Matches(
     /^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[!"#$%&'()*+,-.\/:;<=>?@[\]^_`{|}~])[A-Za-z0-9!"#$%&'()*+,-.\/:;<=>?@[\]^_`{|}~]+$/,

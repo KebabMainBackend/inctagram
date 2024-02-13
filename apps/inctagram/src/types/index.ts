@@ -5,7 +5,7 @@
 //     export interface Request {
 //       user: {
 //         id: number;
-//         login: string;
+//         username: string;
 //         email: string;
 //       } | null;
 //     }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { SecurityDevicesTypes } from '../types/create-device.types';
 import { PrismaService } from '../../../prisma.service';
+import { CreateSessionTypes } from '../types/create-session.types';
 
 @Injectable()
 export class SecurityDevicesRepository {
@@ -10,14 +11,21 @@ export class SecurityDevicesRepository {
       data: deviceBody,
     });
   }
-  async updateLastActiveDateOfDevice(
-    deviceId: string,
+
+  async createSession(data: CreateSessionTypes) {
+    const session = await this.prisma.session.create({
+      data,
+    });
+    return session.id;
+  }
+  async updateLastActiveDateOfSession(
+    sessionId: number,
     newDate: string,
     aliveTill: string,
   ) {
-    this.prisma.devices.update({
+    this.prisma.session.update({
       where: {
-        deviceId: deviceId,
+        id: sessionId,
       },
       data: {
         lastActiveDate: newDate,
@@ -25,9 +33,9 @@ export class SecurityDevicesRepository {
       },
     });
   }
-  deleteDeviceById(deviceId: string) {
-    this.prisma.devices.delete({
-      where: { deviceId },
+  deleteSessionById(sessionId: number) {
+    this.prisma.session.delete({
+      where: { id: sessionId },
     });
   }
   async addTokenToBlacklist(refreshToken: string) {

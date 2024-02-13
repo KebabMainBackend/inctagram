@@ -6,9 +6,9 @@ import * as request from 'supertest';
 
 const URL = '/auth';
 const userBody = {
-  username: 'sansrona',
+  username: 'default',
   password: 'Pa$$w0rd',
-  email: 'zhumamedin@gmail.com',
+  email: 'default@gmail.com',
 };
 const timeout = 10000;
 describe('AuthController', () => {
@@ -18,7 +18,7 @@ describe('AuthController', () => {
   let newRefreshToken: string;
   let accesstoken;
   const data = {
-    email: 'zhumamedin@gmail.com',
+    email: 'default@gmail.com',
     password: 'Pa$$w0rD',
   };
 
@@ -113,7 +113,7 @@ describe('AuthController', () => {
     it('should return token when login with default acc', async () => {
       const token = await request(httpServer)
         .post(URL + '/login')
-        .send({ email: 'example@gmail.com', password: 'Pa$$w0rd' })
+        .send({ email: 'example@gmail.com', password: 'Pa$$w0rD' })
         .expect(HttpStatus.OK);
       accesstoken = token.body.accessToken;
       refreshToken = token.headers['set-cookie'][0];

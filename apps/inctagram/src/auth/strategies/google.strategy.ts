@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Profile, Strategy } from 'passport-google-oauth20';
-import { CommandBus } from '@nestjs/cqrs';
-import * as process from 'process';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-  constructor(private readonly commandBus: CommandBus) {
+  constructor() {
     super({
       clientID: process.env['GOOGLE_CLIENT_ID'],
       clientSecret: process.env['GOOGLE_CLIENT_SECRET'],
@@ -16,19 +14,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   }
 
   async validate(accessToken: string, refreshToken: string, profile: Profile) {
-    const { name, emails, photos } = profile;
-    // const user = {
-    //   username: 'client' + profile.id,
-    //   email: profile.emails[0].value,
-    //   id: profile.id,
-    // };
-    const user = {
-      email: emails[0].value,
-      firstName: name.givenName,
-      lastName: name.familyName,
-      picture: photos[0].value,
+    return {
+      email: profile.emails[0].value,
+      id: profile.id,
     };
-
-    return user;
   }
 }

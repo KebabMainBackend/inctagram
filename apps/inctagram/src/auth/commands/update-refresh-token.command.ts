@@ -7,7 +7,7 @@ export class UpdateRefreshTokenCommand {
   constructor(
     public oldRefresh: {
       userId: number;
-      deviceId: string;
+      sessionId: number;
     },
   ) {}
 }
@@ -26,15 +26,15 @@ export class UpdateRefreshTokenHandler
     const token = await this.jwtService.signAsync(
       {
         userId: oldRefresh.userId,
-        deviceId: oldRefresh.deviceId,
+        sessionId: oldRefresh.sessionId,
       },
       {
         expiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME,
         secret: process.env.JWT_REFRESH_KEY,
       },
     );
-    await this.securityDevicesRepository.updateLastActiveDateOfDevice(
-      oldRefresh.deviceId,
+    await this.securityDevicesRepository.updateLastActiveDateOfSession(
+      oldRefresh.sessionId,
       currentTime.toISOString(),
       aliveTill,
     );
