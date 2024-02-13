@@ -125,9 +125,9 @@ export class AuthService {
     return userId;
   }
   async deleteMe() {
-    const me = await this.usersQueryRepo.getUserByEmail('zhumamedin@gmail.com');
+    const me = await this.usersQueryRepo.getUserByEmail('default@gmail.com');
     if (me) {
-      await this.usersRepo.deleteUserByEmail('zhumamedin@gmail.com');
+      await this.usersRepo.deleteUserByEmail('default@gmail.com');
     }
   }
 }

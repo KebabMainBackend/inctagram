@@ -54,7 +54,7 @@ export class GithubController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const { email, id } = req.user;
-    const userId = await this.authService.loginViaProvider(email, id, 'google');
+    const userId = await this.authService.loginViaProvider(email, id, 'github');
     const title = req.get('User-Agent') || 'unknown user agent';
     const ip = req.socket.remoteAddress || '';
     const refreshToken = await this.commandBus.execute(

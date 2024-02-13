@@ -6,9 +6,9 @@ import * as request from 'supertest';
 
 const URL = '/auth';
 const userBody = {
-  username: 'sansrona',
+  username: 'default',
   password: 'Pa$$w0rd',
-  email: 'zhumamedin@gmail.com',
+  email: 'default@gmail.com',
 };
 const timeout = 10000;
 describe('AuthController', () => {
@@ -18,7 +18,7 @@ describe('AuthController', () => {
   let newRefreshToken: string;
   let accesstoken;
   const data = {
-    email: 'zhumamedin@gmail.com',
+    email: 'default@gmail.com',
     password: 'Pa$$w0rD',
   };
 
