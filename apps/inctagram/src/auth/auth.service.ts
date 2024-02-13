@@ -120,6 +120,7 @@ export class AuthService {
       providerId,
       userId: userId,
     });
+    console.log(provider);
     const p = await this.usersRepo.createOauthProvider(provider);
     console.log(p, 'created provider');
     return userId;
