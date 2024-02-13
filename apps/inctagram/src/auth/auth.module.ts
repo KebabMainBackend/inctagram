@@ -22,6 +22,10 @@ import { DeleteDeviceHandler } from '../features/security-devices/commands/delet
 import { PasswordRecoveryHandler } from './commands/password-recovery.command';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { PassportModule } from '@nestjs/passport';
+import { GithubStrategy } from './strategies/github.strategy';
+import { ResendConfirmationCodeHandler } from './commands/resend-confirmation-code.command';
+import { ChangeUserPasswordHandler } from './commands/change-user-password';
+import { CreateUserViaOauthProviderHandler } from './commands/create-user-via-oauth-provider.command';
 
 const CommandHandlers = [
   RegisterUserHandler,
@@ -32,6 +36,9 @@ const CommandHandlers = [
   AddRefreshToBlacklistHandler,
   DeleteDeviceHandler,
   PasswordRecoveryHandler,
+  ResendConfirmationCodeHandler,
+  ChangeUserPasswordHandler,
+  CreateUserViaOauthProviderHandler,
 ];
 
 @Module({
@@ -48,6 +55,7 @@ const CommandHandlers = [
   controllers: [AuthController, GithubController, GoogleController],
   providers: [
     GoogleStrategy,
+    GithubStrategy,
     AuthService,
     UsersRepository,
     UsersQueryRepository,

@@ -1,7 +1,7 @@
-import { add } from 'date-fns';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
 import { SecurityDevicesRepository } from '../../features/security-devices/db/security-devices.repository';
+import { DeviceEntity, SessionEntity } from '../entities/session.entity';
 
 export class CreateRefreshTokenCommand {
   constructor(
@@ -20,24 +20,21 @@ export class CreateRefreshTokenHandler
     private securityDevicesRepository: SecurityDevicesRepository,
   ) {}
   async execute({ userId, deviceTitle, deviceIp }: CreateRefreshTokenCommand) {
-    const currentTime = new Date();
-    const token = await this.jwtService.signAsync(
-      { userId: userId, deviceId: currentTime.getTime().toString() },
+    const device = DeviceEntity.create({
+      title: deviceTitle,
+      ip: deviceIp,
+    });
+    const newDevice = await this.securityDevicesRepository.createDevice(device);
+    const session = SessionEntity.create(userId, newDevice.deviceId);
+    const sessionId = await this.securityDevicesRepository.createSession(
+      session,
+    );
+    return await this.jwtService.signAsync(
+      { userId, sessionId },
       {
         expiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME,
         secret: process.env.JWT_REFRESH_KEY,
       },
     );
-    const deviceBody = {
-      title: deviceTitle,
-      deviceId: currentTime.getTime().toString(),
-      lastActiveDate: currentTime.toISOString(),
-      userId,
-      ip: deviceIp,
-      aliveTill: add(currentTime, { minutes: 15 }).toISOString(),
-    };
-    await this.securityDevicesRepository.createDevice(deviceBody);
-
-    return token;
   }
 }

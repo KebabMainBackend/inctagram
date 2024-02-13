@@ -21,15 +21,15 @@ export class DecodeRefreshTokenHandler
       });
       const isInBlackList =
         await this.securityDevicesQueryRepository.getBlackList(refresh);
-      const device =
-        await this.securityDevicesQueryRepository.getDeviceByUserIdAndDeviceId(
-          result.deviceId,
+      const session =
+        await this.securityDevicesQueryRepository.getSessionByUserIdAndSessionId(
+          result.sessionId,
           result.userId,
         );
       if (isInBlackList) {
         return null;
       }
-      if (!device) {
+      if (!session) {
         return null;
       }
       if (result.exp * 1000 < Date.now()) {
@@ -37,7 +37,7 @@ export class DecodeRefreshTokenHandler
       }
       return {
         userId: result.userId,
-        deviceId: result.deviceId,
+        sessionId: result.sessionId,
       };
     } catch (e) {
       return null;

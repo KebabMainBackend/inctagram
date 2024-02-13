@@ -3,6 +3,4 @@ export type CreateUserTypes = {
   passwordHash: string;
   passwordSalt: string;
   email: string;
-  confirmationCode: string;
-  codeExpirationDate: Date;
 };

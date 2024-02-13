@@ -14,49 +14,65 @@ model Post {
   content   String?
   published Boolean? @default(false)
   authorId  Int?
-  // User      User?    @relation(fields: [authorId], references: [id])
 }
 
 model User {
-  id                 Int      @id @default(autoincrement())
-  email              String   @unique
-  username           String   @unique
-  passwordHash       String?
-  passwordSalt       String?
-  isConfirmed        Boolean  @default(false)
+  id               Int               @id @unique @default(autoincrement())
+  email            String            @unique
+  username         String            @unique
+  passwordHash     String?
+  passwordSalt     String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  isConfirmed      Boolean           @default(false)
+  isDeleted        Boolean           @default(false)
+  confirmationData UserConfirmation?
+  providers        OAuthProvider[]
+  providerId       String?
+  sessions         Session[]
+}
+
+model UserConfirmation {
+  id                 Int      @id @unique @default(autoincrement())
   confirmationCode   String
   codeExpirationDate DateTime
+  userId             Int      @unique
+  User               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
-  isDeleted          Boolean  @default(false)
-  github             Github?  @relation(fields: [githubProviderId], references: [providerId])
-  githubProviderId   Int?
-  Google             Google?  @relation(fields: [googleProviderId], references: [providerId])
-  googleProviderId   Int?
-  // Post  Post[]
+}
+
+model Session {
+  id             Int       @id @unique @default(autoincrement())
+  userId         Int
+  User           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastActiveDate DateTime
+  aliveTill      DateTime
+  devices        Devices[]
+  deviceId       String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 model Devices {
-  deviceId       String   @id @unique
-  title          String
-  ip             String
-  lastActiveDate DateTime
-  aliveTill      DateTime
-  userId         Int
+  title     String
+  ip        String
+  deviceId  String   @id @unique
+  session   Session? @relation(fields: [sessionId], references: [id])
+  sessionId Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model Github {
-  providerId Int    @id
-  email      String
-  username   String
-  User       User[]
-}
-
-model Google {
-  providerId Int    @id
-  email      String
-  username   String
-  User       User[]
+model OAuthProvider {
+  id           Int      @id @unique @default(autoincrement())
+  providerId   String
+  providerType String
+  email        String?
+  userId       Int      @unique
+  user         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Blacklist {

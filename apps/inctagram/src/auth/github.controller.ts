@@ -1,21 +1,17 @@
 import {
   Controller,
-  Post,
-  Body,
   HttpCode,
   UseGuards,
   HttpStatus,
   Get,
-  Res,
   Req,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthRegisterDto } from './dto/auth-register.dto';
 import {
   ApiBadRequestResponse,
-  ApiCreatedResponse,
+  ApiExcludeEndpoint,
   ApiNoContentResponse,
-  ApiOkResponse,
   ApiTags,
   ApiTooManyRequestsResponse,
 } from '@nestjs/swagger';
@@ -24,12 +20,19 @@ import {
   BadRequestResponseOptions,
   TooManyRequestsResponseOptions,
 } from '../utils/swagger-constants';
-import * as querystring from 'querystring';
+import { AuthGuard } from '@nestjs/passport';
+import { Request, Response } from 'express';
+import { CreateRefreshTokenCommand } from './commands/create-refresh-token.command';
+import { CreateAccessTokenCommand } from './commands/create-access-token.command';
+import { CommandBus } from '@nestjs/cqrs';
 
 @Controller('auth/github')
 @ApiTags('Github-OAuth2')
 export class GithubController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private commandBus: CommandBus,
+  ) {}
 
   @ApiNoContentResponse({
     description:
@@ -39,66 +42,31 @@ export class GithubController {
   @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
   @Get('login')
   @UseGuards(ThrottlerGuard)
+  @UseGuards(AuthGuard('github'))
   @HttpCode(HttpStatus.NO_CONTENT)
-  async register(@Res() res) {
-    const clientId = process.env['GITHUB_CLIENT_ID'];
-    const redirectUri = process.env.PROD_URL + '/api/v1/auth/github/redirect';
-    const scope = 'user'; // Здесь можете указать необходимые права
-    const queryParams = querystring.stringify({
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      scope: scope,
-    });
+  async register() {}
 
-    const githubAuthUrl = `https://github.com/login/oauth/authorize?${queryParams}`;
-    res.redirect(githubAuthUrl);
-  }
-  @ApiCreatedResponse({
-    description: 'success',
-    content: {
-      'application/json': {
-        example: { accessToken: 'string', email: 'string' },
-      },
-    },
-  })
-  @ApiBadRequestResponse(BadRequestResponseOptions)
-  @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
   @Get('redirect')
-  @UseGuards(ThrottlerGuard)
-  async redirect(@Req() req, @Res() res) {
-    const { code } = req.query;
-    const clientSecret = process.env['GITHUB_CLIENT_SECRET'];
-    const clientId = process.env['GITHUB_CLIENT_ID'];
-    const redirectUri = process.env.PROD_URL + '/api/v1/auth/github/redirect';
-    console.log(code);
-    const params = {
-      client_id: clientId,
-      client_secret: clientSecret,
-      code: code,
-      redirect_uri: redirectUri,
-    };
-    console.log(params);
-    try {
-      const response = await fetch(
-        'https://github.com/login/oauth/access_token',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: JSON.stringify(params),
-        },
-      );
-      const data = await response.json();
-      const accessToken = data.access_token;
-      console.log(accessToken, data);
-
-      // Используйте accessToken для запросов к API GitHub или сохраните его в базе данных
-
-      res.send('Аутентификация успешна');
-    } catch (error) {
-      console.error('Ошибка аутентификации:', error);
-      res.send('Ошибка аутентификации');
-    }
+  @ApiExcludeEndpoint()
+  @UseGuards(AuthGuard('github'))
+  async redirect(
+    @Req() req: Request & { user: { id: string; email: string } },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { email, id } = req.user;
+    const userId = await this.authService.loginViaProvider(email, id, 'google');
+    const title = req.get('User-Agent') || 'unknown user agent';
+    const ip = req.socket.remoteAddress || '';
+    const refreshToken = await this.commandBus.execute(
+      new CreateRefreshTokenCommand(userId, title, ip),
+    );
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    const accessToken = await this.commandBus.execute(
+      new CreateAccessTokenCommand(userId),
+    );
+    return { accessToken, email };
   }
 }

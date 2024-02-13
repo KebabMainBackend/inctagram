@@ -113,7 +113,7 @@ describe('AuthController', () => {
     it('should return token when login with default acc', async () => {
       const token = await request(httpServer)
         .post(URL + '/login')
-        .send({ email: 'example@gmail.com', password: 'Pa$$w0rd' })
+        .send({ email: 'example@gmail.com', password: 'Pa$$w0rD' })
         .expect(HttpStatus.OK);
       accesstoken = token.body.accessToken;
       refreshToken = token.headers['set-cookie'][0];

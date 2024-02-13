@@ -7,7 +7,9 @@ import { RegisterUserCommand } from './commands/register-user.command';
 import { UsersRepository } from './db/users.repository';
 import { UserHashingManager } from './managers/user-hashing.manager';
 import { PasswordRecoveryCommand } from './commands/password-recovery.command';
-// import { ResultNotification } from '../modules/notification';
+import { ResendConfirmationCodeCommand } from './commands/resend-confirmation-code.command';
+import { CreateUserViaOauthProviderCommand } from './commands/create-user-via-oauth-provider.command';
+import { OauthProviderEntity } from './entities/oauth-provider.entity';
 
 @Injectable()
 export class AuthService {
@@ -22,20 +24,14 @@ export class AuthService {
     const userByUsername = await this.usersQueryRepo.getUserByUsername(
       username,
     );
-    // const notification = new ResultNotification();
     if (userByEmail) {
       const error = createErrorMessage('email already exists', 'email');
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
-      // notification.addError('email already exists', 'email');
     }
     if (userByUsername) {
       const error = createErrorMessage('username already exists', 'username');
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
-      // notification.addError('username already exists', 'username');
     }
-    // if (notification.hasError()) {
-    //   throw new HttpException(notification.extensions, HttpStatus.BAD_REQUEST);
-    // }
     return this.commandBus.execute(
       new RegisterUserCommand(username, password, email),
     );
@@ -61,18 +57,20 @@ export class AuthService {
   }
   async verifyConfirmationCode(code: string) {
     const user = await this.usersQueryRepo.getUserByCode(code);
-    if (user) {
-      if (user.codeExpirationDate < new Date()) {
-        const error = createErrorMessage('code expired', 'code');
-        throw new HttpException(error, HttpStatus.BAD_REQUEST);
-      }
-      if (user.isConfirmed) {
-        const error = createErrorMessage('code already confirmed', 'code');
-        throw new HttpException(error, HttpStatus.BAD_REQUEST);
-      }
-      await this.usersRepo.updateUsersConfirmationStatus(user.id);
+    if (!user) {
+      const error = createErrorMessage('invalid code', 'code');
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
-    return null;
+    if (user.confirmationData.codeExpirationDate < new Date()) {
+      const error = createErrorMessage('code expired', 'code');
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
+    if (user.isConfirmed) {
+      const error = createErrorMessage('code already confirmed', 'code');
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
+    await this.usersRepo.deleteUserConfirmationData(user.confirmationData.id);
+    await this.usersRepo.updateUsersConfirmationStatus(user.id);
   }
   async sendCodeToRecoverPassword(email: string, recaptcha: string) {
     const secretKey = process.env['RECAPTCHA_SECRET'];
@@ -90,6 +88,41 @@ export class AuthService {
     }
     const error = createErrorMessage('incorrect recaptcha', 'recaptcha');
     throw new HttpException(error, HttpStatus.BAD_REQUEST);
+  }
+  async resendConfirmationCode(email: string) {
+    await this.commandBus.execute(new ResendConfirmationCodeCommand(email));
+  }
+  async loginViaProvider(
+    email: string | null,
+    providerId: string,
+    providerType: string,
+  ) {
+    let userId: number;
+    const providerClient = await this.usersQueryRepo.getUserProviderByIdAndType(
+      providerId,
+      providerType,
+    );
+    if (providerClient) {
+      console.log(providerClient, 'found provider');
+      return providerClient.userId;
+    }
+    const userByEmail = await this.usersQueryRepo.getUserByEmail(email);
+    if (!userByEmail) {
+      userId = await this.commandBus.execute(
+        new CreateUserViaOauthProviderCommand(providerId, email, providerType),
+      );
+    } else {
+      userId = userByEmail.id;
+    }
+    const provider = OauthProviderEntity.create({
+      email,
+      providerType,
+      providerId,
+      userId: userId,
+    });
+    const p = await this.usersRepo.createOauthProvider(provider);
+    console.log(p, 'created provider');
+    return userId;
   }
   async deleteMe() {
     const me = await this.usersQueryRepo.getUserByEmail('zhumamedin@gmail.com');

@@ -9,6 +9,7 @@ import {
   Req,
   Delete,
   Res,
+  Get,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -37,6 +38,10 @@ import { AuthVerifyEmailDto } from './dto/auth-verify-email.dto';
 import { DecodeRefreshTokenCommand } from './commands/decode-refresh-token.command';
 import { DeleteDeviceCommand } from '../features/security-devices/commands/delete-device.command';
 import { AuthPasswordRecoveryDto } from './dto/auth-password-recovery.dto';
+import { AuthResendCodeDto } from './dto/auth-resend-code.dto';
+import { AuthNewPasswordDto } from './dto/auth-new-password.dto';
+import { ChangeUserPasswordCommand } from './commands/change-user-password';
+import { BearerAuthGuard } from './guards/bearer-auth.guard';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -116,7 +121,9 @@ export class AuthController {
         new DecodeRefreshTokenCommand(refreshToken),
       );
       if (result) {
-        await this.commandBus.execute(new DeleteDeviceCommand(result.deviceId));
+        await this.commandBus.execute(
+          new DeleteDeviceCommand(result.sessionId),
+        );
         return;
       }
     }
@@ -134,9 +141,44 @@ export class AuthController {
     await this.authService.verifyConfirmationCode(code);
   }
 
+  @ApiNoContentResponse(NoContentResponseOptions)
+  @ApiBadRequestResponse(BadRequestResponseOptions)
+  @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
+  @Post('registration-email-resending')
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async registrationEmailResend(@Body() body: AuthResendCodeDto) {
+    const email = body.email;
+    await this.authService.resendConfirmationCode(email);
+    return;
+  }
+
+  @ApiNoContentResponse(NoContentResponseOptions)
+  @ApiBadRequestResponse(BadRequestResponseOptions)
+  @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
+  @Post('new-password')
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async newPassword(@Body() body: AuthNewPasswordDto) {
+    const code = body.recoveryCode;
+    const newPassword = body.newPassword;
+    await this.commandBus.execute(
+      new ChangeUserPasswordCommand(code, newPassword),
+    );
+  }
+  @Get('me')
+  @UseGuards(BearerAuthGuard)
+  async getMe(@Req() req: Request) {
+    const user = req.user;
+    if (user) {
+      return user;
+    }
+    throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+  }
+
   @ApiExcludeEndpoint()
   @Delete('delete-me')
   async deleteMe() {
-    this.authService.deleteMe();
+    await this.authService.deleteMe();
   }
 }
