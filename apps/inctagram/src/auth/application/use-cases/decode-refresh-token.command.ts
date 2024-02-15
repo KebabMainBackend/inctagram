@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
-import { SecurityDevicesQueryRepository } from '../../features/security-devices/db/security-devices.query-repository';
+import { SecurityDevicesQueryRepository } from '../../../features/security-devices/db/security-devices.query-repository';
 
 export class DecodeRefreshTokenCommand {
   constructor(public refresh: string) {}

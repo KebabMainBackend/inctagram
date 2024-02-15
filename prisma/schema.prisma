@@ -30,6 +30,18 @@ model User {
   providers        OAuthProvider[]
   providerId       String?
   sessions         Session[]
+  Profile          Profile[]
+}
+
+model Profile {
+  userId    Int      @id @unique
+  user      User     @relation(fields: [userId], references: [id])
+  firstname String
+  lastname  String
+  birthDate DateTime
+  aboutMe   String
+  avatar    String
+  city      String
 }
 
 model UserConfirmation {

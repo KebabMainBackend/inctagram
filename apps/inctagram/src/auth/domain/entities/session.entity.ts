@@ -1,4 +1,4 @@
-import { BaseEntity } from '../../utils/base.entity';
+import { BaseEntity } from '../../../utils/base.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
 

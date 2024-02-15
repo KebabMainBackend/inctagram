@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
+import { join } from 'path';
+import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { ThrottlerModule } from '@nestjs/throttler';
-import { ConfigModule } from '@nestjs/config';
 import { SecurityDevicesModule } from './features/security-devices/security-devices.module';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
+import { ProfileModule } from './features/profile/profile.module';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -25,6 +26,7 @@ import { join } from 'path';
         limit: 5,
       },
     ]),
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],

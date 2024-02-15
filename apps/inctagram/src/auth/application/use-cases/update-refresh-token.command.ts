@@ -1,7 +1,7 @@
 import { add } from 'date-fns';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
-import { SecurityDevicesRepository } from '../../features/security-devices/db/security-devices.repository';
+import { SecurityDevicesRepository } from '../../../features/security-devices/db/security-devices.repository';
 
 export class UpdateRefreshTokenCommand {
   constructor(

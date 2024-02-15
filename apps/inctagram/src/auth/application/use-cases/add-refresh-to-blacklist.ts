@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { SecurityDevicesRepository } from '../../features/security-devices/db/security-devices.repository';
+import { SecurityDevicesRepository } from '../../../features/security-devices/db/security-devices.repository';
 
 export class AddRefreshToBlacklistCommand {
   constructor(public refreshToken: string) {}

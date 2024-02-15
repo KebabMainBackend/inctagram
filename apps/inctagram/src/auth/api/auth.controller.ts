@@ -12,7 +12,6 @@ import {
   Get,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { AuthService } from './auth.service';
 import { AuthRegisterDto } from './dto/auth-register.dto';
 import {
   ApiBadRequestResponse,
@@ -29,27 +28,30 @@ import {
   NoContentResponseOptions,
   TooManyRequestsResponseOptions,
   UnauthorizedRequestResponseOptions,
-} from '../utils/swagger-constants';
+} from '../../utils/swagger-constants';
 import { AuthLoginDto } from './dto/auth-login.dto';
-import { CreateRefreshTokenCommand } from './commands/create-refresh-token.command';
-import { CreateAccessTokenCommand } from './commands/create-access-token.command';
+import { CreateRefreshTokenCommand } from '../application/use-cases/create-refresh-token.command';
+import { CreateAccessTokenCommand } from '../application/use-cases/create-access-token.command';
 import { CommandBus } from '@nestjs/cqrs';
 import { AuthVerifyEmailDto } from './dto/auth-verify-email.dto';
-import { DecodeRefreshTokenCommand } from './commands/decode-refresh-token.command';
-import { DeleteDeviceCommand } from '../features/security-devices/commands/delete-device.command';
+import { DecodeRefreshTokenCommand } from '../application/use-cases/decode-refresh-token.command';
+import { DeleteDeviceCommand } from '../../features/security-devices/commands/delete-device.command';
 import { AuthPasswordRecoveryDto } from './dto/auth-password-recovery.dto';
 import { AuthResendCodeDto } from './dto/auth-resend-code.dto';
 import { AuthNewPasswordDto } from './dto/auth-new-password.dto';
-import { ChangeUserPasswordCommand } from './commands/change-user-password';
-import { BearerAuthGuard } from './guards/bearer-auth.guard';
+import { ChangeUserPasswordCommand } from '../application/use-cases/change-user-password';
+import { BearerAuthGuard } from '../guards/bearer-auth.guard';
+import { PasswordRecoveryCommand } from '../application/use-cases/password-recovery.command';
+import { ResendConfirmationCodeCommand } from '../application/use-cases/resend-confirmation-code.command';
+import { RegisterUserCommand } from '../application/use-cases/register-user.command';
+import { CheckCredentialsCommand } from '../application/use-cases/check-credentials.command';
+import { VerifyConfirmationCodeCommand } from '../application/use-cases/verify-confirmation-code.command';
+import { TestDeleteUserCommand } from '../test/delete-user.command';
 
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private commandBus: CommandBus,
-  ) {}
+  constructor(private commandBus: CommandBus) {}
 
   @ApiNoContentResponse({
     description:
@@ -61,7 +63,13 @@ export class AuthController {
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async register(@Body() registerDTO: AuthRegisterDto) {
-    return await this.authService.register(registerDTO);
+    return await this.commandBus.execute(
+      new RegisterUserCommand(
+        registerDTO.username,
+        registerDTO.password,
+        registerDTO.email,
+      ),
+    );
   }
 
   @ApiOkResponse({
@@ -83,7 +91,9 @@ export class AuthController {
   ) {
     const email = loginDto.email;
     const password = loginDto.password;
-    const userId = await this.authService.checkCredentials(email, password);
+    const userId = await this.commandBus.execute(
+      new CheckCredentialsCommand(email, password),
+    );
     const title = req.get('User-Agent') || 'unknown user agent';
     const ip = req.socket.remoteAddress || '';
     const refreshToken = await this.commandBus.execute(
@@ -104,9 +114,11 @@ export class AuthController {
   @Post('password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
   async passwordRecovery(@Body() passwordRecoveryDto: AuthPasswordRecoveryDto) {
-    return await this.authService.sendCodeToRecoverPassword(
-      passwordRecoveryDto.email,
-      passwordRecoveryDto.recaptcha,
+    return await this.commandBus.execute(
+      new PasswordRecoveryCommand(
+        passwordRecoveryDto.email,
+        passwordRecoveryDto.recaptcha,
+      ),
     );
   }
 
@@ -138,7 +150,7 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async registrationConfirmation(@Body() body: AuthVerifyEmailDto) {
     const code = body.confirmationCode;
-    await this.authService.verifyConfirmationCode(code);
+    await this.commandBus.execute(new VerifyConfirmationCodeCommand(code));
   }
 
   @ApiNoContentResponse(NoContentResponseOptions)
@@ -149,7 +161,7 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async registrationEmailResend(@Body() body: AuthResendCodeDto) {
     const email = body.email;
-    await this.authService.resendConfirmationCode(email);
+    await this.commandBus.execute(new ResendConfirmationCodeCommand(email));
     return;
   }
 
@@ -179,6 +191,6 @@ export class AuthController {
   @ApiExcludeEndpoint()
   @Delete('delete-me')
   async deleteMe() {
-    await this.authService.deleteMe();
+    await this.commandBus.execute(new TestDeleteUserCommand());
   }
 }
