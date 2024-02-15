@@ -5,8 +5,8 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class CheckCredentialsCommand {
   constructor(
-    public password: string,
     public email: string,
+    public password: string,
   ) {}
 }
 
