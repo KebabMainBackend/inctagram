@@ -128,6 +128,12 @@ describe('AuthController', () => {
         .send({ email: 'example@gmail.com', password: 'Pa$$w0rd1' })
         .expect(HttpStatus.UNAUTHORIZED);
     });
+    it('should error from logged out acc', async () => {
+      await request(httpServer)
+        .get(URL + '/me')
+        .auth(accesstoken, { type: 'bearer' })
+        .expect(HttpStatus.OK);
+    });
   });
   describe('logout', () => {
     it('should successfully logout user', async () => {

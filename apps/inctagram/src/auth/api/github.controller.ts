@@ -4,10 +4,9 @@ import {
   UseGuards,
   HttpStatus,
   Get,
-  Res,
   Req,
+  Res,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import {
   ApiBadRequestResponse,
   ApiExcludeEndpoint,
@@ -19,20 +18,19 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import {
   BadRequestResponseOptions,
   TooManyRequestsResponseOptions,
-} from '../utils/swagger-constants';
+} from '../../utils/swagger-constants';
 import { AuthGuard } from '@nestjs/passport';
-import { CreateRefreshTokenCommand } from './commands/create-refresh-token.command';
-import { CreateAccessTokenCommand } from './commands/create-access-token.command';
 import { Request, Response } from 'express';
+import { CreateRefreshTokenCommand } from '../application/use-cases/create-refresh-token.command';
+import { CreateAccessTokenCommand } from '../application/use-cases/create-access-token.command';
 import { CommandBus } from '@nestjs/cqrs';
+import { SignInUserViaOauthProviderCommand } from '../application/use-cases/create-user-via-oauth-provider.command';
+import { ProviderType } from '../domain/entities/oauth-provider.entity';
 
-@Controller('auth/google')
-@ApiTags('Google-OAuth2')
-export class GoogleController {
-  constructor(
-    private readonly authService: AuthService,
-    private commandBus: CommandBus,
-  ) {}
+@Controller('auth/github')
+@ApiTags('Github-OAuth2')
+export class GithubController {
+  constructor(private commandBus: CommandBus) {}
 
   @ApiNoContentResponse({
     description:
@@ -42,19 +40,21 @@ export class GoogleController {
   @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
   @Get('login')
   @UseGuards(ThrottlerGuard)
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(AuthGuard('github'))
   @HttpCode(HttpStatus.NO_CONTENT)
   async register() {}
 
   @Get('redirect')
-  @UseGuards(AuthGuard('google'))
   @ApiExcludeEndpoint()
+  @UseGuards(AuthGuard('github'))
   async redirect(
     @Req() req: Request & { user: { id: string; email: string } },
     @Res({ passthrough: true }) res: Response,
   ) {
     const { email, id } = req.user;
-    const userId = await this.authService.loginViaProvider(email, id, 'google');
+    const userId = await this.commandBus.execute(
+      new SignInUserViaOauthProviderCommand(email, id, ProviderType.GITHUB),
+    );
     const title = req.get('User-Agent') || 'unknown user agent';
     const ip = req.socket.remoteAddress || '';
     const refreshToken = await this.commandBus.execute(

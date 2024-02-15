@@ -1,7 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
-import { SecurityDevicesRepository } from '../../features/security-devices/db/security-devices.repository';
-import { DeviceEntity, SessionEntity } from '../entities/session.entity';
+import { SecurityDevicesRepository } from '../../../features/security-devices/db/security-devices.repository';
+import {
+  DeviceEntity,
+  SessionEntity,
+} from '../../domain/entities/session.entity';
 
 export class CreateRefreshTokenCommand {
   constructor(

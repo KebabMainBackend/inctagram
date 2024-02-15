@@ -1,10 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PrismaService } from '../../prisma.service';
-import { EmailService } from '../managers/email.manager';
-import { UsersQueryRepository } from '../db/users.query-repository';
+import { PrismaService } from '../../../prisma.service';
+import { EmailService } from '../../managers/email.manager';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { createErrorMessage } from '../../utils/create-error-object';
-import { UserConfirmationEntity } from '../entities/user.entity';
+import { createErrorMessage } from '../../../utils/create-error-object';
+import { UserConfirmationEntity } from '../../domain/entities/user.entity';
+import { UsersRepository } from '../../db/users.repository';
 
 export class ResendConfirmationCodeCommand {
   constructor(public email: string) {}
@@ -17,10 +17,10 @@ export class ResendConfirmationCodeHandler
   constructor(
     private prisma: PrismaService,
     private emailService: EmailService,
-    private usersQueryRepo: UsersQueryRepository,
+    private usersRepo: UsersRepository,
   ) {}
   async execute({ email }: ResendConfirmationCodeCommand) {
-    const user = await this.usersQueryRepo.getUserByEmail(email);
+    const user = await this.usersRepo.getUserByEmail(email);
 
     if (!user) {
       const error = createErrorMessage('incorrect email', 'email');

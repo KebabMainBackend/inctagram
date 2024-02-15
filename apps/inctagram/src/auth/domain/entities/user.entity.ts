@@ -1,4 +1,4 @@
-import { BaseEntity } from '../../utils/base.entity';
+import { BaseEntity } from '../../../utils/base.entity';
 import { SessionEntity } from './session.entity';
 import { OauthProviderEntity } from './oauth-provider.entity';
 import { v4 as uuidv4 } from 'uuid';

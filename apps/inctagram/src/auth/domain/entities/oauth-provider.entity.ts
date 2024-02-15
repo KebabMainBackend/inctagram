@@ -1,10 +1,14 @@
-import { BaseEntity } from '../../utils/base.entity';
+import { BaseEntity } from '../../../utils/base.entity';
 import { CreateOauthProviderTypes } from '../types/create-oauth-provider.types';
 
+export enum ProviderType {
+  GOOGLE = 'google',
+  GITHUB = 'github',
+}
 export class OauthProviderEntity extends BaseEntity {
   id: number;
   providerId: string;
-  providerType: string;
+  providerType: ProviderType;
   email: string | null;
   userId: number;
 

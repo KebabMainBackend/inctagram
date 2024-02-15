@@ -1,8 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UserHashingManager } from '../managers/user-hashing.manager';
-import { UsersRepository } from '../db/users.repository';
-import { UsersQueryRepository } from '../db/users.query-repository';
-import { createErrorMessage } from '../../utils/create-error-object';
+import { UserHashingManager } from '../../managers/user-hashing.manager';
+import { UsersRepository } from '../../db/users.repository';
+import { createErrorMessage } from '../../../utils/create-error-object';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class ChangeUserPasswordCommand {
@@ -19,11 +18,10 @@ export class ChangeUserPasswordHandler
   constructor(
     private userHashingManager: UserHashingManager,
     private usersRepo: UsersRepository,
-    private usersQueryRepo: UsersQueryRepository,
   ) {}
 
   async execute({ recoveryCode, newPassword }: ChangeUserPasswordCommand) {
-    const user = await this.usersQueryRepo.getUserByCode(recoveryCode);
+    const user = await this.usersRepo.getUserByCode(recoveryCode);
     if (!user) {
       const error = createErrorMessage('invalid recovery code', 'recoveryCode');
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
