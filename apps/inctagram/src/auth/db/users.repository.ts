@@ -9,7 +9,15 @@ export class UsersRepository {
   constructor(private prisma: PrismaService) {}
   async createUser(data: CreateUserTypes) {
     return this.prisma.user.create({
-      data,
+      data: {
+        ...data,
+        profile: {
+          create: {
+            firstname: null,
+            lastname: null,
+          },
+        },
+      },
     });
   }
 

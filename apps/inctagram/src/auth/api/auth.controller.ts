@@ -181,7 +181,8 @@ export class AuthController {
   @Get('me')
   @UseGuards(BearerAuthGuard)
   async getMe(@Req() req: Request) {
-    const user = req.user;
+    const user = req.owner;
+    console.log(user, 'me');
     if (user) {
       return user;
     }
