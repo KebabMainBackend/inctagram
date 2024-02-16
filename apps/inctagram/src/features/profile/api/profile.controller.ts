@@ -3,57 +3,99 @@ import {
   Get,
   Post,
   Body,
-  Delete,
   UseGuards,
   Put,
+  UploadedFile,
+  UseInterceptors,
+  FileTypeValidator,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  HttpCode,
+  HttpStatus,
+  Req,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { BearerAuthGuard } from '../../../auth/guards/bearer-auth.guard';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiNoContentResponse,
   ApiOkResponse,
+  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import {
   BadRequestResponseOptions,
+  NoContentResponseOptions,
   UnauthorizedRequestResponseOptions,
 } from '../../../utils/swagger-constants';
 import { CommandBus } from '@nestjs/cqrs';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Request } from 'express';
+import { ProfileQueryRepository } from '../db/profile.query-repository';
+import { ProfileViewExample } from '../db/view/profile.view';
+import { UpdateProfileCommand } from '../application/use-cases/update-profile.command';
 
 @Controller('profile')
+@ApiTags('Profile')
+@ApiBearerAuth()
+@ApiUnauthorizedResponse(UnauthorizedRequestResponseOptions)
 export class ProfileController {
-  constructor(private readonly commandBus: CommandBus) {}
-
-  @Post()
-  @ApiUnauthorizedResponse(UnauthorizedRequestResponseOptions)
-  @UseGuards(BearerAuthGuard)
-  create(@Body() createProfileDto: CreateProfileDto) {
-    return 'this.profileService.create(createProfileDto);';
-  }
+  constructor(
+    private readonly commandBus: CommandBus,
+    private profileQueryRepo: ProfileQueryRepository,
+  ) {}
 
   @Get()
   @ApiOkResponse({
     description: 'success',
     content: {
-      'application/json': { example: { accessToken: 'string' } },
+      'application/json': { example: ProfileViewExample },
     },
   })
-  @ApiBadRequestResponse(BadRequestResponseOptions)
   @UseGuards(BearerAuthGuard)
-  findAll() {
-    return 'this.profileService.findAll()';
+  findProfile(@Req() req: Request) {
+    const user = req.owner;
+    if (user) {
+      return this.profileQueryRepo.getUserProfile(user.id);
+    }
+    throw new UnauthorizedException();
   }
 
   @Put()
+  @ApiNoContentResponse(NoContentResponseOptions)
+  @ApiBadRequestResponse(BadRequestResponseOptions)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BearerAuthGuard)
-  update(@Body() updateProfileDto: UpdateProfileDto) {
-    return 'this.profileService.update(+id, updateProfileDto)';
+  async update(
+    @Body() updateProfileDto: UpdateProfileDto,
+    @Req() req: Request,
+  ) {
+    const user = req.owner;
+    if (user) {
+      await this.commandBus.execute(
+        new UpdateProfileCommand(updateProfileDto, user.id),
+      );
+      return;
+    }
+    throw new UnauthorizedException();
   }
 
-  @Delete()
-  @UseGuards(BearerAuthGuard)
-  remove() {
-    return 'this.profileService.remove(+id)';
+  @Post('avatar')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 100000 }),
+          new FileTypeValidator({ fileType: 'image/jpeg' }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    console.log(file);
+    return;
   }
 }

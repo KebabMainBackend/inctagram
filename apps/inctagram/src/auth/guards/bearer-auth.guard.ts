@@ -29,7 +29,7 @@ export class BearerAuthGuard implements CanActivate {
       if (payload.userId) {
         const user = await this.usersRepo.getUserById(payload.userId);
         if (user) {
-          request['user'] = {
+          request['owner'] = {
             id: user.id,
             email: user.email,
           };
