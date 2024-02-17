@@ -7,12 +7,19 @@ import { PrismaService } from '../../prisma.service';
 import { ProfileRepository } from './db/profile.repository';
 import { ProfileQueryRepository } from './db/profile.query-repository';
 import { UpdateProfileHandler } from './application/use-cases/update-profile.command';
+import { UploadAvatarHandler } from './application/use-cases/upload-avatar.command';
+import { S3StorageManager } from './managers/s3-storage.manager';
+import { DeleteAvatarHandler } from './application/use-cases/delete-avatar.command';
 
-const CommandHandlers = [UpdateProfileHandler];
+const CommandHandlers = [
+  UpdateProfileHandler,
+  UploadAvatarHandler,
+  DeleteAvatarHandler,
+];
 const Repos = [UsersRepository, ProfileRepository, ProfileQueryRepository];
 @Module({
   imports: [CqrsModule, JwtModule],
   controllers: [ProfileController],
-  providers: [PrismaService, ...Repos, ...CommandHandlers],
+  providers: [PrismaService, S3StorageManager, ...Repos, ...CommandHandlers],
 })
 export class ProfileModule {}
