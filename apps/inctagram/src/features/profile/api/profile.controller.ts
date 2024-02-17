@@ -7,19 +7,20 @@ import {
   Put,
   UploadedFile,
   UseInterceptors,
-  FileTypeValidator,
-  ParseFilePipe,
-  MaxFileSizeValidator,
   HttpCode,
   HttpStatus,
   Req,
   UnauthorizedException,
+  ParseFilePipeBuilder,
+  Delete,
 } from '@nestjs/common';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { BearerAuthGuard } from '../../../auth/guards/bearer-auth.guard';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
@@ -36,9 +37,13 @@ import { Request } from 'express';
 import { ProfileQueryRepository } from '../db/profile.query-repository';
 import { ProfileViewExample } from '../db/view/profile.view';
 import { UpdateProfileCommand } from '../application/use-cases/update-profile.command';
+import { UploadAvatarCommand } from '../application/use-cases/upload-avatar.command';
+import { UploadAvatarDto } from './dto/upload-avatar.dto';
+import { DeleteAvatarCommand } from '../application/use-cases/delete-avatar.command';
 
 @Controller('profile')
 @ApiTags('Profile')
+@UseGuards(BearerAuthGuard)
 @ApiBearerAuth()
 @ApiUnauthorizedResponse(UnauthorizedRequestResponseOptions)
 export class ProfileController {
@@ -54,7 +59,6 @@ export class ProfileController {
       'application/json': { example: ProfileViewExample },
     },
   })
-  @UseGuards(BearerAuthGuard)
   findProfile(@Req() req: Request) {
     const user = req.owner;
     if (user) {
@@ -67,7 +71,6 @@ export class ProfileController {
   @ApiNoContentResponse(NoContentResponseOptions)
   @ApiBadRequestResponse(BadRequestResponseOptions)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(BearerAuthGuard)
   async update(
     @Body() updateProfileDto: UpdateProfileDto,
     @Req() req: Request,
@@ -83,19 +86,53 @@ export class ProfileController {
   }
 
   @Post('avatar')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Profile avatar',
+    type: UploadAvatarDto,
+  })
   @UseInterceptors(FileInterceptor('file'))
-  uploadFile(
+  async uploadFile(
+    @Req() req: Request,
     @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 100000 }),
-          new FileTypeValidator({ fileType: 'image/jpeg' }),
-        ],
-      }),
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /^.+(jpeg|png)$/,
+        })
+        .addMaxSizeValidator({
+          maxSize: 10000000,
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
     )
     file: Express.Multer.File,
   ) {
-    console.log(file);
-    return;
+    const user = req.owner;
+    const extension = file.originalname.split('.');
+    if (user) {
+      await this.commandBus.execute(
+        new UploadAvatarCommand(
+          file.buffer,
+          file.mimetype,
+          extension.at(-1),
+          user.id,
+        ),
+      );
+      return;
+    }
+    throw new UnauthorizedException();
+  }
+
+  @Delete('avatar')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse(NoContentResponseOptions)
+  async delete(@Req() req: Request) {
+    const user = req.owner;
+    if (user) {
+      await this.commandBus.execute(new DeleteAvatarCommand(user.id));
+      return;
+    }
+    throw new UnauthorizedException();
   }
 }

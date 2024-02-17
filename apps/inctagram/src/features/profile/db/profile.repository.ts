@@ -24,6 +24,12 @@ export class ProfileRepository {
       data,
     });
   }
+  async updateProfileAvatar(userId: number, avatar: string | null) {
+    await this.prisma.profile.update({
+      where: { userId },
+      data: { avatarUrl: avatar },
+    });
+  }
   deleteProfile(userId: number) {
     this.prisma.profile.delete({
       where: { userId },

@@ -87,6 +87,21 @@ spec:
                  secretKeyRef:
                    name: main-service-production-config-secret
                    key: GITHUB_CLIENT_SECRET
+             - name: YANDEX_SECRET
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: YANDEX_SECRET
+             - name: YANDEX_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: YANDEX_ID
+             - name: YANDEX_BUCKET
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: YANDEX_BUCKET
              - name: DATABASE_URL
                valueFrom:
                  secretKeyRef:
