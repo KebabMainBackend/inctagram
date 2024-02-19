@@ -69,25 +69,25 @@ model UserConfirmation {
 }
 
 model Session {
-  id             Int       @id @unique @default(autoincrement())
+  id             String   @id @unique @default(uuid())
   userId         Int
-  User           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   lastActiveDate DateTime
   aliveTill      DateTime
-  devices        Devices[]
+  device         Devices? @relation(fields: [deviceId], references: [deviceId])
   deviceId       String
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Devices {
   title     String
   ip        String
-  deviceId  String   @id @unique
-  session   Session? @relation(fields: [sessionId], references: [id])
-  sessionId Int?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  deviceId  String    @id @unique
+  session   Session[]
+  sessionId String?   @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model OAuthProvider {

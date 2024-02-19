@@ -17,6 +17,7 @@ describe('AuthController', () => {
   let refreshToken: string;
   let newRefreshToken: string;
   let accesstoken;
+  let newAccessToken;
   const data = {
     email: 'default@gmail.com',
     password: 'Pa$$w0rD',
@@ -128,7 +129,7 @@ describe('AuthController', () => {
         .send({ email: 'example@gmail.com', password: 'Pa$$w0rd1' })
         .expect(HttpStatus.UNAUTHORIZED);
     });
-    it('should error from logged out acc', async () => {
+    it('should return info about token owner', async () => {
       await request(httpServer)
         .get(URL + '/me')
         .auth(accesstoken, { type: 'bearer' })
@@ -136,11 +137,45 @@ describe('AuthController', () => {
     });
   });
   describe('logout', () => {
-    it('should successfully logout user', async () => {
+    it('should return error on logged out refreshToken', async () => {
       await request(httpServer)
         .post(URL + '/logout')
         .set('Cookie', refreshToken)
         .expect(HttpStatus.NO_CONTENT);
     });
+  });
+  describe('update-token', () => {
+    it('should return new token after login', async () => {
+      const token = await request(httpServer)
+        .post(URL + '/login')
+        .send({ email: 'example@gmail.com', password: 'Pa$$w0rD' })
+        .expect(HttpStatus.OK);
+      accesstoken = token.body.accessToken;
+      refreshToken = token.headers['set-cookie'][0];
+    });
+    it('should return new tokens after update', async () => {
+      const token = await request(httpServer)
+        .post(URL + '/update-token')
+        .set('Cookie', refreshToken)
+        .expect(HttpStatus.OK);
+      newAccessToken = token.body.accessToken;
+      newRefreshToken = token.headers['set-cookie'][0];
+      //   .find((cookie: string) =>
+      //   cookie.startsWith('refreshToken='),
+      // );
+      expect(token.body.accessToken).toEqual(expect.any(String));
+    });
+    it('should return error on old refresh token', async () => {
+      await request(httpServer)
+        .post(URL + '/logout')
+        .set('Cookie', refreshToken)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+    // it('should return error on old refresh token', async () => {
+    //   await request(httpServer)
+    //     .post(URL + '/logout')
+    //     .set('Cookie', newRefreshToken)
+    //     .expect(HttpStatus.NO_CONTENT);
+    // });
   });
 });

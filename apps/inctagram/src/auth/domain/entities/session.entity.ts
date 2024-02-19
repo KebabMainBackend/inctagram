@@ -7,7 +7,7 @@ export class SessionEntity extends BaseEntity {
   userId: number;
   lastActiveDate: string;
   aliveTill: Date;
-  devices: DeviceEntity[];
+  device: DeviceEntity;
   deviceId: string;
 
   static create(userId: number, deviceId: string) {
