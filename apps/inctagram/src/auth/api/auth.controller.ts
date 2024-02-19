@@ -47,6 +47,8 @@ import { RegisterUserCommand } from '../application/use-cases/register-user.comm
 import { CheckCredentialsCommand } from '../application/use-cases/check-credentials.command';
 import { VerifyConfirmationCodeCommand } from '../application/use-cases/verify-confirmation-code.command';
 import { TestDeleteUserCommand } from '../test/delete-user.command';
+import { AddRefreshToBlacklistCommand } from '../application/use-cases/add-refresh-to-blacklist';
+import { UpdateRefreshTokenCommand } from '../application/use-cases/update-refresh-token.command';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -134,6 +136,9 @@ export class AuthController {
       );
       if (result) {
         await this.commandBus.execute(
+          new AddRefreshToBlacklistCommand(refreshToken),
+        );
+        await this.commandBus.execute(
           new DeleteDeviceCommand(result.sessionId),
         );
         return;
@@ -178,11 +183,50 @@ export class AuthController {
       new ChangeUserPasswordCommand(code, newPassword),
     );
   }
+  @Post('update-token')
+  @ApiUnauthorizedResponse({
+    description:
+      'JWT refreshToken inside cookie is missing, expired or incorrect',
+  })
+  @ApiOkResponse({
+    description: 'success',
+    content: {
+      'application/json': { example: { accessToken: 'string' } },
+    },
+  })
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = req.cookies.refreshToken;
+    const result = await this.commandBus.execute(
+      new DecodeRefreshTokenCommand(refreshToken),
+    );
+    if (result) {
+      const accessToken = await this.commandBus.execute(
+        new CreateAccessTokenCommand(result.userId),
+      );
+      const newRefreshToken = await this.commandBus.execute(
+        new UpdateRefreshTokenCommand(result),
+      );
+      await this.commandBus.execute(
+        new AddRefreshToBlacklistCommand(refreshToken),
+      );
+      res.cookie('refreshToken', newRefreshToken, {
+        httpOnly: true,
+        secure: true,
+      });
+      return { accessToken };
+    }
+    throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+  }
+
   @Get('me')
   @UseGuards(BearerAuthGuard)
   async getMe(@Req() req: Request) {
     const user = req.owner;
-    console.log(user, 'me');
     if (user) {
       return user;
     }

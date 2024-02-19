@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { SecurityDevicesRepository } from '../db/security-devices.repository';
 
 export class DeleteDeviceCommand {
-  constructor(public sessionId: number) {}
+  constructor(public sessionId: string) {}
 }
 
 @CommandHandler(DeleteDeviceCommand)
@@ -12,6 +12,6 @@ export class DeleteDeviceHandler
   constructor(private securityDevicesRepository: SecurityDevicesRepository) {}
 
   async execute({ sessionId }: DeleteDeviceCommand) {
-    this.securityDevicesRepository.deleteSessionById(sessionId);
+    await this.securityDevicesRepository.deleteSessionById(sessionId);
   }
 }

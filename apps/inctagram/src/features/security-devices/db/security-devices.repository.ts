@@ -19,7 +19,7 @@ export class SecurityDevicesRepository {
     return session.id;
   }
   async updateLastActiveDateOfSession(
-    sessionId: number,
+    sessionId: string,
     newDate: string,
     aliveTill: string,
   ) {
@@ -33,9 +33,15 @@ export class SecurityDevicesRepository {
       },
     });
   }
-  deleteSessionById(sessionId: number) {
-    this.prisma.session.delete({
+  async deleteSessionById(sessionId: string) {
+    await this.prisma.session.delete({
       where: { id: sessionId },
+    });
+  }
+  getSession(sessionId: string) {
+    return this.prisma.session.findUnique({
+      where: { id: sessionId },
+      include: { device: true },
     });
   }
   async addTokenToBlacklist(refreshToken: string) {

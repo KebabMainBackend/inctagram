@@ -4,7 +4,7 @@ import { PrismaService } from '../../../prisma.service';
 @Injectable()
 export class SecurityDevicesQueryRepository {
   constructor(private prisma: PrismaService) {}
-  getSessionByUserIdAndSessionId(sessionId: number, userId: number) {
+  getSessionByUserIdAndSessionId(sessionId: string, userId: number) {
     return this.prisma.session.findUnique({
       where: {
         id: sessionId,
