@@ -24,15 +24,8 @@ export type ResponseErrorMessageTypes = {
   message: string;
 };
 
-export type ResponseErrorTypes = {
+export type ExceptionResponseType = {
   statusCode: number;
-  messages: ResponseErrorMessageTypes[];
-  // messages: [
-  //   {
-  //     message: 'string';
-  //     field: 'string';
-  //   },
-  //   'string',
-  // ];
+  message: ResponseErrorMessageTypes[];
   error: string;
 };

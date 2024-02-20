@@ -34,6 +34,7 @@ export class CheckCredentialsHandler
       if (user.passwordHash === passwordHash) {
         return user.id;
       }
+      throw new HttpException('wrong password', HttpStatus.UNAUTHORIZED);
     }
     throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
   }

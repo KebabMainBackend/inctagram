@@ -15,6 +15,7 @@ import { Request, Response } from 'express';
 import { AuthRegisterDto } from './dto/auth-register.dto';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiExcludeEndpoint,
   ApiNoContentResponse,
   ApiOkResponse,
@@ -82,7 +83,9 @@ export class AuthController {
   })
   @ApiBadRequestResponse(BadRequestResponseOptions)
   @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
-  @ApiUnauthorizedResponse(UnauthorizedRequestResponseOptions)
+  @ApiUnauthorizedResponse({
+    description: 'If the password or login is wrong',
+  })
   @Post('login')
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)
@@ -224,6 +227,7 @@ export class AuthController {
   }
 
   @Get('me')
+  @ApiBearerAuth()
   @UseGuards(BearerAuthGuard)
   async getMe(@Req() req: Request) {
     const user = req.owner;
