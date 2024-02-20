@@ -14,7 +14,7 @@ export class UserEntity extends BaseEntity {
   isDeleted: boolean;
   providerId: string;
   providers: OauthProviderEntity[];
-  sessionId: number;
+  sessionId: string;
   sessions: SessionEntity[];
   confirmationData: UserConfirmationEntity | null;
 
