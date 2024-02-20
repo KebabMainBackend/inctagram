@@ -64,7 +64,7 @@ export class RegisterUserHandler
 
         return true;
       },
-      { timeout: 6000 },
+      { timeout: 7000 },
     );
   }
 }
