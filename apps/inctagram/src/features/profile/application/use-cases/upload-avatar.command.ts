@@ -7,7 +7,6 @@ import { FileImageEntity } from '../../domain/entities/file-image.entity';
 export class UploadAvatarCommand {
   constructor(
     public buffer: Buffer,
-    public mimetype: string,
     public extension: string,
     public userId: number,
     public fileSize: number,
@@ -24,29 +23,31 @@ export class UploadAvatarHandler
     private profileRepo: ProfileRepository,
   ) {}
 
-  async execute({
-    buffer,
-    userId,
-    mimetype,
-    extension,
-    fileSize,
-  }: UploadAvatarCommand) {
+  async execute({ buffer, userId, extension, fileSize }: UploadAvatarCommand) {
+    const userAvatar = await this.profileRepo.getUserFileImage(userId);
     await this.prisma.$transaction(async () => {
-      const { url } = await this.s3Manager.saveImage(
-        userId,
-        buffer,
-        mimetype,
-        extension,
-      );
-      const avatar = FileImageEntity.create(
-        {
-          fileSize,
-          imageUrl: url,
-          buffer,
-        },
-        userId,
-      );
-      await this.profileRepo.createProfileAvatar(avatar);
+      if (userAvatar) {
+        await this.s3Manager.deleteImage(userAvatar.url);
+        await this.profileRepo.deleteProfileAvatar(userAvatar.url);
+      }
+      await this.createFileImage(fileSize, buffer, userId, extension);
     });
+  }
+  async createFileImage(
+    fileSize: number,
+    buffer: Buffer,
+    userId: number,
+    extension: string,
+  ) {
+    const { url } = await this.s3Manager.saveImage(userId, buffer, extension);
+    const avatar = FileImageEntity.create(
+      {
+        fileSize,
+        imageUrl: url,
+        buffer,
+      },
+      userId,
+    );
+    await this.profileRepo.createProfileAvatar(avatar);
   }
 }

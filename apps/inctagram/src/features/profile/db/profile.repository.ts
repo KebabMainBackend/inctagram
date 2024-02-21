@@ -18,6 +18,13 @@ export class ProfileRepository {
       },
     });
   }
+  getUserFileImage(userId: number) {
+    return this.prisma.fileImage.findUnique({
+      where: {
+        profileUserId: userId,
+      },
+    });
+  }
 
   updateUserUsername(username: string, userId: number) {
     return this.prisma.user.update({
@@ -33,12 +40,12 @@ export class ProfileRepository {
     });
   }
   async createProfileAvatar(data: FileImageEntity) {
-    await this.prisma.avatar.create({
+    await this.prisma.fileImage.create({
       data,
     });
   }
   async deleteProfileAvatar(url: string) {
-    await this.prisma.avatar.delete({
+    await this.prisma.fileImage.delete({
       where: {
         url,
       },

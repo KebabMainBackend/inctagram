@@ -22,10 +22,12 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import {
   BadRequestResponseOptions,
@@ -51,7 +53,8 @@ import { ClientProxy } from '@nestjs/microservices';
 export class ProfileController {
   constructor(
     private readonly commandBus: CommandBus,
-    private profileQueryRepo: ProfileQueryRepository, // @Inject('FILES_SERVICE') private client: ClientProxy,
+    private profileQueryRepo: ProfileQueryRepository,
+    @Inject('FILES_SERVICE') private client: ClientProxy,
   ) {}
   // async onApplicationBootstrap() {
   //   await this.client.connect();
@@ -96,6 +99,10 @@ export class ProfileController {
     type: UploadAvatarDto,
   })
   @UseInterceptors(FileInterceptor('file'))
+  @ApiUnprocessableEntityResponse({
+    description: 'invalid file, wrong fileType or maxSize',
+  })
+  @ApiCreatedResponse(NoContentResponseOptions)
   async uploadFile(
     @Req() req: Request,
     @UploadedFile(
@@ -123,7 +130,6 @@ export class ProfileController {
       await this.commandBus.execute(
         new UploadAvatarCommand(
           file.buffer,
-          file.mimetype,
           extension.at(-1),
           user.id,
           file.size,

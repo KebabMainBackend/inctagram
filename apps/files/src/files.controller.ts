@@ -16,6 +16,6 @@ export class FilesController {
     console.log('dede');
     // console.log(`Pattern: ${context.getPattern()}`);
     // console.log(context.getMessage());
-    return 'what';
+    return { content: 'what' };
   }
 }
