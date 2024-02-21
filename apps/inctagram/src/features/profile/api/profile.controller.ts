@@ -51,7 +51,7 @@ import { ClientProxy } from '@nestjs/microservices';
 export class ProfileController {
   constructor(
     private readonly commandBus: CommandBus,
-    private profileQueryRepo: ProfileQueryRepository,
+    private profileQueryRepo: ProfileQueryRepository, // @Inject('FILES_SERVICE') private client: ClientProxy,
   ) {}
   // async onApplicationBootstrap() {
   //   await this.client.connect();
@@ -119,7 +119,7 @@ export class ProfileController {
       // const payload = {
       //   userId: user.id,
       // };
-      // this.client.send(pattern, payload);
+      // this.client.send(pattern, '');
       await this.commandBus.execute(
         new UploadAvatarCommand(
           file.buffer,
