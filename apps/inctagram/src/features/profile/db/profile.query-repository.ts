@@ -15,6 +15,7 @@ export class ProfileQueryRepository {
             username: true,
           },
         },
+        avatar: true,
       },
     });
     return mapUserProfile(profile);

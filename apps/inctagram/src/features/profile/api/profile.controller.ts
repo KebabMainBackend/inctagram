@@ -13,6 +13,7 @@ import {
   UnauthorizedException,
   ParseFilePipeBuilder,
   Delete,
+  Inject,
 } from '@nestjs/common';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { BearerAuthGuard } from '../../../auth/guards/bearer-auth.guard';
@@ -40,6 +41,7 @@ import { UpdateProfileCommand } from '../application/use-cases/update-profile.co
 import { UploadAvatarCommand } from '../application/use-cases/upload-avatar.command';
 import { UploadAvatarDto } from './dto/upload-avatar.dto';
 import { DeleteAvatarCommand } from '../application/use-cases/delete-avatar.command';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Controller('profile')
 @ApiTags('Profile')
@@ -51,7 +53,9 @@ export class ProfileController {
     private readonly commandBus: CommandBus,
     private profileQueryRepo: ProfileQueryRepository,
   ) {}
-
+  // async onApplicationBootstrap() {
+  //   await this.client.connect();
+  // }
   @Get()
   @ApiOkResponse({
     description: 'success',
@@ -111,12 +115,18 @@ export class ProfileController {
     const user = req.owner;
     const extension = file.originalname.split('.');
     if (user) {
+      // const pattern = { cmd: 'upload-avatar' };
+      // const payload = {
+      //   userId: user.id,
+      // };
+      // this.client.send(pattern, payload);
       await this.commandBus.execute(
         new UploadAvatarCommand(
           file.buffer,
           file.mimetype,
           extension.at(-1),
           user.id,
+          file.size,
         ),
       );
       return;

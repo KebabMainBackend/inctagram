@@ -1,6 +1,4 @@
 import {
-  IsDate,
-  IsDateString,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -44,10 +42,10 @@ export class UpdateProfileDto {
   @Matches(/^[a-zA-Zа-яА-Я]*$/)
   lastname: string;
 
-  @IsDateString()
+  @IsString()
   @ApiProperty({
     description: 'birthDate',
-    example: '2020-01-01',
+    example: '01-01-2000',
   })
   birthDate: string;
 
