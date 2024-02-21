@@ -9,6 +9,7 @@ async function bootstrap() {
       transport: Transport.TCP,
       options: {
         port: 3001,
+        host: '0.0.0.0',
       },
       // options: {
       //   urls: ['amqp://localhost:5672'],

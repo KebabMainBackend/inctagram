@@ -13,7 +13,7 @@ export class FilesController {
 
   @MessagePattern({ cmd: 'upload-avatar' })
   sum(data: any) {
-    console.log(data);
+    console.log('dede');
     // console.log(`Pattern: ${context.getPattern()}`);
     // console.log(context.getMessage());
     return 'what';

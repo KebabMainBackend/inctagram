@@ -35,7 +35,11 @@ export const appSettings = (app: INestApplication) => {
     }),
   );
   app.enableCors({
-    origin: '*',
+    origin: [
+      'https://inctagram.fun/',
+      'http://localhost:3000',
+      'http://localhost:5173',
+    ],
     credentials: true,
   });
 
