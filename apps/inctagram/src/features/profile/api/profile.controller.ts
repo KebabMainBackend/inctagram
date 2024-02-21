@@ -52,11 +52,10 @@ export class ProfileController {
   constructor(
     private readonly commandBus: CommandBus,
     private profileQueryRepo: ProfileQueryRepository,
-    @Inject('FILES_SERVICE') private client: ClientProxy,
   ) {}
-  async onApplicationBootstrap() {
-    await this.client.connect();
-  }
+  // async onApplicationBootstrap() {
+  //   await this.client.connect();
+  // }
   @Get()
   @ApiOkResponse({
     description: 'success',

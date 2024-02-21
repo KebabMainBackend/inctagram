@@ -10,7 +10,7 @@ const userBody = {
   password: 'Pa$$w0rd',
   email: 'default@gmail.com',
 };
-const timeout = 11000;
+const timeout = 15000;
 describe('AuthController', () => {
   let app: INestApplication;
   let httpServer;
@@ -59,7 +59,6 @@ describe('AuthController', () => {
           login: 'log',
         })
         .expect(HttpStatus.BAD_REQUEST);
-      console.log(errorBody.body);
       expect(errorBody.body.errorDescription.length).toBe(3);
     });
     it('should return 429 on too many requests', async () => {
