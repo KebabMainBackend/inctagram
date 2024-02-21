@@ -7,10 +7,10 @@ async function bootstrap() {
     FilesModule,
     {
       transport: Transport.TCP,
-      options: {
-        port: 3001,
-        host: '0.0.0.0',
-      },
+      // options: {
+      //   port: 3001,
+      //   host: '0.0.0.0',
+      // },
       // options: {
       //   urls: ['amqp://localhost:5672'],
       //   queue: 'file-upload',

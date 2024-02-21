@@ -26,21 +26,21 @@ const Repos = [UsersRepository, ProfileRepository, ProfileQueryRepository];
   imports: [
     CqrsModule,
     JwtModule,
-    // ClientsModule.register([
-    //   {
-    //     name: 'FILES_SERVICE',
-    //     transport: Transport.TCP,
-    //     options: {
-    //       port: 3001,
-    //       host: '0.0.0.0',
-    //       // urls: ['amqp://localhost:5672'],
-    //       // queue: 'file-upload',
-    //       // queueOptions: {
-    //       //   durable: false,
-    //       // },
-    //     },
-    //   },
-    // ]),
+    ClientsModule.register([
+      {
+        name: 'FILES_SERVICE',
+        transport: Transport.TCP,
+        options: {
+          port: 3001,
+          host: '0.0.0.0',
+          // urls: ['amqp://localhost:5672'],
+          // queue: 'file-upload',
+          // queueOptions: {
+          //   durable: false,
+          // },
+        },
+      },
+    ]),
   ],
   controllers: [ProfileController],
   providers: [PrismaService, S3StorageManager, ...Repos, ...CommandHandlers],

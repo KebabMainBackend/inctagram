@@ -34,20 +34,20 @@ model User {
 }
 
 model Profile {
-  userId    Int      @id @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    Int        @id @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   firstname String?
   lastname  String?
   birthDate String?
   aboutMe   String?
   avatarUrl String?
   city      String?
-  avatar    Avatar?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  avatar    FileImage?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
-model Avatar {
+model FileImage {
   url           String   @unique
   width         Int
   height        Int
