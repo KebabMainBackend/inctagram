@@ -2,6 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PrismaService } from '../../../../prisma.service';
 import { S3StorageManager } from '../../managers/s3-storage.manager';
 import { ProfileRepository } from '../../db/profile.repository';
+import { FileImageEntity } from '../../domain/entities/file-image.entity';
 
 export class UploadAvatarCommand {
   constructor(
@@ -9,6 +10,7 @@ export class UploadAvatarCommand {
     public mimetype: string,
     public extension: string,
     public userId: number,
+    public fileSize: number,
   ) {}
 }
 
@@ -22,7 +24,13 @@ export class UploadAvatarHandler
     private profileRepo: ProfileRepository,
   ) {}
 
-  async execute({ buffer, userId, mimetype, extension }: UploadAvatarCommand) {
+  async execute({
+    buffer,
+    userId,
+    mimetype,
+    extension,
+    fileSize,
+  }: UploadAvatarCommand) {
     await this.prisma.$transaction(async () => {
       const { url } = await this.s3Manager.saveImage(
         userId,
@@ -30,7 +38,15 @@ export class UploadAvatarHandler
         mimetype,
         extension,
       );
-      await this.profileRepo.updateProfileAvatar(userId, url);
+      const avatar = FileImageEntity.create(
+        {
+          fileSize,
+          imageUrl: url,
+          buffer,
+        },
+        userId,
+      );
+      await this.profileRepo.createProfileAvatar(avatar);
     });
   }
 }

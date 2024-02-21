@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma.service';
 import { DomainProfileDto } from './dto/profile.dto';
+import { FileImageEntity } from '../domain/entities/file-image.entity';
 
 @Injectable()
 export class ProfileRepository {
@@ -8,6 +9,13 @@ export class ProfileRepository {
   getUserProfile(userId: number) {
     return this.prisma.profile.findUnique({
       where: { userId },
+      include: {
+        avatar: {
+          select: {
+            url: true,
+          },
+        },
+      },
     });
   }
 
@@ -24,10 +32,16 @@ export class ProfileRepository {
       data,
     });
   }
-  async updateProfileAvatar(userId: number, avatar: string | null) {
-    await this.prisma.profile.update({
-      where: { userId },
-      data: { avatarUrl: avatar },
+  async createProfileAvatar(data: FileImageEntity) {
+    await this.prisma.avatar.create({
+      data,
+    });
+  }
+  async deleteProfileAvatar(url: string) {
+    await this.prisma.avatar.delete({
+      where: {
+        url,
+      },
     });
   }
   deleteProfile(userId: number) {

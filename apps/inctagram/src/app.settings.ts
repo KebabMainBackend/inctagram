@@ -34,7 +34,7 @@ export const appSettings = (app: INestApplication) => {
       },
     }),
   );
-  app.enableCors();
+  // app.enableCors();
 
   app.useGlobalFilters(new HttpExceptionFilter());
   // app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));

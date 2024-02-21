@@ -4,12 +4,17 @@ export type DBProfileView = {
   lastname: string;
   birthDate: string;
   aboutMe: string | null;
-  avatarUrl: string | null;
   city: string | null;
   createdAt: Date;
   updatedAt: Date;
   user: {
     username: string;
+  };
+  avatar: {
+    url: string;
+    width: number;
+    height: number;
+    fileSize: number;
   };
 };
 

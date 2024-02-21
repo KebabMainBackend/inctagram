@@ -8,6 +8,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { SecurityDevicesModule } from './features/security-devices/security-devices.module';
 import { ProfileModule } from './features/profile/profile.module';
+// import { ClientsModule, Transport } from '@nestjs/microservices';
 @Module({
   imports: [
     ServeStaticModule.forRoot({

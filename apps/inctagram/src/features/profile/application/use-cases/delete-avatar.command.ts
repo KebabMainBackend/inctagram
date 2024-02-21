@@ -19,10 +19,9 @@ export class DeleteAvatarHandler
 
   async execute({ userId }: DeleteAvatarCommand) {
     const profile = await this.profileRepo.getUserProfile(userId);
-    console.log(profile.avatarUrl);
     await this.prisma.$transaction(async () => {
-      await this.s3Manager.deleteImage(profile.avatarUrl);
-      await this.profileRepo.updateProfileAvatar(userId, null);
+      await this.s3Manager.deleteImage(profile.avatar.url);
+      await this.profileRepo.deleteProfileAvatar(profile.avatar.url);
     });
   }
 }

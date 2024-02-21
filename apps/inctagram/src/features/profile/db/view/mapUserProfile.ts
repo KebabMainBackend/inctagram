@@ -9,14 +9,14 @@ export const mapUserProfile = (profile: DBProfileView) => {
     city: profile.city,
     birthDate: profile.birthDate,
     aboutMe: profile.aboutMe,
-    avatars: profile.avatarUrl
+    avatar: profile.avatar
       ? {
           url:
             'https://storage.yandexcloud.net/kebab-inctagram/' +
-            profile.avatarUrl,
-          width: 300,
-          height: 300,
-          fileSize: 300,
+            profile.avatar.url,
+          width: profile.avatar.width,
+          height: profile.avatar.height,
+          fileSize: profile.avatar.fileSize,
         }
       : null,
 
