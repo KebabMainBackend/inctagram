@@ -20,8 +20,7 @@ export class S3StorageManager {
       },
     });
   }
-  async saveImage(userId: number, buffer: Buffer, extension: string) {
-    const url = `media/users/${userId}/avatars/${userId}-avatar-${Date.now()}.${extension}`;
+  async saveImage(buffer: Buffer, url: string) {
     const options = {
       Bucket: this.bucketName,
       Key: url,

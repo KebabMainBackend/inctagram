@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { appSettings } from './app.settings';
 import { createStaticSwagger } from './configs/swagger.configs';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+// import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,19 +20,18 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/v1/swagger', app, document);
 
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.TCP,
-    options: {
-      port: 3001,
-      //   urls: ['amqp://localhost:5672'],
-      //   queue: 'file-upload',
-      //   queueOptions: {
-      //     durable: false,
-      //   },
-    },
-  });
-
-  await app.startAllMicroservices();
+  // app.connectMicroservice<MicroserviceOptions>({
+  //   transport: Transport.RMQ,
+  //   options: {
+  //     urls: ['amqp://localhost:5672'],
+  //     queue: 'file-upload',
+  //     queueOptions: {
+  //       durable: false,
+  //     },
+  //   },
+  // });
+  //
+  // await app.startAllMicroservices();
   await app.listen(process.env.PORT || 3000);
   createStaticSwagger();
 }

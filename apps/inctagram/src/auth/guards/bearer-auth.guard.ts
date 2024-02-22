@@ -26,6 +26,7 @@ export class BearerAuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET_KEY,
       });
+
       if (payload.userId) {
         const user = await this.usersRepo.getUserById(payload.userId);
         if (user) {

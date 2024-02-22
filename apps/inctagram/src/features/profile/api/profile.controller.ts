@@ -125,9 +125,10 @@ export class ProfileController {
       // const pattern = { cmd: 'upload-avatar' };
       // const payload = {
       //   userId: user.id,
+      //   file,
       // };
-      // this.client.send(pattern, '');
-      await this.commandBus.execute(
+      // return this.client.send(pattern, payload);
+      return await this.commandBus.execute(
         new UploadAvatarCommand(
           file.buffer,
           extension.at(-1),
@@ -135,7 +136,6 @@ export class ProfileController {
           file.size,
         ),
       );
-      return;
     }
     throw new UnauthorizedException();
   }

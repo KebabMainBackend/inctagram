@@ -25,13 +25,18 @@ export class UploadAvatarHandler
 
   async execute({ buffer, userId, extension, fileSize }: UploadAvatarCommand) {
     const userAvatar = await this.profileRepo.getUserFileImage(userId);
-    await this.prisma.$transaction(async () => {
-      if (userAvatar) {
-        await this.s3Manager.deleteImage(userAvatar.url);
-        await this.profileRepo.deleteProfileAvatar(userAvatar.url);
-      }
-      await this.createFileImage(fileSize, buffer, userId, extension);
-    });
+    await this.prisma.$transaction(
+      async () => {
+        if (userAvatar) {
+          await this.s3Manager.deleteImage(userAvatar.url);
+          await this.profileRepo.deleteProfileAvatar(userAvatar.url);
+        }
+        await this.createFileImage(fileSize, buffer, userId, extension);
+      },
+      {
+        timeout: 7000,
+      },
+    );
   }
   async createFileImage(
     fileSize: number,
@@ -39,7 +44,8 @@ export class UploadAvatarHandler
     userId: number,
     extension: string,
   ) {
-    const { url } = await this.s3Manager.saveImage(userId, buffer, extension);
+    const url = `media/users/${userId}/avatars/${userId}-avatar-${Date.now()}.${extension}`;
+    await this.s3Manager.saveImage(buffer, url);
     const avatar = FileImageEntity.create(
       {
         fileSize,
