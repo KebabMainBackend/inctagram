@@ -3,10 +3,11 @@ import { ProfileRepository } from '../../db/profile.repository';
 import { UpdateProfileDto } from '../../api/dto/update-profile.dto';
 import { PrismaService } from '../../../../prisma.service';
 import { ProfileEntity } from '../../domain/entities/profile.entity';
-import { differenceInCalendarYears } from 'date-fns';
+import { differenceInYears } from 'date-fns';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { createErrorMessage } from '../../../../utils/create-error-object';
 import { isValidDate } from '../../../../utils/custom-validators/date.validator';
+import { convertDMYtoYMD } from '../../../../utils/helpers/convert-date.helper';
 
 export class UpdateProfileCommand {
   constructor(
@@ -26,9 +27,13 @@ export class UpdateProfileHandler
 
   async execute({ data, userId }: UpdateProfileCommand) {
     const currentDate = new Date();
-    const birthDate = new Date(data.birthDate);
     const isBirthDateValid = isValidDate(data.birthDate);
-    const age = differenceInCalendarYears(currentDate, birthDate);
+    const convertedDate = convertDMYtoYMD(data.birthDate);
+    const age = differenceInYears(currentDate, convertedDate);
+    if (!isBirthDateValid) {
+      const error = createErrorMessage('Invalid date', 'birthDate');
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
     if (age < 13) {
       const error = createErrorMessage(
         'A user under 13 cannot create a profile',
@@ -36,10 +41,7 @@ export class UpdateProfileHandler
       );
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
-    if (!isBirthDateValid) {
-      const error = createErrorMessage('Invalid date', 'birthDate');
-      throw new HttpException(error, HttpStatus.BAD_REQUEST);
-    }
+
     await this.update(data, userId);
     return;
   }

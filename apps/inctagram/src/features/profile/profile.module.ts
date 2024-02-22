@@ -10,11 +10,7 @@ import { UpdateProfileHandler } from './application/use-cases/update-profile.com
 import { UploadAvatarHandler } from './application/use-cases/upload-avatar.command';
 import { S3StorageManager } from './managers/s3-storage.manager';
 import { DeleteAvatarHandler } from './application/use-cases/delete-avatar.command';
-import {
-  ClientProxyFactory,
-  ClientsModule,
-  Transport,
-} from '@nestjs/microservices';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 const CommandHandlers = [
   UpdateProfileHandler,
@@ -29,15 +25,13 @@ const Repos = [UsersRepository, ProfileRepository, ProfileQueryRepository];
     ClientsModule.register([
       {
         name: 'FILES_SERVICE',
-        transport: Transport.TCP,
+        transport: Transport.RMQ,
         options: {
-          port: 3001,
-          host: '0.0.0.0',
-          // urls: ['amqp://localhost:5672'],
-          // queue: 'file-upload',
-          // queueOptions: {
-          //   durable: false,
-          // },
+          urls: ['amqp://localhost:5672'],
+          queue: 'file-upload',
+          queueOptions: {
+            durable: false,
+          },
         },
       },
     ]),

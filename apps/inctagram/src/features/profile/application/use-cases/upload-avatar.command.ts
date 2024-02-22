@@ -44,7 +44,8 @@ export class UploadAvatarHandler
     userId: number,
     extension: string,
   ) {
-    const { url } = await this.s3Manager.saveImage(userId, buffer, extension);
+    const url = `media/users/${userId}/avatars/${userId}-avatar-${Date.now()}.${extension}`;
+    await this.s3Manager.saveImage(buffer, url);
     const avatar = FileImageEntity.create(
       {
         fileSize,
