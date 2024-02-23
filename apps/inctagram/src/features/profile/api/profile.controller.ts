@@ -9,8 +9,6 @@ import {
   UseInterceptors,
   HttpCode,
   HttpStatus,
-  Req,
-  UnauthorizedException,
   ParseFilePipeBuilder,
   Delete,
   Inject,
@@ -36,7 +34,6 @@ import {
 } from '../../../utils/swagger-constants';
 import { CommandBus } from '@nestjs/cqrs';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Request } from 'express';
 import { ProfileQueryRepository } from '../db/profile.query-repository';
 import { ProfileViewExample } from '../db/view/profile.view';
 import { UpdateProfileCommand } from '../application/use-cases/update-profile.command';
@@ -44,6 +41,8 @@ import { UploadAvatarCommand } from '../application/use-cases/upload-avatar.comm
 import { UploadAvatarDto } from './dto/upload-avatar.dto';
 import { DeleteAvatarCommand } from '../application/use-cases/delete-avatar.command';
 import { ClientProxy } from '@nestjs/microservices';
+import { User } from '../../../utils/decorators/user.decorator';
+import { UserTypes } from '../../../types';
 
 @Controller('profile')
 @ApiTags('Profile')
@@ -56,9 +55,7 @@ export class ProfileController {
     private profileQueryRepo: ProfileQueryRepository,
     @Inject('FILES_SERVICE') private client: ClientProxy,
   ) {}
-  // async onApplicationBootstrap() {
-  //   await this.client.connect();
-  // }
+
   @Get()
   @ApiOkResponse({
     description: 'success',
@@ -66,12 +63,8 @@ export class ProfileController {
       'application/json': { example: ProfileViewExample },
     },
   })
-  findProfile(@Req() req: Request) {
-    const user = req.owner;
-    if (user) {
-      return this.profileQueryRepo.getUserProfile(user.id);
-    }
-    throw new UnauthorizedException();
+  findProfile(@User() user: UserTypes) {
+    return this.profileQueryRepo.getUserProfile(user.id);
   }
 
   @Put()
@@ -80,16 +73,12 @@ export class ProfileController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async update(
     @Body() updateProfileDto: UpdateProfileDto,
-    @Req() req: Request,
+    @User() user: UserTypes,
   ) {
-    const user = req.owner;
-    if (user) {
-      await this.commandBus.execute(
-        new UpdateProfileCommand(updateProfileDto, user.id),
-      );
-      return;
-    }
-    throw new UnauthorizedException();
+    await this.commandBus.execute<UpdateProfileCommand, void>(
+      new UpdateProfileCommand(updateProfileDto, user.id),
+    );
+    return;
   }
 
   @Post('avatar')
@@ -104,7 +93,7 @@ export class ProfileController {
   })
   @ApiCreatedResponse(NoContentResponseOptions)
   async uploadFile(
-    @Req() req: Request,
+    @User() user: UserTypes,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
@@ -119,36 +108,28 @@ export class ProfileController {
     )
     file: Express.Multer.File,
   ) {
-    const user = req.owner;
     const extension = file.originalname.split('.');
-    if (user) {
-      // const pattern = { cmd: 'upload-avatar' };
-      // const payload = {
-      //   userId: user.id,
-      //   file,
-      // };
-      // return this.client.send(pattern, payload);
-      return await this.commandBus.execute(
-        new UploadAvatarCommand(
-          file.buffer,
-          extension.at(-1),
-          user.id,
-          file.size,
-        ),
-      );
-    }
-    throw new UnauthorizedException();
+    // const pattern = { cmd: 'upload-avatar' };
+    // const payload = {
+    //   userId: user.id,
+    //   file,
+    // };
+    // return this.client.send(pattern, payload);
+    return await this.commandBus.execute(
+      new UploadAvatarCommand(
+        file.buffer,
+        extension.at(-1),
+        user.id,
+        file.size,
+      ),
+    );
   }
 
   @Delete('avatar')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse(NoContentResponseOptions)
-  async delete(@Req() req: Request) {
-    const user = req.owner;
-    if (user) {
-      await this.commandBus.execute(new DeleteAvatarCommand(user.id));
-      return;
-    }
-    throw new UnauthorizedException();
+  async delete(@User() user: UserTypes) {
+    await this.commandBus.execute(new DeleteAvatarCommand(user.id));
+    return;
   }
 }

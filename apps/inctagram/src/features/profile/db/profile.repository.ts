@@ -26,6 +26,12 @@ export class ProfileRepository {
     });
   }
 
+  async getUserByUsername(username: string) {
+    return this.prisma.user.findUnique({
+      where: { username },
+    });
+  }
+
   updateUserUsername(username: string, userId: number) {
     return this.prisma.user.update({
       where: { id: userId },
