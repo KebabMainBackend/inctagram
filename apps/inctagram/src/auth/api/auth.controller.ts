@@ -50,6 +50,8 @@ import { VerifyConfirmationCodeCommand } from '../application/use-cases/verify-c
 import { TestDeleteUserCommand } from '../test/delete-user.command';
 import { AddRefreshToBlacklistCommand } from '../application/use-cases/add-refresh-to-blacklist';
 import { UpdateRefreshTokenCommand } from '../application/use-cases/update-refresh-token.command';
+import { User } from '../../utils/decorators/user.decorator';
+import { UserTypes } from '../../types';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -229,12 +231,8 @@ export class AuthController {
   @Get('me')
   @ApiBearerAuth()
   @UseGuards(BearerAuthGuard)
-  async getMe(@Req() req: Request) {
-    const user = req.owner;
-    if (user) {
-      return user;
-    }
-    throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+  async getMe(@User() user: UserTypes) {
+    return user;
   }
 
   @ApiExcludeEndpoint()

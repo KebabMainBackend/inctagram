@@ -26,9 +26,22 @@ export class UpdateProfileHandler
   ) {}
 
   async execute({ data, userId }: UpdateProfileCommand) {
+    this.checkAge(data.birthDate);
+    await this.checkUsername(data.username, userId);
+    await this.update(data, userId);
+    return;
+  }
+  async update(data: UpdateProfileDto, userId: number) {
+    return this.prisma.$transaction(async () => {
+      await this.profileRepo.updateUserUsername(data.username, userId);
+      const newProfile = ProfileEntity.create(data, userId);
+      await this.profileRepo.updateProfile(userId, newProfile);
+    });
+  }
+  checkAge(birthDate: string) {
     const currentDate = new Date();
-    const isBirthDateValid = isValidDate(data.birthDate);
-    const convertedDate = convertDMYtoYMD(data.birthDate);
+    const isBirthDateValid = isValidDate(birthDate);
+    const convertedDate = convertDMYtoYMD(birthDate);
     const age = differenceInYears(currentDate, convertedDate);
     if (!isBirthDateValid) {
       const error = createErrorMessage('Invalid date', 'birthDate');
@@ -41,15 +54,14 @@ export class UpdateProfileHandler
       );
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
-
-    await this.update(data, userId);
-    return;
   }
-  async update(data: UpdateProfileDto, userId: number) {
-    return this.prisma.$transaction(async () => {
-      await this.profileRepo.updateUserUsername(data.username, userId);
-      const newProfile = ProfileEntity.create(data, userId);
-      await this.profileRepo.updateProfile(userId, newProfile);
-    });
+  async checkUsername(username: string, userId: number) {
+    const user = await this.profileRepo.getUserByUsername(username);
+    if (user.id !== userId) {
+      throw new HttpException(
+        'user with this username already exists',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 }
