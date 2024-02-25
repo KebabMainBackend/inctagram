@@ -6,6 +6,8 @@ import {
   Get,
   Req,
   Res,
+  Post,
+  Body,
 } from '@nestjs/common';
 import {
   ApiExcludeEndpoint,
@@ -22,6 +24,8 @@ import { CreateAccessTokenCommand } from '../application/use-cases/create-access
 import { CommandBus } from '@nestjs/cqrs';
 import { SignInUserViaOauthProviderCommand } from '../application/use-cases/create-user-via-oauth-provider.command';
 import { ProviderType } from '../domain/entities/oauth-provider.entity';
+import { SignInUserViaOauthProviderCommand1 } from '../application/use-cases/create-user-via-oauth-provider1.command';
+import { ProviderCodeDto } from './dto/provider-code.dto';
 
 @Controller('auth/github')
 @ApiTags('Github-OAuth2')
@@ -66,5 +70,37 @@ export class GithubController {
       new CreateAccessTokenCommand(userId),
     );
     return { accessToken, email };
+  }
+  @Post('login1')
+  @ApiOkResponse({
+    description: 'success',
+    content: {
+      'application/json': { example: { accessToken: 'string' } },
+    },
+  })
+  @UseGuards(ThrottlerGuard)
+  @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
+  @HttpCode(HttpStatus.OK)
+  async login1(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Body() data: ProviderCodeDto,
+  ) {
+    const userId = await this.commandBus.execute(
+      new SignInUserViaOauthProviderCommand1(data.code, ProviderType.GITHUB),
+    );
+    const title = req.get('User-Agent') || 'unknown user agent';
+    const ip = req.socket.remoteAddress || '';
+    const refreshToken = await this.commandBus.execute(
+      new CreateRefreshTokenCommand(userId, title, ip),
+    );
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    const accessToken = await this.commandBus.execute(
+      new CreateAccessTokenCommand(userId),
+    );
+    return { accessToken };
   }
 }
