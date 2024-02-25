@@ -8,17 +8,13 @@ import {
   Req,
 } from '@nestjs/common';
 import {
-  ApiBadRequestResponse,
   ApiExcludeEndpoint,
-  ApiNoContentResponse,
+  ApiOkResponse,
   ApiTags,
   ApiTooManyRequestsResponse,
 } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import {
-  BadRequestResponseOptions,
-  TooManyRequestsResponseOptions,
-} from '../../utils/swagger-constants';
+import { TooManyRequestsResponseOptions } from '../../utils/swagger-constants';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateRefreshTokenCommand } from '../application/use-cases/create-refresh-token.command';
 import { CreateAccessTokenCommand } from '../application/use-cases/create-access-token.command';
@@ -32,16 +28,18 @@ import { ProviderType } from '../domain/entities/oauth-provider.entity';
 export class GoogleController {
   constructor(private commandBus: CommandBus) {}
 
-  @ApiNoContentResponse({
+  @ApiOkResponse({
     description:
       'An email with a verification code has been sent to the specified email address',
+    content: {
+      'application/json': { example: { accessToken: 'string' } },
+    },
   })
-  @ApiBadRequestResponse(BadRequestResponseOptions)
   @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
   @Get('login')
   @UseGuards(ThrottlerGuard)
   @UseGuards(AuthGuard('google'))
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   async register() {}
 
   @Get('redirect')
@@ -67,6 +65,6 @@ export class GoogleController {
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );
-    return { accessToken, email };
+    return { accessToken };
   }
 }
