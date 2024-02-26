@@ -109,6 +109,7 @@ export class AuthController {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
+      sameSite: 'none',
     });
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
@@ -206,6 +207,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const refreshToken = req.cookies.refreshToken;
+    console.log(refreshToken, 'refreshToken');
     const result = await this.commandBus.execute(
       new DecodeRefreshTokenCommand(refreshToken),
     );
@@ -222,6 +224,7 @@ export class AuthController {
       res.cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
         secure: true,
+        sameSite: 'none',
       });
       return { accessToken };
     }

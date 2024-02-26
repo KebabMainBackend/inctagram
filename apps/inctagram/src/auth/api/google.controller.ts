@@ -17,7 +17,6 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { TooManyRequestsResponseOptions } from '../../utils/swagger-constants';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateRefreshTokenCommand } from '../application/use-cases/create-refresh-token.command';
-import { CreateAccessTokenCommand } from '../application/use-cases/create-access-token.command';
 import { Request, Response } from 'express';
 import { CommandBus } from '@nestjs/cqrs';
 import { SignInUserViaOauthProviderCommand } from '../application/use-cases/create-user-via-oauth-provider.command';
@@ -61,19 +60,12 @@ export class GoogleController {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
+      sameSite: 'none',
     });
-    const accessToken = await this.commandBus.execute(
-      new CreateAccessTokenCommand(userId),
-    );
-
     const frontLink = process.env.FRONT_PROD;
     res
       .writeHead(301, {
         Location: `${frontLink}/oauth`,
-      })
-      .cookie('accessToken', accessToken, {
-        secure: true,
-        httpOnly: true,
       })
       .end();
   }
