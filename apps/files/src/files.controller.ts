@@ -1,12 +1,20 @@
-import { Controller, Get } from '@nestjs/common';
-import { FilesService } from './files.service';
+import { Controller } from '@nestjs/common';
+import {
+  // Ctx,
+  MessagePattern,
+  // Payload,
+  // RmqContext,
+} from '@nestjs/microservices';
 
 @Controller()
 export class FilesController {
-  constructor(private readonly filesService: FilesService) {}
+  constructor() {}
 
-  @Get()
-  getHello(): string {
-    return this.filesService.getHello();
+  @MessagePattern({ cmd: 'upload-avatar' })
+  sum(data: any) {
+    console.log(data);
+    // console.log(`Pattern: ${context.getPattern()}`);
+    // console.log(context.getMessage());
+    return { content: 'what' };
   }
 }

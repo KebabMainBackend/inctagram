@@ -6,9 +6,9 @@ import * as request from 'supertest';
 
 const URL = '/auth';
 const userBody = {
-  username: 'sansrona',
+  username: 'default',
   password: 'Pa$$w0rd',
-  email: 'zhumamedin@gmail.com',
+  email: 'default@gmail.com',
 };
 const timeout = 15000;
 describe('AuthController', () => {
@@ -17,13 +17,11 @@ describe('AuthController', () => {
   let refreshToken: string;
   let newRefreshToken: string;
   let accesstoken;
+  let newAccessToken;
   const data = {
-    email: 'zhumamedin@gmail.com',
-    password: 'Pa$$w0rd',
+    email: 'default@gmail.com',
+    password: 'Pa$$w0rD',
   };
-
-  const UA1 =
-    'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0';
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -36,6 +34,7 @@ describe('AuthController', () => {
     await app.init();
 
     httpServer = app.getHttpServer();
+
     await request(httpServer).delete(URL + '/delete-me');
   });
 
@@ -43,18 +42,8 @@ describe('AuthController', () => {
     await app.close();
   });
 
-  const login = async (
-    data: { email: string; password: string },
-    userAgent: string,
-  ) => {
-    return request(httpServer)
-      .post('/auth/login')
-      .set('User-Agent', userAgent)
-      .send({ loginOrEmail: data.email, password: data.password });
-  };
-
   describe('registration', () => {
-    jest.setTimeout(10000);
+    jest.setTimeout(timeout);
     it('should create user and return 204', async () => {
       await request(httpServer)
         .post(URL + '/registration')
@@ -70,7 +59,7 @@ describe('AuthController', () => {
           login: 'log',
         })
         .expect(HttpStatus.BAD_REQUEST);
-      expect(errorBody.body.errorsMessages.length).toBe(3);
+      expect(errorBody.body.errorDescription.length).toBe(3);
     });
     it('should return 429 on too many requests', async () => {
       await request(httpServer)
@@ -115,54 +104,78 @@ describe('AuthController', () => {
         .expect(HttpStatus.TOO_MANY_REQUESTS);
     });
   });
-  // describe('refresh token', () => {
-  //   it(
-  //     'should return new access token',
-  //     async () => {
-  //       const newAccessReq = await request(httpServer)
-  //         .post(authURL + '/refresh-token')
-  //         .set('Cookie', refreshToken)
-  //         .expect(HttpStatus.OK);
-  //       accesstoken = newAccessReq.body.accessToken;
-  //       newRefreshToken = newAccessReq.headers['set-cookie'].find(
-  //         (cookie: string) => cookie.startsWith('refreshToken='),
-  //       );
-  //     },
-  //     timeout,
-  //   );
-  //   it(
-  //     'should return error with invalid refresh token',
-  //     async () => {
-  //       await request(httpServer)
-  //         .post(authURL + '/refresh-token')
-  //         .set('Cookie', refreshToken)
-  //         .expect(HttpStatus.UNAUTHORIZED);
-  //     },
-  //     timeout,
-  //   );
-  // });
-  // describe('check logout', () => {
-  //   it('should return error on  expired token', async () => {
-  //     await request(httpServer)
-  //       .post(authURL + '/logout')
-  //       .set('Cookie', refreshToken)
-  //       .expect(HttpStatus.UNAUTHORIZED);
-  //   });
-  //   it('should return 204 on valid token', async () => {
-  //     await request(httpServer)
-  //       .post(authURL + '/logout')
-  //       .set('Cookie', newRefreshToken)
-  //       .expect(HttpStatus.NO_CONTENT);
-  //   });
-  //   it('should return error on expired token 2', async () => {
-  //     await request(httpServer)
-  //       .post(authURL + '/logout')
-  //       .set('Cookie', refreshToken)
-  //       .expect(HttpStatus.UNAUTHORIZED);
-  //   });
-  // });
+  describe('login', () => {
+    it('should return error when email is not confirmed', async () => {
+      await request(httpServer)
+        .post(URL + '/login')
+        .send(data)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+    it('should return token when login with default acc', async () => {
+      const token = await request(httpServer)
+        .post(URL + '/login')
+        .send({ email: 'example@gmail.com', password: 'Pa$$w0rD' })
+        .expect(HttpStatus.OK);
+      accesstoken = token.body.accessToken;
+      refreshToken = token.headers['set-cookie'][0];
+      //   .find((cookie: string) =>
+      //   cookie.startsWith('refreshToken='),
+      // );
+      expect(token.body.accessToken).toEqual(expect.any(String));
+    });
+    it('should return error with incorrect data', async () => {
+      await request(httpServer)
+        .post(URL + '/login')
+        .send({ email: 'example@gmail.com', password: 'Pa$$w0rd1' })
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+    it('should return info about token owner', async () => {
+      await request(httpServer)
+        .get(URL + '/me')
+        .auth(accesstoken, { type: 'bearer' })
+        .expect(HttpStatus.OK);
+    });
+  });
+  describe('logout', () => {
+    it('should return error on logged out refreshToken', async () => {
+      await request(httpServer)
+        .post(URL + '/logout')
+        .set('Cookie', refreshToken)
+        .expect(HttpStatus.NO_CONTENT);
+    });
+  });
+  describe('update-token', () => {
+    it('should return new token after login', async () => {
+      const token = await request(httpServer)
+        .post(URL + '/login')
+        .send({ email: 'example@gmail.com', password: 'Pa$$w0rD' })
+        .expect(HttpStatus.OK);
+      accesstoken = token.body.accessToken;
+      refreshToken = token.headers['set-cookie'][0];
+    });
+    it('should return new tokens after update', async () => {
+      const token = await request(httpServer)
+        .post(URL + '/update-token')
+        .set('Cookie', refreshToken)
+        .expect(HttpStatus.OK);
+      newAccessToken = token.body.accessToken;
+      newRefreshToken = token.headers['set-cookie'][0];
+      //   .find((cookie: string) =>
+      //   cookie.startsWith('refreshToken='),
+      // );
+      expect(token.body.accessToken).toEqual(expect.any(String));
+    });
+    it('should return error on old refresh token', async () => {
+      await request(httpServer)
+        .post(URL + '/logout')
+        .set('Cookie', refreshToken)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+    // it('should return error on old refresh token', async () => {
+    //   await request(httpServer)
+    //     .post(URL + '/logout')
+    //     .set('Cookie', newRefreshToken)
+    //     .expect(HttpStatus.NO_CONTENT);
+    // });
+  });
 });
-// accesstoken = await login(data, UA1);
-// refreshToken = accesstoken.headers['set-cookie'].find(
-//   (cookie: string) => cookie.startsWith('refreshToken='),
-// );

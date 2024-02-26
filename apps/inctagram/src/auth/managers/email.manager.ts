@@ -21,7 +21,7 @@ export class EmailService {
 
   async sendMail(
     mailDetails: Mail.Options,
-    callback: (info: SMTPTransport.SentMessageInfo) => void,
+    callback?: (info: SMTPTransport.SentMessageInfo) => void,
   ): Promise<void> {
     try {
       const info = await this.transporter.sendMail(mailDetails);
@@ -39,7 +39,7 @@ export class EmailService {
     const messageTemplate = `
             <h1>Thanks for your registration</h1>
             <p>To finish registration please follow the link below:
-                <a href='https://it-incubator-theta.vercel.app/confirm-email?code=${message}'>complete registration</a>
+                <a href='https://inctagram.fun/confirm-email?code=${message}'>complete registration</a>
             </p>`;
     const options = {
       from: 'Johnny <johnny178917@gmail.com>',
@@ -50,6 +50,51 @@ export class EmailService {
     try {
       await this.sendMail(options, () => {
         console.log('Email is delivered successfully');
+        return true;
+      });
+    } catch (e) {
+      throw Error('second error');
+    }
+  }
+
+  async sendRecoveryCodeEmail(
+    userEmail: string,
+    message: string,
+    subject: string,
+  ) {
+    const messageTemplate = `
+            <h1>Password recovery</h1>
+            <p>To finish password recovery please follow the link below:
+                <a href='https://inctagram.fun/password-recovery?recoveryCode=${message}'>recovery password</a>
+            </p>`;
+    const options = {
+      from: 'Johnny <johnny178917@gmail.com>',
+      to: userEmail,
+      subject: subject,
+      html: messageTemplate,
+    };
+    try {
+      await this.sendMail(options);
+    } catch (e) {
+      throw Error('second error');
+    }
+  }
+
+  async sendNotificationEmail(userEmail: string) {
+    const messageTemplate = `
+            <h1>Congratulations!</h1>
+            <p>You registered in our service
+                <a href='https://inctagram.fun'>Inctagram</a>
+            </p>`;
+    const options = {
+      from: 'Johnny <johnny178917@gmail.com>',
+      to: userEmail,
+      subject: 'Successful registration',
+      html: messageTemplate,
+    };
+    try {
+      await this.sendMail(options, () => {
+        console.log('notification Email is delivered successfully');
         return true;
       });
     } catch (e) {

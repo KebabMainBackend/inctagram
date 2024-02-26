@@ -4,18 +4,13 @@ import { PrismaService } from '../../../prisma.service';
 @Injectable()
 export class SecurityDevicesQueryRepository {
   constructor(private prisma: PrismaService) {}
-  async getDeviceByUserIdAndDeviceId(deviceId: string, userId: number) {
-    const device = await this.prisma.devices.findUnique({
+  getSessionByUserIdAndSessionId(sessionId: string, userId: number) {
+    return this.prisma.session.findUnique({
       where: {
-        deviceId,
+        id: sessionId,
         userId,
       },
     });
-
-    if (device) {
-      return device;
-    }
-    return null;
   }
   async getBlackList(refresh: string) {
     return this.prisma.blacklist.findUnique({

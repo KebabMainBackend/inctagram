@@ -34,7 +34,16 @@ export const appSettings = (app: INestApplication) => {
       },
     }),
   );
-  app.enableCors();
+  app.enableCors({
+    origin: [
+      'https://inctagram.fun/',
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://localhost:3001',
+    ],
+    credentials: true,
+  });
+
   app.useGlobalFilters(new HttpExceptionFilter());
   // app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));
 };
