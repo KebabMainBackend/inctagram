@@ -98,9 +98,12 @@ export class GithubController {
       httpOnly: true,
       secure: true,
     });
-    const accessToken = await this.commandBus.execute(
-      new CreateAccessTokenCommand(userId),
-    );
-    return { accessToken };
+
+    const frontLink = process.env.FRONT_PROD;
+    res
+      .writeHead(301, {
+        Location: `${frontLink}/oauth`,
+      })
+      .end();
   }
 }

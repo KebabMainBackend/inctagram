@@ -66,17 +66,14 @@ export class GoogleController {
       httpOnly: true,
       secure: true,
     });
-    const accessToken = await this.commandBus.execute(
-      new CreateAccessTokenCommand(userId),
-    );
-    return { accessToken };
-    // res
-    //   .writeHead(301, { Location: 'https://inctagram.fun/profile' })
-    //   .cookie('accessToken', accessToken, {
-    //     secure: true,
-    //     httpOnly: true,
-    //   })
-    //   .end(accessToken);
+
+    const frontLink = process.env.FRONT_PROD;
+
+    res
+      .writeHead(301, {
+        Location: `${frontLink}/oauth`,
+      })
+      .end();
   }
 
   @Post('login1')
