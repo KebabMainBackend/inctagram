@@ -79,9 +79,9 @@ export class AuthController {
 
   @ApiOkResponse({
     description: 'success',
-    // content: {
-    //   'application/json': { example: { accessToken: 'string' } },
-    // },
+    content: {
+      'application/json': { example: { accessToken: 'string' } },
+    },
   })
   @ApiBadRequestResponse(BadRequestResponseOptions)
   @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
@@ -114,12 +114,8 @@ export class AuthController {
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-    });
-    return;
+
+    return { accessToken };
   }
 
   @ApiNoContentResponse(NoContentResponseOptions)

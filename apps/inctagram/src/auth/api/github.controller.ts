@@ -63,16 +63,9 @@ export class GithubController {
       secure: true,
       sameSite: 'none',
     });
-    const accessToken = await this.commandBus.execute(
-      new CreateAccessTokenCommand(userId),
-    );
+    await this.commandBus.execute(new CreateAccessTokenCommand(userId));
     const frontLink = process.env.FRONT_PROD;
     res
-      .cookie('accessToken', accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-      })
       .writeHead(301, {
         Location: `${frontLink}/oauth`,
       })
