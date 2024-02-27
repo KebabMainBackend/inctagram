@@ -12,9 +12,9 @@ async function bootstrap() {
       },
       // options: {
       //   urls: [
-      //     'amqps://faqtdshr:G9jGzo6PGzV8RMQqVr6F1G0mk0Ze39uz@dingo.rmq.cloudamqp.com/faqtdshr',
+      //     process.env.AMQP_RABBIT,
       //   ],
-      //   queue: 'file-upload',
+      //   queue: process.env.QUEUE_NAME,
       //   queueOptions: {
       //     durable: false,
       //   },

@@ -68,9 +68,15 @@ export class GithubController {
     );
     const frontLink = process.env.FRONT_PROD;
     res
+      .cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+      })
       .writeHead(301, {
         Location: `${frontLink}/oauth`,
       })
+
       .end();
   }
   // @Post('login1')
