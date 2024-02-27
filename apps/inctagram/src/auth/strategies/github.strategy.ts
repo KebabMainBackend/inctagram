@@ -14,11 +14,21 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
   }
 
   async validate(accessToken: string, refreshToken: string, profile: Profile) {
-    if (profile.emails) {
-      return {
-        email: profile.emails[0].value || null,
-        id: profile.id,
-      };
+    let email: string;
+    if (!profile.emails) {
+      const req = await fetch('https://api.github.com/user/emails', {
+        headers: {
+          Authorization: 'token ' + accessToken,
+        },
+      });
+      const emails = await req.json();
+      if (req.status !== 404) {
+        email = (emails.find((e) => e.primary) ?? emails[0]).email;
+        return {
+          email: email || null,
+          id: profile.id,
+        };
+      }
     }
     throw new HttpException('email is hidden', HttpStatus.CONFLICT);
   }

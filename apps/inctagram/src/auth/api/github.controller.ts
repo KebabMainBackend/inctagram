@@ -66,7 +66,12 @@ export class GithubController {
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );
-    return { accessToken, email };
+    const frontLink = process.env.FRONT_PROD;
+    res
+      .writeHead(301, {
+        Location: `${frontLink}/oauth`,
+      })
+      .end();
   }
   // @Post('login1')
   // @ApiOkResponse({

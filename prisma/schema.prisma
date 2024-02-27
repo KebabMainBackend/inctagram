@@ -30,12 +30,13 @@ model User {
   providers        OAuthProvider[]
   providerId       String?
   sessions         Session[]
+  status           String
   profile          Profile[]
 }
 
 model Profile {
   userId    Int        @id @unique
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user      User       @relation(fields: [userId], references: [id])
   firstname String?
   lastname  String?
   birthDate String?

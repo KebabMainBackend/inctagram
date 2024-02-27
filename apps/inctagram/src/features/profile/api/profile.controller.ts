@@ -109,19 +109,20 @@ export class ProfileController {
     file: Express.Multer.File,
   ) {
     const extension = file.originalname.split('.');
-    // const pattern = { cmd: 'upload-avatar' };
-    // const payload = {
-    //   userId: user.id,
-    // };
-    // return this.client.send(pattern, payload);
-    return await this.commandBus.execute(
-      new UploadAvatarCommand(
-        file.buffer,
-        extension.at(-1),
-        user.id,
-        file.size,
-      ),
-    );
+    const pattern = { cmd: 'upload-avatar' };
+    const payload = {
+      userId: user.id,
+      file,
+    };
+    return this.client.send(pattern, payload);
+    // return await this.commandBus.execute(
+    //   new UploadAvatarCommand(
+    //     file.buffer,
+    //     extension.at(-1),
+    //     user.id,
+    //     file.size,
+    //   ),
+    // );
   }
 
   @Delete('avatar')

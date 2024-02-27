@@ -25,16 +25,19 @@ const Repos = [UsersRepository, ProfileRepository, ProfileQueryRepository];
     ClientsModule.register([
       {
         name: 'FILES_SERVICE',
-        transport: Transport.RMQ,
+        transport: Transport.TCP,
         options: {
-          urls: [
-            'amqps://faqtdshr:G9jGzo6PGzV8RMQqVr6F1G0mk0Ze39uz@dingo.rmq.cloudamqp.com/faqtdshr',
-          ],
-          queue: 'file-upload',
-          queueOptions: {
-            durable: false,
-          },
+          port: 3001,
         },
+        // options: {
+        //   urls: [
+        //     'amqps://faqtdshr:G9jGzo6PGzV8RMQqVr6F1G0mk0Ze39uz@dingo.rmq.cloudamqp.com/faqtdshr',
+        //   ],
+        //   queue: 'file-upload',
+        //   queueOptions: {
+        //     durable: false,
+        //   },
+        // },
       },
     ]),
   ],
