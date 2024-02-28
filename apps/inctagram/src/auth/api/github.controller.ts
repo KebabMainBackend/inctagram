@@ -67,7 +67,7 @@ export class GithubController {
     const frontLink = process.env.FRONT_PROD;
     res
       .writeHead(301, {
-        Location: `${frontLink}/oauth`,
+        Location: `${frontLink}/home`,
       })
 
       .end();

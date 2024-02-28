@@ -27,6 +27,7 @@ const Repos = [UsersRepository, ProfileRepository, ProfileQueryRepository];
         name: 'FILES_SERVICE',
         transport: Transport.TCP,
         options: {
+          // host: 'localhost',
           port: 3001,
         },
         // options: {
