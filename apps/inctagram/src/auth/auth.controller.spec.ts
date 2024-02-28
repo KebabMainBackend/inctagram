@@ -48,7 +48,9 @@ describe('AuthController', () => {
       await request(httpServer)
         .post(URL + '/registration')
         .send(userBody)
-        .expect(HttpStatus.NO_CONTENT);
+        .expect(HttpStatus.OK, {
+          email: 'default@gmail.com',
+        });
     });
     it('should return 404 on invalid input data', async () => {
       const errorBody = await request(httpServer)
