@@ -8,7 +8,6 @@ import { ProfileRepository } from './db/profile.repository';
 import { ProfileQueryRepository } from './db/profile.query-repository';
 import { UpdateProfileHandler } from './application/use-cases/update-profile.command';
 import { UploadAvatarHandler } from './application/use-cases/upload-avatar.command';
-import { S3StorageManager } from './managers/s3-storage.manager';
 import { DeleteAvatarHandler } from './application/use-cases/delete-avatar.command';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
@@ -28,7 +27,7 @@ const Repos = [UsersRepository, ProfileRepository, ProfileQueryRepository];
         transport: Transport.TCP,
         options: {
           // host: 'localhost',
-          port: 3001,
+          port: 3261,
         },
         // options: {
         //   urls: [
@@ -43,6 +42,6 @@ const Repos = [UsersRepository, ProfileRepository, ProfileQueryRepository];
     ]),
   ],
   controllers: [ProfileController],
-  providers: [PrismaService, S3StorageManager, ...Repos, ...CommandHandlers],
+  providers: [PrismaService, ...Repos, ...CommandHandlers],
 })
 export class ProfileModule {}
