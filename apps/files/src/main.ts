@@ -8,8 +8,8 @@ async function bootstrap() {
     {
       transport: Transport.TCP,
       options: {
-        // host: 'localhost',
-        port: 3261,
+        host: '0.0.0.0',
+        port: Number(process.env.FILES_SERVICE_PORT || 3261),
       },
       // options: {
       //   urls: [
