@@ -11,7 +11,6 @@ export class UsersRepository {
     return this.prisma.user.create({
       data: {
         ...data,
-        status: 'active',
         profile: {
           create: {
             firstname: null,

@@ -64,6 +64,7 @@ export class GoogleController {
     });
 
     const frontLink = process.env.FRONT_PROD;
+
     res
       .writeHead(301, {
         Location: `${frontLink}/home`,
