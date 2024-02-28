@@ -1,0 +1,1 @@
+{"message":"Cannot GET /swagger/swagger-ui-bundle.js","error":"Not Found","statusCode":404}
