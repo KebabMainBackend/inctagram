@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import {
   // Ctx,
   MessagePattern,
@@ -12,6 +12,11 @@ import { UploadAvatarDto } from './dto/upload-avatar.dto';
 @Controller()
 export class FilesController {
   constructor(private fileService: FilesService) {}
+
+  @Get('/hello')
+  hello() {
+    return 'hello';
+  }
 
   @MessagePattern({ cmd: MicroserviceMessagesEnum.UPLOAD_AVATAR })
   async upload(data: UploadAvatarDto) {
