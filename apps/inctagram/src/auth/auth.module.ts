@@ -29,6 +29,7 @@ import { CheckCredentialsHandler } from './application/use-cases/check-credentia
 import { VerifyConfirmationCodeHandler } from './application/use-cases/verify-confirmation-code.command';
 import { TestDeleteUserHandler } from './test/delete-user.command';
 import { SignInUserViaOauthProviderHandler1 } from './application/use-cases/create-user-via-oauth-provider1.command';
+import { PostsQueryRepository } from '../features/posts/rep/posts.repository';
 
 const CommandHandlers = [
   RegisterUserHandler,

@@ -9,15 +9,19 @@ datasource db {
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean? @default(false)
-  authorId  Int?
+  id          Int      @id @default(autoincrement())
+  description String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+  userId      Int      @map("user_id") // Changed to Int
+
+  user User @relation(fields: [userId], references: [id])
+
+  postImages PostImage[]
 }
 
 model User {
-  id               Int               @id @unique @default(autoincrement())
+  id               Int               @id @default(autoincrement())
   email            String            @unique
   username         String            @unique
   passwordHash     String?
@@ -31,19 +35,50 @@ model User {
   providerId       String?
   sessions         Session[]
   profile          Profile[]
+
+  posts      Post[]
+  postImages PostImage[]
+}
+
+model PostImage {
+  id          Int      @id @default(autoincrement())
+  path        String   @unique
+  url         String   @unique
+  contentType String   @map("content_type")
+  width       Int
+  height      Int
+  size        Int
+  createdAt   DateTime @default(now()) @map("created_at")
+  userId      Int      @map("user_id")
+  postId      Int      @map("post_id")
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
 }
 
 model Profile {
-  userId    Int      @id @unique
-  user      User     @relation(fields: [userId], references: [id])
+  userId    Int        @id @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   firstname String?
   lastname  String?
   birthDate String?
   aboutMe   String?
-  avatarId  String?
+  avatarUrl String?
   city      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  avatar    FileImage?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model FileImage {
+  url           String   @unique
+  width         Int
+  height        Int
+  fileSize      Int
+  profile       Profile  @relation(fields: [profileUserId], references: [userId], onDelete: Cascade)
+  profileUserId Int      @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model UserConfirmation {

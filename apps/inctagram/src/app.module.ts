@@ -8,7 +8,8 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { SecurityDevicesModule } from './features/security-devices/security-devices.module';
 import { ProfileModule } from './features/profile/profile.module';
-// import { ClientsModule, Transport } from '@nestjs/microservices';
+import { PostsModule } from './features/posts/posts.module';
+
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -27,6 +28,7 @@ import { ProfileModule } from './features/profile/profile.module';
         limit: 5,
       },
     ]),
+    PostsModule,
     ProfileModule,
   ],
   controllers: [AppController],
