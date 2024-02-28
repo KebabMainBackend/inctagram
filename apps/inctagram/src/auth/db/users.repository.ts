@@ -21,7 +21,10 @@ export class UsersRepository {
     });
   }
 
-  async deleteUserByEmail(email: string) {
+  async deleteUserByEmail(email: string, userId: number) {
+    await this.prisma.profile.delete({
+      where: { userId },
+    });
     await this.prisma.user.delete({
       where: { email },
     });

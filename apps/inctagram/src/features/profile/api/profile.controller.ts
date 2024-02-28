@@ -40,9 +40,9 @@ import { UpdateProfileCommand } from '../application/use-cases/update-profile.co
 import { UploadAvatarCommand } from '../application/use-cases/upload-avatar.command';
 import { UploadAvatarDto } from './dto/upload-avatar.dto';
 import { DeleteAvatarCommand } from '../application/use-cases/delete-avatar.command';
-import { ClientProxy } from '@nestjs/microservices';
 import { User } from '../../../utils/decorators/user.decorator';
 import { UserTypes } from '../../../types';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Controller('profile')
 @ApiTags('Profile')
@@ -109,12 +109,7 @@ export class ProfileController {
     file: Express.Multer.File,
   ) {
     const extension = file.originalname.split('.');
-    // const pattern = { cmd: 'upload-avatar' };
-    // const payload = {
-    //   userId: user.id,
-    // };
-    // return this.client.send(pattern, payload);
-    return await this.commandBus.execute(
+    return this.commandBus.execute(
       new UploadAvatarCommand(
         file.buffer,
         extension.at(-1),
@@ -129,6 +124,7 @@ export class ProfileController {
   @ApiNoContentResponse(NoContentResponseOptions)
   async delete(@User() user: UserTypes) {
     await this.commandBus.execute(new DeleteAvatarCommand(user.id));
+
     return;
   }
 }

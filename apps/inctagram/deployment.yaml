@@ -102,6 +102,11 @@ spec:
                  secretKeyRef:
                    name: main-service-production-config-secret
                    key: YANDEX_BUCKET
+             - name: FRONT_PROD
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: FRONT_PROD
              - name: DATABASE_URL
                valueFrom:
                  secretKeyRef:

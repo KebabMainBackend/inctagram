@@ -34,28 +34,16 @@ model User {
 }
 
 model Profile {
-  userId    Int        @id @unique
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    Int      @id @unique
+  user      User     @relation(fields: [userId], references: [id])
   firstname String?
   lastname  String?
   birthDate String?
   aboutMe   String?
-  avatarUrl String?
+  avatarId  String?
   city      String?
-  avatar    FileImage?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-}
-
-model FileImage {
-  url           String   @unique
-  width         Int
-  height        Int
-  fileSize      Int
-  profile       Profile  @relation(fields: [profileUserId], references: [userId], onDelete: Cascade)
-  profileUserId Int      @unique
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model UserConfirmation {

@@ -109,10 +109,12 @@ export class AuthController {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
+      sameSite: 'none',
     });
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );
+
     return { accessToken };
   }
 
@@ -222,6 +224,7 @@ export class AuthController {
       res.cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
         secure: true,
+        sameSite: 'none',
       });
       return { accessToken };
     }

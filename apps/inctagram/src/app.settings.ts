@@ -39,6 +39,7 @@ export const appSettings = (app: INestApplication) => {
       'https://inctagram.fun/',
       'http://localhost:3000',
       'http://localhost:5173',
+      'http://localhost:3001',
     ],
     credentials: true,
   });

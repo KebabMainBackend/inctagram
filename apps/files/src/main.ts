@@ -6,16 +6,20 @@ async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     FilesModule,
     {
-      transport: Transport.RMQ,
+      transport: Transport.TCP,
       options: {
-        urls: [
-          'amqps://faqtdshr:G9jGzo6PGzV8RMQqVr6F1G0mk0Ze39uz@dingo.rmq.cloudamqp.com/faqtdshr',
-        ],
-        queue: 'file-upload',
-        queueOptions: {
-          durable: false,
-        },
+        // host: 'localhost',
+        port: 3261,
       },
+      // options: {
+      //   urls: [
+      //     process.env.AMQP_RABBIT,
+      //   ],
+      //   queue: process.env.QUEUE_NAME,
+      //   queueOptions: {
+      //     durable: false,
+      //   },
+      // },
     },
   );
   await app.listen();

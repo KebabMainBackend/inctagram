@@ -8,7 +8,6 @@ import { ProfileRepository } from './db/profile.repository';
 import { ProfileQueryRepository } from './db/profile.query-repository';
 import { UpdateProfileHandler } from './application/use-cases/update-profile.command';
 import { UploadAvatarHandler } from './application/use-cases/upload-avatar.command';
-import { S3StorageManager } from './managers/s3-storage.manager';
 import { DeleteAvatarHandler } from './application/use-cases/delete-avatar.command';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
@@ -25,20 +24,24 @@ const Repos = [UsersRepository, ProfileRepository, ProfileQueryRepository];
     ClientsModule.register([
       {
         name: 'FILES_SERVICE',
-        transport: Transport.RMQ,
+        transport: Transport.TCP,
         options: {
-          urls: [
-            'amqps://faqtdshr:G9jGzo6PGzV8RMQqVr6F1G0mk0Ze39uz@dingo.rmq.cloudamqp.com/faqtdshr',
-          ],
-          queue: 'file-upload',
-          queueOptions: {
-            durable: false,
-          },
+          // host: 'localhost',
+          port: 3261,
         },
+        // options: {
+        //   urls: [
+        //     process.env.AMQP_RABBIT,
+        //   ],
+        //   queue: process.env.QUEUE_NAME,
+        //   queueOptions: {
+        //     durable: false,
+        //   },
+        // },
       },
     ]),
   ],
   controllers: [ProfileController],
-  providers: [PrismaService, S3StorageManager, ...Repos, ...CommandHandlers],
+  providers: [PrismaService, ...Repos, ...CommandHandlers],
 })
 export class ProfileModule {}

@@ -7,8 +7,8 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class S3StorageManager {
-  s3client;
-  bucketName = process.env.YANDEX_BUCKET;
+  private s3client;
+  private bucketName = process.env.YANDEX_BUCKET;
   constructor() {
     const region = 'us-east-1';
     this.s3client = new S3Client({
@@ -28,10 +28,8 @@ export class S3StorageManager {
     };
     const command = new PutObjectCommand(options);
     try {
-      await this.s3client.send(command);
-      return {
-        url,
-      };
+      const data = await this.s3client.send(command);
+      return data.id;
     } catch (e) {
       console.log(e);
       throw e;

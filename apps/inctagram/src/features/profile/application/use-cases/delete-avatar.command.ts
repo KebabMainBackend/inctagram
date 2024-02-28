@@ -1,7 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PrismaService } from '../../../../prisma.service';
-import { S3StorageManager } from '../../managers/s3-storage.manager';
 import { ProfileRepository } from '../../db/profile.repository';
+import { Inject } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { MicroserviceMessagesEnum } from '../messages';
 
 export class DeleteAvatarCommand {
   constructor(public userId: number) {}
@@ -13,17 +15,23 @@ export class DeleteAvatarHandler
 {
   constructor(
     private prisma: PrismaService,
-    private s3Manager: S3StorageManager,
     private profileRepo: ProfileRepository,
+
+    @Inject('FILES_SERVICE') private client: ClientProxy,
   ) {}
 
   async execute({ userId }: DeleteAvatarCommand) {
-    const profileAvatar = await this.profileRepo.getUserFileImage(userId);
-    await this.prisma.$transaction(async () => {
-      if (profileAvatar) {
-        await this.s3Manager.deleteImage(profileAvatar.url);
-        await this.profileRepo.deleteProfileAvatar(profileAvatar.url);
-      }
-    });
+    const profile = await this.profileRepo.getUserProfile(userId);
+    if (profile) {
+      this.deleteFromMS(profile.avatarId).subscribe();
+      await this.profileRepo.removeAvatarFromProfile(userId);
+    }
+  }
+  deleteFromMS(avatarId: string) {
+    const pattern = { cmd: MicroserviceMessagesEnum.DELETE_AVATAR };
+    const payload = {
+      fileId: avatarId,
+    };
+    return this.client.send(pattern, payload);
   }
 }
