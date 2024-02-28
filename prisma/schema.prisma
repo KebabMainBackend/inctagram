@@ -30,7 +30,6 @@ model User {
   providers        OAuthProvider[]
   providerId       String?
   sessions         Session[]
-  status           String
   profile          Profile[]
 }
 
