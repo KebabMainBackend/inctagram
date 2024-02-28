@@ -36,7 +36,11 @@ export class PasswordRecoveryHandler
     if (requestStatus.status) {
       return this.recoverPassword(email);
     }
-    const error = createErrorMessage('incorrect recaptcha', 'recaptcha');
+
+    const error = createErrorMessage(
+      requestStatus['error-codes'][0],
+      'recaptcha',
+    );
     throw new HttpException(error, HttpStatus.BAD_REQUEST);
   }
   private async recoverPassword(email: string) {

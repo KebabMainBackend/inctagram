@@ -9,7 +9,7 @@ async function bootstrap() {
       transport: Transport.TCP,
       options: {
         host: '0.0.0.0',
-        port: Number(process.env.FILES_SERVICE_PORT || 3261),
+        port: Number(process.env.FILES_SERVICE_PORT || 3262),
       },
       // options: {
       //   urls: [

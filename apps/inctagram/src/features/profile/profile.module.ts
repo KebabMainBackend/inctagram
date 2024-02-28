@@ -28,7 +28,7 @@ const Repos = [UsersRepository, ProfileRepository, ProfileQueryRepository];
         transport: Transport.TCP,
         options: {
           host: process.env.FILES_SERVICE_HOST,
-          port: Number(process.env.FILES_SERVICE_PORT || 3261),
+          port: Number(process.env.FILES_SERVICE_PORT || 3262),
         },
         // options: {
         //   urls: [
