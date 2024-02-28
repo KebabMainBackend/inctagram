@@ -18,8 +18,8 @@ export class FilesService {
 
   async uploadIFile(data: UploadAvatarDto) {
     const { buffer, userId: ownerId, fileSize, url } = data;
-    console.log(buffer);
-    const { width, height } = sizeOf(buffer);
+    const fileBuffer = Buffer.from(buffer);
+    const { width, height } = sizeOf(fileBuffer);
     const fileImage = new this.fileImageModel({
       url,
       width,
@@ -29,8 +29,24 @@ export class FilesService {
       type: FileImageTypeEnum.AVATAR,
     });
     await fileImage.save();
-    console.log(fileImage.id);
-    // await this.s3Manager.saveImage(buffer, url);
-    return fileImage.id;
+    await this.s3Manager.saveImage(buffer, url);
+    return {
+      avatarId: fileImage.id,
+      url: 'https://storage.yandexcloud.net/kebab-inctagram/' + fileImage.url,
+      width,
+      height,
+    };
+  }
+  async deleteFile(fileImageId: string) {
+    const image = await this.getImage(fileImageId);
+    if (image) {
+      await this.s3Manager.deleteImage(image.url);
+      return this.fileImageModel.deleteOne({
+        _id: fileImageId,
+      });
+    }
+  }
+  async getImage(fileImageId: string) {
+    return this.fileImageModel.findById(fileImageId);
   }
 }

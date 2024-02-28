@@ -109,11 +109,6 @@ export class ProfileController {
     file: Express.Multer.File,
   ) {
     const extension = file.originalname.split('.');
-    // const pattern = { cmd: MicroserviceMessagesEnum.UPLOAD_AVATAR };
-    // const payload = {
-    //   userId: user.id,
-    // };
-    // return this.client.send(pattern, payload);
     return this.commandBus.execute(
       new UploadAvatarCommand(
         file.buffer,
@@ -129,6 +124,7 @@ export class ProfileController {
   @ApiNoContentResponse(NoContentResponseOptions)
   async delete(@User() user: UserTypes) {
     await this.commandBus.execute(new DeleteAvatarCommand(user.id));
+
     return;
   }
 }

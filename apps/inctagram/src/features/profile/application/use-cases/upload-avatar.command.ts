@@ -1,10 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PrismaService } from '../../../../prisma.service';
-import { S3StorageManager } from '../../managers/s3-storage.manager';
 import { ProfileRepository } from '../../db/profile.repository';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { MicroserviceMessagesEnum } from '../messages';
+import { firstValueFrom } from 'rxjs';
 
 export class UploadAvatarCommand {
   constructor(
@@ -21,21 +21,25 @@ export class UploadAvatarHandler
 {
   constructor(
     private prisma: PrismaService,
-    private s3Manager: S3StorageManager,
     private profileRepo: ProfileRepository,
     @Inject('FILES_SERVICE') private client: ClientProxy,
   ) {}
 
   async execute({ buffer, userId, extension, fileSize }: UploadAvatarCommand) {
-    const userAvatar = await this.profileRepo.getUserFileImage(userId);
-
-    // if (userAvatar) {
-    //   await this.s3Manager.deleteImage(userAvatar.url);
-    //   await this.profileRepo.deleteProfileAvatar(userAvatar.url);
-    // }
-    const a = this.createFileImage(fileSize, buffer, userId, extension);
-    console.log(a);
-    return a;
+    const userProfile = await this.profileRepo.getUserProfile(userId);
+    if (userProfile.avatarId) {
+      this.deleteFileImage(userProfile.avatarId).subscribe();
+    }
+    const { avatarId, url, width, height } = await firstValueFrom(
+      this.createFileImage(fileSize, buffer, userId, extension),
+    );
+    await this.profileRepo.addAvatarToProfile(avatarId, userId);
+    return {
+      url,
+      width,
+      height,
+      fileSize,
+    };
   }
   createFileImage(
     fileSize: number,
@@ -50,6 +54,14 @@ export class UploadAvatarHandler
       buffer,
       url,
       fileSize,
+    };
+    return this.client.send(pattern, payload);
+  }
+  deleteFileImage(avatarId: string) {
+    console.log('workerd');
+    const pattern = { cmd: MicroserviceMessagesEnum.DELETE_AVATAR };
+    const payload = {
+      fileId: avatarId,
     };
     return this.client.send(pattern, payload);
   }

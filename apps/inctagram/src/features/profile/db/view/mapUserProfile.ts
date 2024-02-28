@@ -1,6 +1,9 @@
-import { DBProfileView } from './profile.view';
+import { DBProfileAvatarView, DBProfileView } from './profile.view';
 
-export const mapUserProfile = (profile: DBProfileView) => {
+export const mapUserProfile = (
+  profile: DBProfileView,
+  avatar: DBProfileAvatarView | null,
+) => {
   return {
     id: profile.userId,
     username: profile.user.username,
@@ -9,14 +12,12 @@ export const mapUserProfile = (profile: DBProfileView) => {
     city: profile.city,
     birthDate: profile.birthDate,
     aboutMe: profile.aboutMe,
-    avatar: profile.avatar
+    avatar: avatar
       ? {
-          url:
-            'https://storage.yandexcloud.net/kebab-inctagram/' +
-            profile.avatar.url,
-          width: profile.avatar.width,
-          height: profile.avatar.height,
-          fileSize: profile.avatar.fileSize,
+          url: 'https://storage.yandexcloud.net/kebab-inctagram/' + avatar.url,
+          width: avatar.width,
+          height: avatar.height,
+          fileSize: avatar.fileSize,
         }
       : null,
 

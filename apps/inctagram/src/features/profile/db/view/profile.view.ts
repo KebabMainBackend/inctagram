@@ -10,12 +10,12 @@ export type DBProfileView = {
   user: {
     username: string;
   };
-  avatar: {
-    url: string;
-    width: number;
-    height: number;
-    fileSize: number;
-  };
+};
+export type DBProfileAvatarView = {
+  url: string;
+  width: number;
+  height: number;
+  fileSize: number;
 };
 
 export const ProfileViewExample = {
