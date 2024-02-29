@@ -30,6 +30,7 @@ export class UploadAvatarHandler
     if (userProfile.avatarId) {
       this.deleteFileImage(userProfile.avatarId).subscribe();
     }
+    console.log('after deleteion before upload');
     const { avatarId, url, width, height } = await firstValueFrom(
       this.createFileImage(fileSize, buffer, userId, extension),
     );
