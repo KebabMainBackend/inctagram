@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma.service';
 import { CreateUserTypes } from '../domain/types/create-user.types';
 import { CreateUserConfirmationTypes } from '../domain/types/create-user-confirmation.types';
 import { CreateOauthProviderTypes } from '../domain/types/create-oauth-provider.types';
+import { UserConfirmationEntity } from '../domain/entities/user.entity';
 
 @Injectable()
 export class UsersRepository {
@@ -59,6 +60,28 @@ export class UsersRepository {
   async createUserConfirmationData(data: CreateUserConfirmationTypes) {
     return this.prisma.userConfirmation.create({
       data,
+    });
+  }
+  async getUserConfirmation(id: number) {
+    const data = await this.prisma.userConfirmation.findUnique({
+      where: { id },
+    });
+    const confirmationData = new UserConfirmationEntity();
+    confirmationData.id = data.id;
+    confirmationData.confirmationCode = data.confirmationCode;
+    confirmationData.userId = data.userId;
+    confirmationData.codeExpirationDate = data.codeExpirationDate;
+    return confirmationData;
+  }
+  async updateConfirmationDate(confirmData: UserConfirmationEntity) {
+    await this.prisma.userConfirmation.update({
+      where: {
+        id: confirmData.id,
+      },
+      data: {
+        confirmationCode: confirmData.confirmationCode,
+        codeExpirationDate: confirmData.codeExpirationDate,
+      },
     });
   }
   async createOauthProvider(data: CreateOauthProviderTypes) {

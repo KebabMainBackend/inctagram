@@ -126,12 +126,13 @@ export class AuthController {
   @Post('password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
   async passwordRecovery(@Body() passwordRecoveryDto: AuthPasswordRecoveryDto) {
-    return await this.commandBus.execute(
+    await this.commandBus.execute(
       new PasswordRecoveryCommand(
         passwordRecoveryDto.email,
         passwordRecoveryDto.recaptcha,
       ),
     );
+    return;
   }
 
   @ApiNoContentResponse(NoContentResponseOptions)

@@ -58,7 +58,6 @@ export class UploadAvatarHandler
     return this.client.send(pattern, payload);
   }
   deleteFileImage(avatarId: string) {
-    console.log('workerd');
     const pattern = { cmd: MicroserviceMessagesEnum.DELETE_AVATAR };
     const payload = {
       fileId: avatarId,

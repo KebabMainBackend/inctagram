@@ -3,7 +3,6 @@ import { PrismaService } from '../../../prisma.service';
 import { EmailService } from '../../managers/email.manager';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { createErrorMessage } from '../../../utils/create-error-object';
-import { UserConfirmationEntity } from '../../domain/entities/user.entity';
 import { UsersRepository } from '../../db/users.repository';
 
 export class PasswordRecoveryCommand {
@@ -33,7 +32,7 @@ export class PasswordRecoveryHandler
       body: verifyCaptchaBodyString,
     });
     const requestStatus = await res.json();
-    if (requestStatus.status) {
+    if (requestStatus.success) {
       return this.recoverPassword(email);
     }
 
@@ -49,23 +48,20 @@ export class PasswordRecoveryHandler
       const error = createErrorMessage('incorrect email', 'email');
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
-    return this.prisma.$transaction(
-      async (tx) => {
-        const userConfirmation = UserConfirmationEntity.create(user.id);
-        await tx.user.update({
-          where: { id: user.id },
-          data: userConfirmation,
-        });
+    this.prisma.$transaction(async () => {
+      try {
+        const confirmationData = await this.usersRepo.getUserConfirmation(
+          user.confirmationData.id,
+        );
+        confirmationData.updateConfirmationData();
+        await this.usersRepo.updateConfirmationDate(confirmationData);
         await this.emailService.sendRecoveryCodeEmail(
           email,
-          userConfirmation.confirmationCode,
-          'Recovery code',
+          confirmationData.confirmationCode,
         );
-        return true;
-      },
-      {
-        timeout: 6000,
-      },
-    );
+      } catch (e) {
+        throw Error('some error try later');
+      }
+    });
   }
 }

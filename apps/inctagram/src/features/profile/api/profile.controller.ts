@@ -21,6 +21,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
+  ApiExcludeEndpoint,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
@@ -55,7 +56,16 @@ export class ProfileController {
     private profileQueryRepo: ProfileQueryRepository,
     @Inject('FILES_SERVICE') private client: ClientProxy,
   ) {}
-
+  @Get('hello-world')
+  @ApiExcludeEndpoint()
+  sendHello() {
+    return this.client.send(
+      {
+        cmd: 'hello-world',
+      },
+      '',
+    );
+  }
   @Get()
   @ApiOkResponse({
     description: 'success',
