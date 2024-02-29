@@ -33,6 +33,7 @@ export class UploadAvatarHandler
     const { avatarId, url, width, height } = await firstValueFrom(
       this.createFileImage(fileSize, buffer, userId, extension),
     );
+    console.log(avatarId, 'avatarId');
     await this.profileRepo.addAvatarToProfile(avatarId, userId);
     return {
       url,
@@ -56,9 +57,8 @@ export class UploadAvatarHandler
       fileSize,
     };
     try {
-      const data = this.client.send(pattern, payload);
-      console.log(data);
-      return data;
+      console.log('upload-image');
+      return this.client.send(pattern, payload);
     } catch (e) {
       console.log(e);
       throw new HttpException(e, HttpStatus.BAD_REQUEST);
