@@ -23,8 +23,8 @@ export class DeleteAvatarHandler
     if (profile) {
       console.log('delete from main1');
       this.deleteFromMS(profile.avatarId).subscribe();
-      console.log('delete from main2');
       await this.profileRepo.removeAvatarFromProfile(userId);
+      console.log('delete from main2');
     }
   }
   deleteFromMS(avatarId: string) {
