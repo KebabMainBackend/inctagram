@@ -59,6 +59,7 @@ export class UploadAvatarHandler
     };
     console.log(url);
     const a = this.client.send(pattern, payload);
+    console.log('b');
     const data = await firstValueFrom(a);
     console.log(data);
     return a;
