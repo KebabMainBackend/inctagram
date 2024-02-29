@@ -12,6 +12,7 @@ import {
   ParseFilePipeBuilder,
   Delete,
   Inject,
+  HttpException,
 } from '@nestjs/common';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { BearerAuthGuard } from '../../../auth/guards/bearer-auth.guard';
@@ -59,7 +60,9 @@ export class ProfileController {
   @Get('hello-world')
   @ApiExcludeEndpoint()
   sendHello() {
+    console.log('first log');
     try {
+      console.log('second log');
       return this.client.send(
         {
           cmd: 'hello-world',
@@ -67,7 +70,8 @@ export class ProfileController {
         '',
       );
     } catch (e) {
-      console.log(e);
+      console.log(e, 'error');
+      throw new HttpException(e, HttpStatus.CONFLICT);
     }
   }
   @Get()
