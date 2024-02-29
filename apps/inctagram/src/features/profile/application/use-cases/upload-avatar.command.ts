@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PrismaService } from '../../../../prisma.service';
 import { ProfileRepository } from '../../db/profile.repository';
-import { Inject } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { MicroserviceMessagesEnum } from '../messages';
 import { firstValueFrom } from 'rxjs';
@@ -62,6 +62,12 @@ export class UploadAvatarHandler
     const payload = {
       fileId: avatarId,
     };
-    return this.client.send(pattern, payload);
+    try {
+      console.log('in try');
+      return this.client.send(pattern, payload);
+    } catch (e) {
+      console.log(e);
+      throw new HttpException(e, HttpStatus.BAD_REQUEST);
+    }
   }
 }

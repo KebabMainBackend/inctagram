@@ -127,6 +127,7 @@ export class ProfileController {
     file: Express.Multer.File,
   ) {
     const extension = file.originalname.split('.');
+    console.log('trye');
     return this.commandBus.execute(
       new UploadAvatarCommand(
         file.buffer,
