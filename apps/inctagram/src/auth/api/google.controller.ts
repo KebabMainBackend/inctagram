@@ -21,6 +21,7 @@ import { Request, Response } from 'express';
 import { CommandBus } from '@nestjs/cqrs';
 import { SignInUserViaOauthProviderCommand } from '../application/use-cases/create-user-via-oauth-provider.command';
 import { ProviderType } from '../domain/entities/oauth-provider.entity';
+import { CreateAccessTokenCommand } from '../application/use-cases/create-access-token.command';
 
 @Controller('auth/google')
 @ApiTags('Google-OAuth2')
@@ -64,10 +65,12 @@ export class GoogleController {
     });
 
     const frontLink = process.env.FRONT_PROD;
-
+    const accessToken = await this.commandBus.execute(
+      new CreateAccessTokenCommand(userId),
+    );
     res
       .writeHead(301, {
-        Location: `${frontLink}/home`,
+        Location: `${frontLink}/auth/redirect/google?code=${accessToken}`,
       })
 
       .end();

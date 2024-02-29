@@ -59,12 +59,16 @@ export class ProfileController {
   @Get('hello-world')
   @ApiExcludeEndpoint()
   sendHello() {
-    return this.client.send(
-      {
-        cmd: 'hello-world',
-      },
-      '',
-    );
+    try {
+      return this.client.send(
+        {
+          cmd: 'hello-world',
+        },
+        '',
+      );
+    } catch (e) {
+      console.log(e);
+    }
   }
   @Get()
   @ApiOkResponse({

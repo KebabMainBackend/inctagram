@@ -65,9 +65,12 @@ export class GithubController {
     });
     await this.commandBus.execute(new CreateAccessTokenCommand(userId));
     const frontLink = process.env.FRONT_PROD;
+    const accessToken = await this.commandBus.execute(
+      new CreateAccessTokenCommand(userId),
+    );
     res
       .writeHead(301, {
-        Location: `${frontLink}/home`,
+        Location: `${frontLink}/auth/redirect/github?code=${accessToken}`,
       })
 
       .end();
