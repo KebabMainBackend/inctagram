@@ -30,7 +30,6 @@ export class UploadAvatarHandler
     if (userProfile.avatarId) {
       this.deleteFileImage(userProfile.avatarId).subscribe();
     }
-    console.log('mid');
     const { avatarId, url, width, height } = await firstValueFrom(
       this.createFileImage(fileSize, buffer, userId, extension),
     );
@@ -57,8 +56,9 @@ export class UploadAvatarHandler
       fileSize,
     };
     try {
-      console.log('upload image');
-      return this.client.send(pattern, payload);
+      const data = this.client.send(pattern, payload);
+      console.log(data);
+      return data;
     } catch (e) {
       console.log(e);
       throw new HttpException(e, HttpStatus.BAD_REQUEST);
@@ -70,7 +70,6 @@ export class UploadAvatarHandler
       fileId: avatarId,
     };
     try {
-      console.log('delete image');
       return this.client.send(pattern, payload);
     } catch (e) {
       console.log(e);
