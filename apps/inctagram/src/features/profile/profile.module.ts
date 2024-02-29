@@ -27,7 +27,7 @@ const Repos = [UsersRepository, ProfileRepository, ProfileQueryRepository];
         name: 'FILES_SERVICE',
         transport: Transport.TCP,
         options: {
-          host: process.env.FILES_SERVICE_HOST,
+          host: process.env.FILES_SERVICE_HOST || 'files-service-service',
           port: Number(process.env.FILES_SERVICE_PORT || 3262),
         },
         // options: {

@@ -27,6 +27,11 @@ spec:
                  secretKeyRef:
                    name: files-service-production-config-secret
                    key: FILES_SERVICE_HOST
+             - name: MONGO_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: files-service-production-config-secret
+                   key: MONGO_URL
              - name: FILES_SERVICE_PORT
                valueFrom:
                  secretKeyRef:

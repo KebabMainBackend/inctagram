@@ -59,15 +59,15 @@ export class ProfileController {
   ) {}
   @Get('hello-world')
   @ApiExcludeEndpoint()
-  sendHello() {
-    console.log('first log');
+  async sendHello() {
     try {
-      console.log('second log');
       return this.client.send(
         {
           cmd: 'hello-world',
         },
-        '',
+        {
+          l: '',
+        },
       );
     } catch (e) {
       console.log(e, 'error');
