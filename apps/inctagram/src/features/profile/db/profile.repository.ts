@@ -27,11 +27,11 @@ export class ProfileRepository {
     });
   }
   async removeAvatarFromProfile(userId: number) {
-    console.log('remove from repo');
     await this.prisma.profile.update({
       where: { userId },
       data: { avatarId: null },
     });
+    console.log('remove from repo');
   }
 
   updateUserUsername(username: string, userId: number) {
