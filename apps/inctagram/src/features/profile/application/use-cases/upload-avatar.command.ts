@@ -30,7 +30,7 @@ export class UploadAvatarHandler
     if (userProfile.avatarId) {
       this.deleteFileImage(userProfile.avatarId).subscribe();
     }
-    console.log('after deleteion before upload');
+    console.log('after deletion before upload');
     const { avatarId, url, width, height } = await firstValueFrom(
       await this.createFileImage(fileSize, buffer, userId, extension),
     );
@@ -57,7 +57,7 @@ export class UploadAvatarHandler
       url,
       fileSize,
     };
-    console.log(url);
+    console.log('a');
     const a = this.client.send(pattern, payload);
     console.log('b');
     const data = await firstValueFrom(a);
