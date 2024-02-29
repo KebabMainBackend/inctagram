@@ -142,7 +142,6 @@ export class ProfileController {
   @ApiNoContentResponse(NoContentResponseOptions)
   async delete(@User() user: UserTypes) {
     await this.commandBus.execute(new DeleteAvatarCommand(user.id));
-    console.log('finished deleteion');
     return;
   }
 }
