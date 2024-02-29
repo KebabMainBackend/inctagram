@@ -32,7 +32,7 @@ export class UploadAvatarHandler
     }
     console.log('after deleteion before upload');
     const { avatarId, url, width, height } = await firstValueFrom(
-      this.createFileImage(fileSize, buffer, userId, extension),
+      await this.createFileImage(fileSize, buffer, userId, extension),
     );
     console.log(avatarId, 'avatarId');
     await this.profileRepo.addAvatarToProfile(avatarId, userId);
@@ -43,7 +43,7 @@ export class UploadAvatarHandler
       fileSize,
     };
   }
-  createFileImage(
+  async createFileImage(
     fileSize: number,
     buffer: Buffer,
     userId: number,
@@ -57,7 +57,11 @@ export class UploadAvatarHandler
       url,
       fileSize,
     };
-    return this.client.send(pattern, payload);
+    console.log(url);
+    const a = this.client.send(pattern, payload);
+    const data = await firstValueFrom(a);
+    console.log(data);
+    return a;
   }
   deleteFileImage(avatarId: string) {
     const pattern = { cmd: MicroserviceMessagesEnum.DELETE_AVATAR };
