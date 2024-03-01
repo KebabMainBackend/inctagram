@@ -45,7 +45,6 @@ import { DeleteAvatarCommand } from '../application/use-cases/delete-avatar.comm
 import { User } from '../../../utils/decorators/user.decorator';
 import { UserTypes } from '../../../types';
 import { ClientProxy } from '@nestjs/microservices';
-import { MicroserviceMessagesEnum } from '../application/messages';
 
 @Controller('profile')
 @ApiTags('Profile')
@@ -128,22 +127,15 @@ export class ProfileController {
     file: Express.Multer.File,
   ) {
     const extension = file.originalname.split('.');
-    const pattern = { cmd: MicroserviceMessagesEnum.UPLOAD_AVATAR };
-    const payload = {
-      userId: user.id,
-      buffer: file.buffer,
-      url: 'url',
-      fileSize: file.size,
-    };
-    return this.client.send(pattern, payload);
-    // return this.commandBus.execute(
-    //   new UploadAvatarCommand(
-    //     file.buffer,
-    //     extension.at(-1),
-    //     user.id,
-    //     file.size,
-    //   ),
-    // );
+
+    return this.commandBus.execute(
+      new UploadAvatarCommand(
+        file.buffer,
+        extension.at(-1),
+        user.id,
+        file.size,
+      ),
+    );
   }
 
   @Delete('avatar')

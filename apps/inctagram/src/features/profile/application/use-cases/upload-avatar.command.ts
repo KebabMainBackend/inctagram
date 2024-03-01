@@ -30,19 +30,16 @@ export class UploadAvatarHandler
     if (userProfile.avatarId) {
       this.deleteFileImage(userProfile.avatarId).subscribe();
     }
-    console.log('after deletion before upload');
-    // const { avatarId, url, width, height } = await firstValueFrom(
-    //   await this.createFileImage(fileSize, buffer, userId, extension),
-    // );
-    // console.log(avatarId, 'avatarId');
-    // await this.profileRepo.addAvatarToProfile(avatarId, userId);
-    // return {
-    //   url,
-    //   width,
-    //   height,
-    //   fileSize,
-    // };
-    return this.createFileImage(fileSize, buffer, userId, extension);
+    const { avatarId, url, width, height } = await firstValueFrom(
+      await this.createFileImage(fileSize, buffer, userId, extension),
+    );
+    await this.profileRepo.addAvatarToProfile(avatarId, userId);
+    return {
+      url,
+      width,
+      height,
+      fileSize,
+    };
   }
   async createFileImage(
     fileSize: number,

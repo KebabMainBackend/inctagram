@@ -10,14 +10,11 @@ export class FilesController {
 
   @MessagePattern({ cmd: MicroserviceMessagesEnum.UPLOAD_AVATAR })
   async upload(data: UploadAvatarDto) {
-    console.log('upload files ms');
-    console.log(data);
     return await this.fileService.uploadIFile(data);
   }
 
   @MessagePattern({ cmd: MicroserviceMessagesEnum.DELETE_AVATAR })
   async delete(data: { fileId: string }) {
-    console.log('delete files ms');
     return await this.fileService.deleteFile(data.fileId);
   }
 
