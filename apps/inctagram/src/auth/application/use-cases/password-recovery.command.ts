@@ -22,25 +22,25 @@ export class PasswordRecoveryHandler
     private usersRepo: UsersRepository,
   ) {}
   async execute({ email, recaptcha }: PasswordRecoveryCommand) {
-    // const secretKey = process.env['RECAPTCHA_SECRET'];
-    // const verifyCaptchaBodyString = `secret=${secretKey}&response=${recaptcha}`;
-    // const res = await fetch('https://www.google.com/recaptcha/api/siteverify', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/x-www-form-urlencoded',
-    //   },
-    //   body: verifyCaptchaBodyString,
-    // });
-    // const requestStatus = await res.json();
-    // if (requestStatus.success) {
-    return this.recoverPassword(email);
-    // }
+    const secretKey = process.env['RECAPTCHA_SECRET'];
+    const verifyCaptchaBodyString = `secret=${secretKey}&response=${recaptcha}`;
+    const res = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: verifyCaptchaBodyString,
+    });
+    const requestStatus = await res.json();
+    if (requestStatus.success) {
+      return this.recoverPassword(email);
+    }
 
-    // const error = createErrorMessage(
-    //   requestStatus['error-codes'][0],
-    //   'recaptcha',
-    // );
-    // throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    const error = createErrorMessage(
+      requestStatus['error-codes'][0],
+      'recaptcha',
+    );
+    throw new HttpException(error, HttpStatus.BAD_REQUEST);
   }
   private async recoverPassword(email: string) {
     const user = await this.usersRepo.getUserByEmail(email);
@@ -48,7 +48,7 @@ export class PasswordRecoveryHandler
       const error = createErrorMessage('incorrect email', 'email');
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
-    this.prisma.$transaction(async () => {
+    return this.prisma.$transaction(async () => {
       try {
         const confirmationData = await this.usersRepo.getUserConfirmation(
           user.confirmationData.id,
@@ -59,7 +59,9 @@ export class PasswordRecoveryHandler
           email,
           confirmationData.confirmationCode,
         );
+        return true;
       } catch (e) {
+        console.log(e);
         throw Error('some error try later');
       }
     });
