@@ -32,6 +32,21 @@ spec:
                  secretKeyRef:
                    name: files-service-production-config-secret
                    key: MONGO_URL
+             - name: YANDEX_SECRET
+               valueFrom:
+                 secretKeyRef:
+                   name: files-service-production-config-secret
+                   key: YANDEX_SECRET
+             - name: YANDEX_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: files-service-production-config-secret
+                   key: YANDEX_ID
+             - name: YANDEX_BUCKET
+               valueFrom:
+                 secretKeyRef:
+                   name: files-service-production-config-secret
+                   key: YANDEX_BUCKET
              - name: FILES_SERVICE_PORT
                valueFrom:
                  secretKeyRef:
