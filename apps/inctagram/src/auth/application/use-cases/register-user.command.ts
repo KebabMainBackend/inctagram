@@ -51,7 +51,7 @@ export class RegisterUserHandler
     });
     newUser.passwordSalt = passwordSalt;
     newUser.passwordHash = passwordHash;
-    return this.prisma.$transaction(
+    this.prisma.$transaction(
       async () => {
         const user = await this.userRepo.createUser(newUser);
         const userConfirmation = UserConfirmationEntity.create(user.id);
@@ -61,10 +61,9 @@ export class RegisterUserHandler
           userConfirmation.confirmationCode,
           'Confirmation code',
         );
-
-        return true;
       },
       { timeout: 7000 },
     );
+    return { email };
   }
 }

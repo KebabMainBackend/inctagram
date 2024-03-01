@@ -58,15 +58,18 @@ import { UserTypes } from '../../types';
 export class AuthController {
   constructor(private commandBus: CommandBus) {}
 
-  @ApiNoContentResponse({
+  @ApiOkResponse({
     description:
       'An email with a verification code has been sent to the specified email address',
+    content: {
+      'application/json': { example: { email: 'string' } },
+    },
   })
   @ApiBadRequestResponse(BadRequestResponseOptions)
   @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
   @Post('registration')
   @UseGuards(ThrottlerGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   async register(@Body() registerDTO: AuthRegisterDto) {
     return await this.commandBus.execute(
       new RegisterUserCommand(
@@ -123,12 +126,13 @@ export class AuthController {
   @Post('password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
   async passwordRecovery(@Body() passwordRecoveryDto: AuthPasswordRecoveryDto) {
-    return await this.commandBus.execute(
+    await this.commandBus.execute(
       new PasswordRecoveryCommand(
         passwordRecoveryDto.email,
         passwordRecoveryDto.recaptcha,
       ),
     );
+    return;
   }
 
   @ApiNoContentResponse(NoContentResponseOptions)

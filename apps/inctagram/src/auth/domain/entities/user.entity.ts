@@ -48,4 +48,11 @@ export class UserConfirmationEntity extends BaseEntity {
     userConfirmation.userId = userId;
     return userConfirmation;
   }
+  updateConfirmationData() {
+    const codeExpirationDate = add(new Date(), {
+      minutes: 3,
+    });
+    this.confirmationCode = uuidv4();
+    this.codeExpirationDate = codeExpirationDate;
+  }
 }

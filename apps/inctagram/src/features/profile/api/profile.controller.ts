@@ -12,6 +12,7 @@ import {
   ParseFilePipeBuilder,
   Delete,
   Inject,
+  HttpException,
 } from '@nestjs/common';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { BearerAuthGuard } from '../../../auth/guards/bearer-auth.guard';
@@ -21,6 +22,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
+  ApiExcludeEndpoint,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
@@ -55,7 +57,23 @@ export class ProfileController {
     private profileQueryRepo: ProfileQueryRepository,
     @Inject('FILES_SERVICE') private client: ClientProxy,
   ) {}
-
+  @Get('hello-world')
+  @ApiExcludeEndpoint()
+  async sendHello() {
+    try {
+      return this.client.send(
+        {
+          cmd: 'hello-world',
+        },
+        {
+          l: '',
+        },
+      );
+    } catch (e) {
+      console.log(e, 'error');
+      throw new HttpException(e, HttpStatus.CONFLICT);
+    }
+  }
   @Get()
   @ApiOkResponse({
     description: 'success',
@@ -109,6 +127,7 @@ export class ProfileController {
     file: Express.Multer.File,
   ) {
     const extension = file.originalname.split('.');
+
     return this.commandBus.execute(
       new UploadAvatarCommand(
         file.buffer,
@@ -124,7 +143,6 @@ export class ProfileController {
   @ApiNoContentResponse(NoContentResponseOptions)
   async delete(@User() user: UserTypes) {
     await this.commandBus.execute(new DeleteAvatarCommand(user.id));
-
     return;
   }
 }

@@ -39,7 +39,7 @@ export class EmailService {
     const messageTemplate = `
             <h1>Thanks for your registration</h1>
             <p>To finish registration please follow the link below:
-                <a href='https://inctagram.fun/confirm-email?code=${message}'>complete registration</a>
+                <a href='https://inctagram.fun/auth/confirm-email?code=${message}&email=${userEmail}'>complete registration</a>
             </p>`;
     const options = {
       from: 'Johnny <johnny178917@gmail.com>',
@@ -57,11 +57,7 @@ export class EmailService {
     }
   }
 
-  async sendRecoveryCodeEmail(
-    userEmail: string,
-    message: string,
-    subject: string,
-  ) {
+  async sendRecoveryCodeEmail(userEmail: string, message: string) {
     const messageTemplate = `
             <h1>Password recovery</h1>
             <p>To finish password recovery please follow the link below:
@@ -70,11 +66,14 @@ export class EmailService {
     const options = {
       from: 'Johnny <johnny178917@gmail.com>',
       to: userEmail,
-      subject: subject,
+      subject: 'Recovery code',
       html: messageTemplate,
     };
     try {
-      await this.sendMail(options);
+      await this.sendMail(options, () => {
+        console.log('recovery code Email is delivered successfully');
+        return true;
+      });
     } catch (e) {
       throw Error('second error');
     }

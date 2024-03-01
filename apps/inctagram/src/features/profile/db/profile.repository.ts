@@ -31,6 +31,7 @@ export class ProfileRepository {
       where: { userId },
       data: { avatarId: null },
     });
+    console.log('remove from repo');
   }
 
   updateUserUsername(username: string, userId: number) {

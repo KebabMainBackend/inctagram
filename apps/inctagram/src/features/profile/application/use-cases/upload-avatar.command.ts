@@ -31,7 +31,7 @@ export class UploadAvatarHandler
       this.deleteFileImage(userProfile.avatarId).subscribe();
     }
     const { avatarId, url, width, height } = await firstValueFrom(
-      this.createFileImage(fileSize, buffer, userId, extension),
+      await this.createFileImage(fileSize, buffer, userId, extension),
     );
     await this.profileRepo.addAvatarToProfile(avatarId, userId);
     return {
@@ -41,7 +41,7 @@ export class UploadAvatarHandler
       fileSize,
     };
   }
-  createFileImage(
+  async createFileImage(
     fileSize: number,
     buffer: Buffer,
     userId: number,
@@ -58,7 +58,6 @@ export class UploadAvatarHandler
     return this.client.send(pattern, payload);
   }
   deleteFileImage(avatarId: string) {
-    console.log('workerd');
     const pattern = { cmd: MicroserviceMessagesEnum.DELETE_AVATAR };
     const payload = {
       fileId: avatarId,
