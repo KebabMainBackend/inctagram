@@ -48,6 +48,7 @@ export class PasswordRecoveryHandler
       const error = createErrorMessage('incorrect email', 'email');
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
+    console.log(user);
     return this.prisma.$transaction(async () => {
       try {
         const confirmationData = await this.usersRepo.getUserConfirmation(

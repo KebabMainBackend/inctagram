@@ -56,6 +56,7 @@ export class RegisterUserHandler
         const user = await this.userRepo.createUser(newUser);
         const userConfirmation = UserConfirmationEntity.create(user.id);
         await this.userRepo.createUserConfirmationData(userConfirmation);
+        console.log(userConfirmation);
         await this.emailService.sendConfirmationCodeEmail(
           email,
           userConfirmation.confirmationCode,

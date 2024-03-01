@@ -58,8 +58,12 @@ export class UsersRepository {
     });
   }
   async createUserConfirmationData(data: CreateUserConfirmationTypes) {
-    return this.prisma.userConfirmation.create({
-      data,
+    await this.prisma.userConfirmation.create({
+      data: {
+        confirmationCode: data.confirmationCode,
+        userId: data.userId,
+        codeExpirationDate: data.codeExpirationDate,
+      },
     });
   }
   async getUserConfirmation(id: number) {
