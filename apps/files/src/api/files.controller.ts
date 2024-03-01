@@ -11,6 +11,7 @@ export class FilesController {
   @MessagePattern({ cmd: MicroserviceMessagesEnum.UPLOAD_AVATAR })
   async upload(data: UploadAvatarDto) {
     console.log('upload files ms');
+    console.log(data);
     return await this.fileService.uploadIFile(data);
   }
 
