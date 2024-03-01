@@ -26,7 +26,7 @@ export class VerifyConfirmationCodeHandler
       const error = createErrorMessage('code already confirmed', 'code');
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
-    await this.usersRepo.deleteUserConfirmationData(user.confirmationData.id);
+    // await this.usersRepo.deleteUserConfirmationData(user.confirmationData.id);
     await this.usersRepo.updateUsersConfirmationStatus(user.id);
   }
 }
