@@ -52,6 +52,10 @@ import { AddRefreshToBlacklistCommand } from '../application/use-cases/add-refre
 import { UpdateRefreshTokenCommand } from '../application/use-cases/update-refresh-token.command';
 import { User } from '../../utils/decorators/user.decorator';
 import { UserTypes } from '../../types';
+import { CheckVerifyCodeDto } from './dto/check-verify-code.dto';
+import { CheckRecoveryCodeCommand } from '../application/use-cases/check-recovery-code.command';
+import { AuthResendRecoveryCodeDto } from './dto/auth-resend-recovery-code.dto';
+import { ResendRecoveryCodeCommand } from '../application/use-cases/resend-recovery-code.command';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -235,6 +239,34 @@ export class AuthController {
     throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
   }
 
+  @Post('check-recovery-code')
+  @ApiOkResponse({
+    description: 'Recovery code is valid',
+    content: {
+      'application/json': { example: { email: 'string' } },
+    },
+  })
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBadRequestResponse(BadRequestResponseOptions)
+  async checkRecoveryCode(@Body() body: CheckVerifyCodeDto) {
+    return await this.commandBus.execute(
+      new CheckRecoveryCodeCommand(body.recoveryCode),
+    );
+  }
+
+  @Post('resend-recovery-code')
+  @ApiOkResponse({
+    description: 'Recovery code is sent to email',
+  })
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBadRequestResponse(BadRequestResponseOptions)
+  async resendRecoveryCode(@Body() body: AuthResendRecoveryCodeDto) {
+    return await this.commandBus.execute(
+      new ResendRecoveryCodeCommand(body.email),
+    );
+  }
   @Get('me')
   @ApiBearerAuth()
   @UseGuards(BearerAuthGuard)

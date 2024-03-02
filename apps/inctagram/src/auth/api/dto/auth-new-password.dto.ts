@@ -27,5 +27,5 @@ export class AuthNewPasswordDto {
     description: 'Code that be sent via Email inside link',
     example: 'string',
   })
-  recoveryCode;
+  recoveryCode: string;
 }
