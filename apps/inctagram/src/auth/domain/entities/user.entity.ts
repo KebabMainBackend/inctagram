@@ -40,7 +40,7 @@ export class UserConfirmationEntity extends BaseEntity {
   static create(userId: number) {
     const code = uuidv4();
     const codeExpirationDate = add(new Date(), {
-      minutes: 3,
+      minutes: 1,
     });
     const userConfirmation = new UserConfirmationEntity();
     userConfirmation.confirmationCode = code;
@@ -50,7 +50,7 @@ export class UserConfirmationEntity extends BaseEntity {
   }
   updateConfirmationData() {
     const codeExpirationDate = add(new Date(), {
-      minutes: 3,
+      minutes: 1,
     });
     this.confirmationCode = uuidv4();
     this.codeExpirationDate = codeExpirationDate;
