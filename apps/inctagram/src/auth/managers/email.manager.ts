@@ -39,6 +39,7 @@ export class EmailService {
     const messageTemplate = `
             <h1>Thanks for your registration</h1>
             <p>To finish registration please follow the link below:
+                <a href='http://localhost:3000/auth/confirm-email?code=${message}&email=${userEmail}'>complete registration (localhost)</a>
                 <a href='https://inctagram.fun/auth/confirm-email?code=${message}&email=${userEmail}'>complete registration</a>
             </p>`;
     const options = {
@@ -61,6 +62,7 @@ export class EmailService {
     const messageTemplate = `
             <h1>Password recovery</h1>
             <p>To finish password recovery please follow the link below:
+                <a href='http://localhost:3000/auth/create-new-password?code=${message}&email=${userEmail}'>recovery password (localhost)</a>
                 <a href='https://inctagram.fun/auth/create-new-password?code=${message}&email=${userEmail}'>recovery password</a>
             </p>`;
     const options = {
@@ -83,6 +85,7 @@ export class EmailService {
     const messageTemplate = `
             <h1>Congratulations!</h1>
             <p>You registered in our service
+                <a href='http://localhost:3000'>Inctagram (localhost)</a>
                 <a href='https://inctagram.fun'>Inctagram</a>
             </p>`;
     const options = {
