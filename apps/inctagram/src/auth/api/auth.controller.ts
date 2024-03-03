@@ -56,6 +56,7 @@ import { CheckVerifyCodeDto } from './dto/check-verify-code.dto';
 import { CheckRecoveryCodeCommand } from '../application/use-cases/check-recovery-code.command';
 import { AuthResendRecoveryCodeDto } from './dto/auth-resend-recovery-code.dto';
 import { ResendRecoveryCodeCommand } from '../application/use-cases/resend-recovery-code.command';
+import { CookieOptions } from '../../utils/constants/cookie-options';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -113,11 +114,7 @@ export class AuthController {
     const refreshToken = await this.commandBus.execute(
       new CreateRefreshTokenCommand(userId, title, ip),
     );
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-    });
+    res.cookie('refreshToken', refreshToken, CookieOptions);
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );
@@ -143,7 +140,7 @@ export class AuthController {
   @ApiUnauthorizedResponse(UnauthorizedRequestResponseOptions)
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async logout(@Req() req: Request) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refreshToken;
     if (refreshToken) {
       const result = await this.commandBus.execute(
@@ -156,6 +153,7 @@ export class AuthController {
         await this.commandBus.execute(
           new DeleteDeviceCommand(result.sessionId),
         );
+        res.clearCookie('refreshToken', CookieOptions);
         return;
       }
     }
@@ -229,11 +227,7 @@ export class AuthController {
       await this.commandBus.execute(
         new AddRefreshToBlacklistCommand(refreshToken),
       );
-      res.cookie('refreshToken', newRefreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-      });
+      res.cookie('refreshToken', newRefreshToken, CookieOptions);
       return { accessToken };
     }
     throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
