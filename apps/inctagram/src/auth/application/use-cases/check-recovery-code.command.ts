@@ -1,6 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../db/users.repository';
-import { createErrorMessage } from '../../../utils/create-error-object';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class CheckRecoveryCodeCommand {
@@ -15,12 +14,10 @@ export class CheckRecoveryCodeHandler
   async execute({ code }: CheckRecoveryCodeCommand) {
     const user = await this.usersRepo.getUserByCode(code);
     if (!user) {
-      const error = createErrorMessage('invalid recovery code', 'recoveryCode');
-      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+      throw new HttpException('invalid recovery code', HttpStatus.BAD_REQUEST);
     }
     if (user.confirmationData.codeExpirationDate < new Date()) {
-      const error = createErrorMessage('expired recovery code', 'recoveryCode');
-      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+      throw new HttpException('expired recovery code', HttpStatus.BAD_REQUEST);
     }
     return { email: user.email };
   }
