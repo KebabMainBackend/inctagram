@@ -56,7 +56,7 @@ import { CheckVerifyCodeDto } from './dto/check-verify-code.dto';
 import { CheckRecoveryCodeCommand } from '../application/use-cases/check-recovery-code.command';
 import { AuthResendRecoveryCodeDto } from './dto/auth-resend-recovery-code.dto';
 import { ResendRecoveryCodeCommand } from '../application/use-cases/resend-recovery-code.command';
-import { CookieOptions } from '../../utils/constants/cookie-options';
+import { cookieOptions } from '../../utils/constants/cookie-options';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -114,7 +114,7 @@ export class AuthController {
     const refreshToken = await this.commandBus.execute(
       new CreateRefreshTokenCommand(userId, title, ip),
     );
-    res.cookie('refreshToken', refreshToken, CookieOptions);
+    res.cookie('refreshToken', refreshToken, cookieOptions);
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );
@@ -153,7 +153,7 @@ export class AuthController {
         await this.commandBus.execute(
           new DeleteDeviceCommand(result.sessionId),
         );
-        res.clearCookie('refreshToken', CookieOptions);
+        res.clearCookie('refreshToken', cookieOptions);
         return;
       }
     }
@@ -227,7 +227,7 @@ export class AuthController {
       await this.commandBus.execute(
         new AddRefreshToBlacklistCommand(refreshToken),
       );
-      res.cookie('refreshToken', newRefreshToken, CookieOptions);
+      res.cookie('refreshToken', newRefreshToken, cookieOptions);
       return { accessToken };
     }
     throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
