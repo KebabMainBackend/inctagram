@@ -95,7 +95,7 @@ export class UsersRepository {
   }
   async getUserByEmail(email: string) {
     return this.prisma.user.findUnique({
-      where: { email },
+      where: { email: email.toLowerCase() },
       include: { providers: true, confirmationData: true },
     });
   }

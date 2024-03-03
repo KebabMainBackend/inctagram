@@ -24,7 +24,7 @@ export class UserEntity extends BaseEntity {
     isConfirmed: boolean;
   }) {
     const user = new UserEntity();
-    user.email = data.email;
+    user.email = data.email.toLowerCase();
     user.username = data.username;
     user.isConfirmed = data.isConfirmed;
     return user;
@@ -40,7 +40,7 @@ export class UserConfirmationEntity extends BaseEntity {
   static create(userId: number) {
     const code = uuidv4();
     const codeExpirationDate = add(new Date(), {
-      minutes: 1,
+      minutes: 3,
     });
     const userConfirmation = new UserConfirmationEntity();
     userConfirmation.confirmationCode = code;
@@ -50,7 +50,7 @@ export class UserConfirmationEntity extends BaseEntity {
   }
   updateConfirmationData() {
     const codeExpirationDate = add(new Date(), {
-      minutes: 1,
+      minutes: 3,
     });
     this.confirmationCode = uuidv4();
     this.codeExpirationDate = codeExpirationDate;
