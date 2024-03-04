@@ -28,7 +28,8 @@ import { SignInUserViaOauthProviderHandler } from './application/use-cases/creat
 import { CheckCredentialsHandler } from './application/use-cases/check-credentials.command';
 import { VerifyConfirmationCodeHandler } from './application/use-cases/verify-confirmation-code.command';
 import { TestDeleteUserHandler } from './test/delete-user.command';
-import { SignInUserViaOauthProviderHandler1 } from './application/use-cases/create-user-via-oauth-provider1.command';
+import { CheckRecoveryCodeHandler } from './application/use-cases/check-recovery-code.command';
+import { ResendRecoveryCodeHandler } from './application/use-cases/resend-recovery-code.command';
 
 const CommandHandlers = [
   RegisterUserHandler,
@@ -44,7 +45,8 @@ const CommandHandlers = [
   SignInUserViaOauthProviderHandler,
   CheckCredentialsHandler,
   VerifyConfirmationCodeHandler,
-  SignInUserViaOauthProviderHandler1,
+  CheckRecoveryCodeHandler,
+  ResendRecoveryCodeHandler,
 ];
 
 const TestHandlers = [TestDeleteUserHandler];

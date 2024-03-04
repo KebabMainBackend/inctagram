@@ -61,7 +61,7 @@ export class EmailService {
     const messageTemplate = `
             <h1>Password recovery</h1>
             <p>To finish password recovery please follow the link below:
-                <a href='https://inctagram.fun/password-recovery?recoveryCode=${message}'>recovery password</a>
+                <a href='https://inctagram.fun/auth/create-new-password?code=${message}&email=${userEmail}'>recovery password</a>
             </p>`;
     const options = {
       from: 'Johnny <johnny178917@gmail.com>',

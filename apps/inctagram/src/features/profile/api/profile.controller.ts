@@ -45,6 +45,7 @@ import { DeleteAvatarCommand } from '../application/use-cases/delete-avatar.comm
 import { User } from '../../../utils/decorators/user.decorator';
 import { UserTypes } from '../../../types';
 import { ClientProxy } from '@nestjs/microservices';
+import { CheckMimetype } from '../../../utils/custom-validators/file.validator';
 
 @Controller('profile')
 @ApiTags('Profile')
@@ -117,6 +118,7 @@ export class ProfileController {
         .addFileTypeValidator({
           fileType: /^.+(jpeg|png)$/,
         })
+        .addValidator(new CheckMimetype({ mimetype: 'jpeg' }))
         .addMaxSizeValidator({
           maxSize: 10000000,
         })
@@ -127,7 +129,6 @@ export class ProfileController {
     file: Express.Multer.File,
   ) {
     const extension = file.originalname.split('.');
-
     return this.commandBus.execute(
       new UploadAvatarCommand(
         file.buffer,
