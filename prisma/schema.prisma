@@ -34,16 +34,17 @@ model User {
 }
 
 model Profile {
-  userId    Int      @id @unique
-  user      User     @relation(fields: [userId], references: [id])
-  firstname String?
-  lastname  String?
-  birthDate String?
-  aboutMe   String?
-  avatarId  String?
-  city      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  userId      Int      @id @unique
+  user        User     @relation(fields: [userId], references: [id])
+  firstname   String?
+  lastname    String?
+  birthDate   String?
+  aboutMe     String?
+  avatarId    String?
+  thumbnailId String?
+  city        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model UserConfirmation {

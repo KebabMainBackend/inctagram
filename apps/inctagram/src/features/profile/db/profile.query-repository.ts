@@ -23,13 +23,13 @@ export class ProfileQueryRepository {
         },
       },
     });
-    const fileImage = await firstValueFrom(this.getFileImage(profile.avatarId));
+    const fileImage = await firstValueFrom(this.getUserProfileImages(userId));
     return mapUserProfile(profile, fileImage);
   }
-  private getFileImage(avatarId: string) {
+  private getUserProfileImages(userId: number) {
     const pattern = { cmd: MicroserviceMessagesEnum.GET_AVATAR };
     const payload = {
-      fileId: avatarId,
+      ownerId: userId,
     };
     return this.client.send(pattern, payload);
   }

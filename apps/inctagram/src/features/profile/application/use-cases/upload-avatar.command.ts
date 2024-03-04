@@ -5,13 +5,12 @@ import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { MicroserviceMessagesEnum } from '../messages';
 import { firstValueFrom } from 'rxjs';
+import { mapUserImages } from '../../db/view/mapUserProfile';
 
 export class UploadAvatarCommand {
   constructor(
     public buffer: Buffer,
-    public extension: string,
     public userId: number,
-    public fileSize: number,
   ) {}
 }
 
@@ -25,35 +24,24 @@ export class UploadAvatarHandler
     @Inject('FILES_SERVICE') private client: ClientProxy,
   ) {}
 
-  async execute({ buffer, userId, extension, fileSize }: UploadAvatarCommand) {
+  async execute({ buffer, userId }: UploadAvatarCommand) {
     const userProfile = await this.profileRepo.getUserProfile(userId);
     if (userProfile.avatarId) {
       this.deleteFileImage(userProfile.avatarId).subscribe();
     }
-    const { avatarId, url, width, height } = await firstValueFrom(
-      await this.createFileImage(fileSize, buffer, userId, extension),
+    const data = await firstValueFrom(
+      await this.createFileImage(buffer, userId),
     );
-    await this.profileRepo.addAvatarToProfile(avatarId, userId);
-    return {
-      url,
-      width,
-      height,
-      fileSize,
-    };
+    const avatarId = data.avatars.find((x) => x.type === 'avatar').fileId;
+    const thumbnailId = data.avatars.find((x) => x.type === 'thumbnail').fileId;
+    await this.profileRepo.addAvatarToProfile(avatarId, thumbnailId, userId);
+    return mapUserImages(data.avatars);
   }
-  async createFileImage(
-    fileSize: number,
-    buffer: Buffer,
-    userId: number,
-    extension: string,
-  ) {
-    const url = `media/users/${userId}/avatars/${userId}-avatar-${Date.now()}.${extension}`;
+  async createFileImage(buffer: Buffer, userId: number) {
     const pattern = { cmd: MicroserviceMessagesEnum.UPLOAD_AVATAR };
     const payload = {
       userId,
       buffer,
-      url,
-      fileSize,
     };
     return this.client.send(pattern, payload);
   }
