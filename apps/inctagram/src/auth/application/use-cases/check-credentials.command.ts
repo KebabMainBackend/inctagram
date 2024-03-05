@@ -35,6 +35,6 @@ export class CheckCredentialsHandler
         return user.id;
       }
     }
-    throw new HttpException('wrong email or password', HttpStatus.UNAUTHORIZED);
+    throw new HttpException('wrong email or password', HttpStatus.BAD_REQUEST);
   }
 }

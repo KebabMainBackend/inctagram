@@ -39,7 +39,7 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
     );
     return {
       fileId: fileId,
-      url: 'https://storage.yandexcloud.net/kebab-inctagram/' + url,
+      url,
       width: imageSize,
       height: imageSize,
       fileSize: compressedBuffer.length,
