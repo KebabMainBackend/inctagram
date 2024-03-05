@@ -111,7 +111,7 @@ describe('AuthController', () => {
       await request(httpServer)
         .post(URL + '/login')
         .send(data)
-        .expect(HttpStatus.UNAUTHORIZED);
+        .expect(HttpStatus.BAD_REQUEST);
     });
     it('should return token when login with default acc', async () => {
       const token = await request(httpServer)
@@ -129,7 +129,7 @@ describe('AuthController', () => {
       await request(httpServer)
         .post(URL + '/login')
         .send({ email: 'example@gmail.com', password: 'Pa$$w0rd1' })
-        .expect(HttpStatus.UNAUTHORIZED);
+        .expect(HttpStatus.BAD_REQUEST);
     });
     it('should return info about token owner', async () => {
       await request(httpServer)
