@@ -52,6 +52,11 @@ import { AddRefreshToBlacklistCommand } from '../application/use-cases/add-refre
 import { UpdateRefreshTokenCommand } from '../application/use-cases/update-refresh-token.command';
 import { User } from '../../utils/decorators/user.decorator';
 import { UserTypes } from '../../types';
+import { CheckVerifyCodeDto } from './dto/check-verify-code.dto';
+import { CheckRecoveryCodeCommand } from '../application/use-cases/check-recovery-code.command';
+import { AuthResendRecoveryCodeDto } from './dto/auth-resend-recovery-code.dto';
+import { ResendRecoveryCodeCommand } from '../application/use-cases/resend-recovery-code.command';
+import { cookieOptions } from '../../utils/constants/cookie-options';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -109,11 +114,7 @@ export class AuthController {
     const refreshToken = await this.commandBus.execute(
       new CreateRefreshTokenCommand(userId, title, ip),
     );
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-    });
+    res.cookie('refreshToken', refreshToken, cookieOptions);
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );
@@ -139,7 +140,7 @@ export class AuthController {
   @ApiUnauthorizedResponse(UnauthorizedRequestResponseOptions)
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async logout(@Req() req: Request) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refreshToken;
     if (refreshToken) {
       const result = await this.commandBus.execute(
@@ -152,6 +153,7 @@ export class AuthController {
         await this.commandBus.execute(
           new DeleteDeviceCommand(result.sessionId),
         );
+        res.clearCookie('refreshToken', cookieOptions);
         return;
       }
     }
@@ -225,16 +227,40 @@ export class AuthController {
       await this.commandBus.execute(
         new AddRefreshToBlacklistCommand(refreshToken),
       );
-      res.cookie('refreshToken', newRefreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-      });
+      res.cookie('refreshToken', newRefreshToken, cookieOptions);
       return { accessToken };
     }
     throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
   }
 
+  @Post('check-recovery-code')
+  @ApiOkResponse({
+    description: 'Recovery code is valid',
+    content: {
+      'application/json': { example: { email: 'string' } },
+    },
+  })
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBadRequestResponse(BadRequestResponseOptions)
+  async checkRecoveryCode(@Body() body: CheckVerifyCodeDto) {
+    return await this.commandBus.execute(
+      new CheckRecoveryCodeCommand(body.recoveryCode),
+    );
+  }
+
+  @Post('resend-recovery-code')
+  @ApiOkResponse({
+    description: 'Recovery code is sent to email',
+  })
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBadRequestResponse(BadRequestResponseOptions)
+  async resendRecoveryCode(@Body() body: AuthResendRecoveryCodeDto) {
+    return await this.commandBus.execute(
+      new ResendRecoveryCodeCommand(body.email),
+    );
+  }
   @Get('me')
   @ApiBearerAuth()
   @UseGuards(BearerAuthGuard)

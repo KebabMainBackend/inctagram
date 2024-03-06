@@ -24,7 +24,7 @@ export class UserEntity extends BaseEntity {
     isConfirmed: boolean;
   }) {
     const user = new UserEntity();
-    user.email = data.email;
+    user.email = data.email.toLowerCase();
     user.username = data.username;
     user.isConfirmed = data.isConfirmed;
     return user;

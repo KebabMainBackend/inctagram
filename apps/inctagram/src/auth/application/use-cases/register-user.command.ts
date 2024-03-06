@@ -64,6 +64,6 @@ export class RegisterUserHandler
       },
       { timeout: 7000 },
     );
-    return { email };
+    return { email: email.toLowerCase() };
   }
 }
