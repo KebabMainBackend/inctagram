@@ -9,11 +9,13 @@ datasource db {
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean? @default(false)
-  authorId  Int?
+  id          Int      @id @default(autoincrement())
+  description String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+  userId      Int      @map("user_id") // Changed to Int
+  user        User     @relation(fields: [userId], references: [id])
+  images      String[]
 }
 
 model User {
@@ -31,6 +33,7 @@ model User {
   providerId       String?
   sessions         Session[]
   profile          Profile[]
+  posts            Post[]
 }
 
 model Profile {
