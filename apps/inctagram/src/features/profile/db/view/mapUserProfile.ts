@@ -1,8 +1,8 @@
-import { DBProfileAvatarView, DBProfileView } from './profile.view';
+import { DBProfileUserImages, DBProfileView } from './profile.view';
 
 export const mapUserProfile = (
   profile: DBProfileView,
-  avatar: DBProfileAvatarView | null,
+  avatars: DBProfileUserImages | null,
 ) => {
   return {
     id: profile.userId,
@@ -12,15 +12,20 @@ export const mapUserProfile = (
     city: profile.city,
     birthDate: profile.birthDate,
     aboutMe: profile.aboutMe,
-    avatar: avatar
-      ? {
-          url: 'https://storage.yandexcloud.net/kebab-inctagram/' + avatar.url,
-          width: avatar.width,
-          height: avatar.height,
-          fileSize: avatar.fileSize,
-        }
-      : null,
-
+    avatars: avatars.length ? mapUserImages(avatars) : null,
     createdAt: profile.createdAt,
   };
+};
+
+export const mapUserImages = (avatars: DBProfileUserImages) => {
+  const obj = {};
+  avatars.forEach((x) => {
+    obj[x.type] = {
+      url: 'https://storage.yandexcloud.net/kebab-inctagram/' + x.url,
+      width: x.width,
+      height: x.height,
+      fileSize: x.fileSize,
+    };
+  });
+  return obj;
 };

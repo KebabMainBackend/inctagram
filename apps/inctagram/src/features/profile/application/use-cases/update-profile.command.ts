@@ -57,7 +57,7 @@ export class UpdateProfileHandler
   }
   async checkUsername(username: string, userId: number) {
     const user = await this.profileRepo.getUserByUsername(username);
-    if (user.id !== userId) {
+    if (user && user.id !== userId) {
       throw new HttpException(
         'user with this username already exists',
         HttpStatus.BAD_REQUEST,

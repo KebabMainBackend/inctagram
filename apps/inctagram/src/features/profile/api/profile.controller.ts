@@ -37,7 +37,10 @@ import {
 import { CommandBus } from '@nestjs/cqrs';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ProfileQueryRepository } from '../db/profile.query-repository';
-import { ProfileViewExample } from '../db/view/profile.view';
+import {
+  ProfileImagesViewExample,
+  ProfileViewExample,
+} from '../db/view/profile.view';
 import { UpdateProfileCommand } from '../application/use-cases/update-profile.command';
 import { UploadAvatarCommand } from '../application/use-cases/upload-avatar.command';
 import { UploadAvatarDto } from './dto/upload-avatar.dto';
@@ -110,7 +113,12 @@ export class ProfileController {
   @ApiUnprocessableEntityResponse({
     description: 'invalid file, wrong fileType or maxSize',
   })
-  @ApiCreatedResponse(NoContentResponseOptions)
+  @ApiCreatedResponse({
+    description: 'Uploaded image information object.',
+    content: {
+      'application/json': { example: ProfileImagesViewExample },
+    },
+  })
   async uploadFile(
     @User() user: UserTypes,
     @UploadedFile(
@@ -128,14 +136,8 @@ export class ProfileController {
     )
     file: Express.Multer.File,
   ) {
-    const extension = file.originalname.split('.');
     return this.commandBus.execute(
-      new UploadAvatarCommand(
-        file.buffer,
-        extension.at(-1),
-        user.id,
-        file.size,
-      ),
+      new UploadAvatarCommand(file.buffer, user.id),
     );
   }
 

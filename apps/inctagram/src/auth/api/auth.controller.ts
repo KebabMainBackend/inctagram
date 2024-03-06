@@ -114,11 +114,11 @@ export class AuthController {
     const refreshToken = await this.commandBus.execute(
       new CreateRefreshTokenCommand(userId, title, ip),
     );
+
     res.cookie('refreshToken', refreshToken, cookieOptions);
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );
-
     return { accessToken };
   }
 

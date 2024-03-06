@@ -21,16 +21,14 @@ export class DeleteAvatarHandler
   async execute({ userId }: DeleteAvatarCommand) {
     const profile = await this.profileRepo.getUserProfile(userId);
     if (profile) {
-      console.log('delete from main1');
-      this.deleteFromMS(profile.avatarId).subscribe();
+      this.deleteFromMS(userId).subscribe();
       await this.profileRepo.removeAvatarFromProfile(userId);
-      console.log('delete from main2');
     }
   }
-  deleteFromMS(avatarId: string) {
+  deleteFromMS(userId: number) {
     const pattern = { cmd: MicroserviceMessagesEnum.DELETE_AVATAR };
     const payload = {
-      fileId: avatarId,
+      ownerId: userId,
     };
     return this.client.send(pattern, payload);
   }
