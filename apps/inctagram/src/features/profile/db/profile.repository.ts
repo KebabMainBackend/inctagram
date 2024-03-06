@@ -16,20 +16,25 @@ export class ProfileRepository {
       where: { username },
     });
   }
-  async addAvatarToProfile(avatarId: string, userId: number) {
+  async addAvatarToProfile(
+    avatarId: string,
+    thumbnailId: string,
+    userId: number,
+  ) {
     await this.prisma.profile.update({
       where: {
         userId,
       },
       data: {
         avatarId,
+        thumbnailId,
       },
     });
   }
   async removeAvatarFromProfile(userId: number) {
     await this.prisma.profile.update({
       where: { userId },
-      data: { avatarId: null },
+      data: { avatarId: null, thumbnailId: null },
     });
   }
 

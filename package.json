@@ -55,6 +55,7 @@
     "prisma": "5.9.1",
     "reflect-metadata": "0.1.13",
     "rxjs": "7.8.1",
+    "sharp": "0.32.6",
     "wrap-ansi": "9.0.0"
   },
   "devDependencies": {

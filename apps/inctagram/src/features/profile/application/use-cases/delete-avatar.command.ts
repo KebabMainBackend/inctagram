@@ -1,5 +1,4 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PrismaService } from '../../../../prisma.service';
 import { ProfileRepository } from '../../db/profile.repository';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
@@ -14,7 +13,6 @@ export class DeleteAvatarHandler
   implements ICommandHandler<DeleteAvatarCommand>
 {
   constructor(
-    private prisma: PrismaService,
     private profileRepo: ProfileRepository,
 
     @Inject('FILES_SERVICE') private client: ClientProxy,
@@ -23,14 +21,14 @@ export class DeleteAvatarHandler
   async execute({ userId }: DeleteAvatarCommand) {
     const profile = await this.profileRepo.getUserProfile(userId);
     if (profile) {
-      this.deleteFromMS(profile.avatarId).subscribe();
+      this.deleteFromMS(userId).subscribe();
       await this.profileRepo.removeAvatarFromProfile(userId);
     }
   }
-  deleteFromMS(avatarId: string) {
+  deleteFromMS(userId: number) {
     const pattern = { cmd: MicroserviceMessagesEnum.DELETE_AVATAR };
     const payload = {
-      fileId: avatarId,
+      ownerId: userId,
     };
     return this.client.send(pattern, payload);
   }

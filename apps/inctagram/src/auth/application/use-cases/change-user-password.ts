@@ -26,10 +26,10 @@ export class ChangeUserPasswordHandler
       const error = createErrorMessage('invalid recovery code', 'recoveryCode');
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
-    if (user.confirmationData.codeExpirationDate < new Date()) {
-      const error = createErrorMessage('expired recovery code', 'recoveryCode');
-      throw new HttpException(error, HttpStatus.BAD_REQUEST);
-    }
+    // if (user.confirmationData.codeExpirationDate < new Date()) {
+    //   const error = createErrorMessage('expired recovery code', 'recoveryCode');
+    //   throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    // }
     const { passwordSalt, passwordHash } =
       await this.userHashingManager.getHashAndSalt(newPassword);
 

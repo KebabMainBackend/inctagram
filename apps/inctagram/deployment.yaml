@@ -107,6 +107,16 @@ spec:
                  secretKeyRef:
                    name: main-service-production-config-secret
                    key: FRONT_PROD
+             - name: FILES_SERVICE_PORT
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: FILES_SERVICE_PORT
+             - name: FILES_SERVICE_HOST
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: FILES_SERVICE_HOST
              - name: DATABASE_URL
                valueFrom:
                  secretKeyRef:

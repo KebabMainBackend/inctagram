@@ -25,6 +25,7 @@ export class S3StorageManager {
       Bucket: this.bucketName,
       Key: url,
       Body: buffer,
+      ContentLength: buffer.length,
     };
     const command = new PutObjectCommand(options);
     try {

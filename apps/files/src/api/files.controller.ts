@@ -1,10 +1,5 @@
 import { Controller } from '@nestjs/common';
-import {
-  // Ctx,
-  MessagePattern,
-  // Payload,
-  // RmqContext,
-} from '@nestjs/microservices';
+import { MessagePattern } from '@nestjs/microservices';
 import { FilesService } from '../files.service';
 import { MicroserviceMessagesEnum } from '../messages';
 import { UploadAvatarDto } from './dto/upload-avatar.dto';
@@ -15,16 +10,21 @@ export class FilesController {
 
   @MessagePattern({ cmd: MicroserviceMessagesEnum.UPLOAD_AVATAR })
   async upload(data: UploadAvatarDto) {
-    return await this.fileService.uploadIFile(data);
+    return await this.fileService.uploadUserAvatar(data);
   }
 
   @MessagePattern({ cmd: MicroserviceMessagesEnum.DELETE_AVATAR })
-  async delete(data: { fileId: string }) {
-    return await this.fileService.deleteFile(data.fileId);
+  async delete(data: { ownerId: number }) {
+    return await this.fileService.deleteFile(data.ownerId);
   }
 
   @MessagePattern({ cmd: MicroserviceMessagesEnum.GET_AVATAR })
-  async get(data: { fileId: string }) {
-    return await this.fileService.getImage(data.fileId);
+  async get(data: { ownerId: number }) {
+    return await this.fileService.getImage(data.ownerId);
+  }
+
+  @MessagePattern({ cmd: 'hello-world' })
+  hello() {
+    return 'hello world from files';
   }
 }
