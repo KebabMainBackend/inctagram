@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostImage, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { ErrorEnum } from '../../../../utils/error-enum';
 import { UsersRepository } from '../../../../auth/db/users.repository';
 
@@ -28,11 +28,7 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
       },
     });
 
-    const postImages = await this.prismaClient.postImage.findMany({
-      where: { userId: +command.userId, postId: post.id },
-    });
-
-    const postImagesView = postImages ? this.mapPostImages(postImages) : [];
+    const postImagesView = [];
 
     return {
       id: post.id,
@@ -42,17 +38,5 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
       updatedAt: post.updatedAt,
       userId: command.userId,
     };
-  }
-
-  private mapPostImages(postImages: PostImage[]) {
-    return postImages.map((image) => {
-      return {
-        // url: image.uploadPath,
-        width: image.width,
-        height: image.height,
-        size: image.size,
-        id: image.id,
-      };
-    });
   }
 }

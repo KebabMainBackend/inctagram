@@ -1,4 +1,4 @@
-import { PostImage, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { GetPostsUriInputModel } from '../utils/models/input/get-posts.uri.input-model';
 import { PAGE_SIZE_DEFAULT, SortDirection } from '../../../utils/constants';
@@ -9,7 +9,7 @@ interface IPostNPostImage {
   createdAt: Date;
   updatedAt: Date;
   userId: string;
-  postImages: PostImage[];
+  postImages: string[];
 }
 
 @Injectable()
@@ -23,7 +23,6 @@ export class PostsQueryRepository {
 
     const totalCount = await this.prismaClient.post.count();
     const postsNPostImages: any = await this.prismaClient.post.findMany({
-      include: { postImages: true },
       where: { id: +userId },
       take: count,
       skip: 1,
@@ -47,13 +46,7 @@ export class PostsQueryRepository {
     return data.map((i) => ({
       id: i.id,
       description: i.description,
-      images: i.postImages.map((j) => ({
-        url: j.url,
-        width: j.width,
-        height: j.height,
-        fileSize: j.size,
-        uploadId: j.id,
-      })),
+
       createdAt: i.createdAt,
       updatedAt: i.updatedAt,
       ownerId: i.userId,

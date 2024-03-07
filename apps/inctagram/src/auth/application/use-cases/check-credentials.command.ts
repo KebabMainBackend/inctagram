@@ -21,6 +21,12 @@ export class CheckCredentialsHandler
   async execute({ email, password }: CheckCredentialsCommand) {
     const user = await this.usersRepo.getUserByEmail(email);
     if (user) {
+      if (!user.passwordHash) {
+        throw new HttpException(
+          'create new password or login via Google/Github',
+          HttpStatus.NOT_ACCEPTABLE,
+        );
+      }
       const passwordHash = await this.userHashingManager.generateHash(
         password,
         user.passwordSalt,
