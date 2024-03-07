@@ -10,10 +10,10 @@ datasource db {
 
 model Post {
   id          Int      @id @default(autoincrement())
-  description String
+  description String?
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @default(now()) @map("updated_at")
-  userId      Int      @map("user_id") // Changed to Int
+  userId      Int      @map("user_id")
   user        User     @relation(fields: [userId], references: [id])
   images      String[]
 }

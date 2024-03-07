@@ -5,15 +5,21 @@ import { S3StorageManager } from '../../adapters/s3-storage.adapter';
 import { Inject } from '@nestjs/common';
 import { Model } from 'mongoose';
 import * as sharp from 'sharp';
-import { FileImageTypeEnum } from '../../../../../types/file-image-enum.types';
+import {
+  FileImageAvatarTypeEnum,
+  FileImageTypeEnum,
+} from '../../../../../types/file-image-enum.types';
+
+type UploadFileCommandTypes = {
+  buffer: Buffer;
+  userId: number;
+  imageType: FileImageTypeEnum;
+  suffix: FileImageAvatarTypeEnum;
+  imageSize: number;
+};
 
 export class UploadFileCommand {
-  constructor(
-    public buffer: Buffer,
-    public userId: number,
-    public imageType: FileImageTypeEnum,
-    public imageSize: number,
-  ) {}
+  constructor(public data: UploadFileCommandTypes) {}
 }
 
 @CommandHandler(UploadFileCommand)
@@ -26,16 +32,16 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
   execute(data: UploadFileCommand) {
     return this.uploadIFile(data);
   }
-  async uploadIFile(data: UploadFileCommand) {
-    const { buffer, userId: ownerId, imageSize, imageType } = data;
-    const url = this.createUrlForImage(ownerId, imageType);
+  async uploadIFile({ data }: UploadFileCommand) {
+    const { buffer, userId: ownerId, imageSize, suffix, imageType } = data;
+    const url = this.createUrlForImage(ownerId, imageType, suffix);
     const fileBuffer = Buffer.from(buffer);
     const compressedBuffer = await this.compressImage(fileBuffer, imageSize);
     const fileId = await this.uploadImageToCloud(
       compressedBuffer,
       url,
       ownerId,
-      imageType,
+      suffix,
     );
     return {
       fileId: fileId,
@@ -43,7 +49,7 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
       width: imageSize,
       height: imageSize,
       fileSize: compressedBuffer.length,
-      type: imageType,
+      type: suffix,
     };
   }
   async compressImage(imageBuffer: Buffer, size: number) {
@@ -53,7 +59,7 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
     buffer: Buffer,
     url: string,
     ownerId: number,
-    type: FileImageTypeEnum,
+    type: FileImageAvatarTypeEnum,
   ) {
     const { width, height } = sizeOf(buffer);
     const fileSize = buffer.length;
@@ -85,7 +91,11 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
     }
     return currentImage.id;
   }
-  createUrlForImage(userId: number, type: FileImageTypeEnum) {
-    return `media/users/${userId}/avatars/${userId}-${type}.webp`;
+  createUrlForImage(
+    userId: number,
+    type: FileImageTypeEnum,
+    suffix: FileImageAvatarTypeEnum,
+  ) {
+    return `media/users/${userId}/${type}/${userId}-${suffix}.webp`;
   }
 }

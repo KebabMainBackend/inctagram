@@ -1,4 +1,4 @@
-import { FileImageTypeEnum } from '../../../../../../../types/file-image-enum.types';
+import { FileImageAvatarTypeEnum } from '../../../../../../../types/file-image-enum.types';
 
 export type DBProfileView = {
   userId: number;
@@ -21,7 +21,7 @@ export type DBProfileImageView = {
   width: number;
   height: number;
   fileSize: number;
-  type: FileImageTypeEnum;
+  type: FileImageAvatarTypeEnum;
 };
 
 export const ProfileImagesViewExample = {

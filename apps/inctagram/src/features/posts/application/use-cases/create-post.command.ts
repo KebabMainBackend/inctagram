@@ -1,17 +1,17 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostImage, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { ErrorEnum } from '../../../../utils/error-enum';
 import { UsersRepository } from '../../../../auth/db/users.repository';
 
 export class CreatePostCommand {
   constructor(
-    public userId: string,
+    public userId: number,
     public description: string,
   ) {}
 }
 
 @CommandHandler(CreatePostCommand)
-export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
+export class CreatePostCommand implements ICommandHandler<CreatePostCommand> {
   constructor(
     protected usersRepository: UsersRepository,
     protected prismaClient: PrismaClient,
@@ -42,17 +42,5 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
       updatedAt: post.updatedAt,
       userId: command.userId,
     };
-  }
-
-  private mapPostImages(postImages: PostImage[]) {
-    return postImages.map((image) => {
-      return {
-        // url: image.uploadPath,
-        width: image.width,
-        height: image.height,
-        size: image.size,
-        id: image.id,
-      };
-    });
   }
 }

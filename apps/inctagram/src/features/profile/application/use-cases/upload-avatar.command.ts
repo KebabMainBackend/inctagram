@@ -3,7 +3,7 @@ import { PrismaService } from '../../../../prisma.service';
 import { ProfileRepository } from '../../db/profile.repository';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { MicroserviceMessagesEnum } from '../messages';
+import { MicroserviceMessagesEnum } from '../../../../../../../types/messages';
 import { firstValueFrom } from 'rxjs';
 import { mapUserImages } from '../../db/view/mapUserProfile';
 

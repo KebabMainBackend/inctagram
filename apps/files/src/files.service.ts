@@ -5,7 +5,10 @@ import { Model } from 'mongoose';
 import { FileImageInterface } from './db/interfaces/file-image.interface';
 import { UploadFileCommand } from './application/use-cases/upload-file.command';
 import { CommandBus } from '@nestjs/cqrs';
-import { FileImageTypeEnum } from '../../../types/file-image-enum.types';
+import {
+  FileImageAvatarTypeEnum,
+  FileImageTypeEnum,
+} from '../../../types/file-image-enum.types';
 
 @Injectable()
 export class FilesService {
@@ -17,20 +20,22 @@ export class FilesService {
   ) {}
   async uploadUserAvatar({ userId, buffer }: UploadAvatarDto) {
     const avatarImage = await this.commandBus.execute(
-      new UploadFileCommand(
+      new UploadFileCommand({
         buffer,
         userId,
-        FileImageTypeEnum.AVATAR_MEDIUM,
-        192,
-      ),
+        imageType: FileImageTypeEnum.AVATARS,
+        suffix: FileImageAvatarTypeEnum.AVATAR_MEDIUM,
+        imageSize: 192,
+      }),
     );
     const thumbnailImage = await this.commandBus.execute(
-      new UploadFileCommand(
+      new UploadFileCommand({
         buffer,
         userId,
-        FileImageTypeEnum.AVATAR_THUMBNAIL,
-        45,
-      ),
+        suffix: FileImageAvatarTypeEnum.AVATAR_THUMBNAIL,
+        imageType: FileImageTypeEnum.AVATARS,
+        imageSize: 45,
+      }),
     );
     return { avatars: [avatarImage, thumbnailImage] };
   }

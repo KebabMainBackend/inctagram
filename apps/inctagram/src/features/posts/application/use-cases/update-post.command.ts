@@ -5,14 +5,14 @@ import { UsersRepository } from '../../../../auth/db/users.repository';
 
 export class UpdatePostCommand {
   constructor(
-    public userId: string,
+    public userId: number,
     public postId: string,
     public description: string,
   ) {}
 }
 
 @CommandHandler(UpdatePostCommand)
-export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
+export class UpdatePostCommand implements ICommandHandler<UpdatePostCommand> {
   constructor(
     protected usersRepository: UsersRepository,
     protected prismaClient: PrismaClient,

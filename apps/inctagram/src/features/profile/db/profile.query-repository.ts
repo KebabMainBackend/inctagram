@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma.service';
 import { mapUserProfile } from './view/mapUserProfile';
 import { ClientProxy } from '@nestjs/microservices';
-import { MicroserviceMessagesEnum } from '../application/messages';
+import { MicroserviceMessagesEnum } from '../../../../../../types/messages';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()

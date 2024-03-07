@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
-export class UpdatePostUriInputModel {
+export class UpdatePostUriDto {
   @IsString()
   @IsNotEmpty()
   @IsUUID()

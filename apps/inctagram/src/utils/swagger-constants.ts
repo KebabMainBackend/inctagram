@@ -3,8 +3,6 @@ export const responseErrorObjectExample = {
     {
       message: 'string',
       field: 'string',
-      // 'email must match /^[\\\\w-.]+@([\\\\w-]+\\\\.)+[\\\\w-]{2,4}$/ regular expression',
-      // field: 'email',
     },
   ],
 };

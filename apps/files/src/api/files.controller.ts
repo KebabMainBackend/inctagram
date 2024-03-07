@@ -1,8 +1,9 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { FilesService } from '../files.service';
-import { MicroserviceMessagesEnum } from '../messages';
 import { UploadAvatarDto } from './dto/upload-avatar.dto';
+import { UploadPostImagesDto } from './dto/upload-post-images.dto';
+import { MicroserviceMessagesEnum } from '../../../../types/messages';
 
 @Controller()
 export class FilesController {
@@ -21,6 +22,14 @@ export class FilesController {
   @MessagePattern({ cmd: MicroserviceMessagesEnum.GET_AVATAR })
   async get(data: { ownerId: number }) {
     return await this.fileService.getImage(data.ownerId);
+  }
+
+  @MessagePattern({ cmd: MicroserviceMessagesEnum.UPLOAD_POST_IMAGES })
+  async uploadPostImages(data: UploadPostImagesDto) {
+    console.log('daat');
+    console.log(data);
+    return 'darta';
+    // return await this.fileService.uploadUserAvatar(data);
   }
 
   @MessagePattern({ cmd: 'hello-world' })

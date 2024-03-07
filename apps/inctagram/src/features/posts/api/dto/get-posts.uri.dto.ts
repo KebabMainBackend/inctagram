@@ -11,9 +11,9 @@ import { Type } from 'class-transformer';
 import {
   PAGE_SIZE_DEFAULT,
   SortDirection,
-} from '../../../../../utils/constants';
+} from '../../../../utils/constants/default-query-params';
 
-export class GetPostsUriInputModel {
+export class GetPostsUriDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
