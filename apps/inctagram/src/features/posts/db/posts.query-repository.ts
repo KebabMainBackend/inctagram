@@ -22,32 +22,35 @@ export class PostsQueryRepository {
   async findPosts(queryPost: GetDefaultUriDto, userId?: number) {
     const { pageSize, cursor, sortBy, sortDirection } =
       getRequestQueryMapper(queryPost);
+    const filter: any = {
+      where: { userId, status: PostStatusEnum.ACTIVE },
+      take: pageSize,
+      orderBy: { [sortBy]: sortDirection },
+    };
+    if (cursor) {
+      filter.skip = 1;
+      filter.cursor = { id: Number(cursor) };
+    }
     const totalCount = await this.prismaClient.post.count({
       where: {
         status: PostStatusEnum.ACTIVE,
+        userId,
       },
     });
 
-    const postsNPostImages = await this.prismaClient.post.findMany({
-      where: { userId, status: PostStatusEnum.ACTIVE },
-      take: pageSize,
-      skip: 1,
-      cursor: cursor ? { id: Number(cursor) } : undefined,
-      orderBy: { [sortBy]: sortDirection },
-    });
-    const lastPostId = postsNPostImages.at(-1).id;
+    const postsNPostImages = await this.prismaClient.post.findMany(filter);
+    const lastPostId = postsNPostImages.length ? postsNPostImages.at(-1).id : 0;
     const userProfile = await this.getUserProfile(userId);
     const userAvatar = await firstValueFrom(
       this.getUserThumbnailAvatar(userProfile.thumbnailId),
     );
-
     const items: PostView[] = [];
     for (const post of postsNPostImages) {
       const postImages = await firstValueFrom(this.getPostImages(post.images));
       const mappedPost = mapPostsWithImages({
         post,
         profile: userProfile,
-        userAvatar,
+        userAvatar: userAvatar.url,
         postImages,
       });
       items.push(mappedPost);

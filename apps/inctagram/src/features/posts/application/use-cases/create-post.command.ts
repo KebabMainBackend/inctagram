@@ -7,7 +7,6 @@ import { CreatePostTypes } from '../../domain/types/create-post.types';
 import { MicroserviceMessagesEnum } from '../../../../../../../types/messages';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { FileImageTypeEnum } from '../../../../../../../types/file-image-enum.types';
 import { ProfileRepository } from '../../../profile/db/profile.repository';
 
 export class CreatePostCommand {
@@ -28,7 +27,9 @@ export class CreatePostHandler implements ICommandHandler<CreatePostCommand> {
     const newPost = PostEntity.create(data);
     const res = await this.postsRepo.createPost(newPost);
     const images = await firstValueFrom(this.getImages(data.images));
-    const userAvatar = await this.getUserThumbnailAvatar(data.userId);
+    const userAvatar = await this.getUserThumbnailAvatar(
+      userProfile.thumbnailId,
+    );
 
     return mapPostsWithImages({
       post: res,
@@ -44,18 +45,15 @@ export class CreatePostHandler implements ICommandHandler<CreatePostCommand> {
     };
     return this.client.send(pattern, payload);
   }
-  private getUserAvatar(userId: number) {
-    const pattern = { cmd: MicroserviceMessagesEnum.GET_AVATAR };
+  private getUserAvatar(imageId: string) {
+    const pattern = { cmd: MicroserviceMessagesEnum.GET_USER_THUMBNAIL_AVATAR };
     const payload = {
-      ownerId: userId,
+      imageId,
     };
     return this.client.send(pattern, payload);
   }
-  private async getUserThumbnailAvatar(userId: number) {
-    const userAvatars = await firstValueFrom(this.getUserAvatar(userId));
-    const thumbnail = userAvatars.find(
-      (x) => x.type === FileImageTypeEnum.AVATAR_THUMBNAIL,
-    ).url;
-    return process.env.FILES_STORAGE_URL + thumbnail;
+  private async getUserThumbnailAvatar(imageId: string) {
+    const thumbnail = await firstValueFrom(this.getUserAvatar(imageId));
+    return thumbnail.url;
   }
 }
