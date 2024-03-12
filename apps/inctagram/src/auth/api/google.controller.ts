@@ -14,7 +14,7 @@ import {
   ApiTooManyRequestsResponse,
 } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { TooManyRequestsResponseOptions } from '../../utils/swagger-constants';
+import { TooManyRequestsResponseOptions } from '../../utils/constants/swagger-constants';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateRefreshTokenCommand } from '../application/use-cases/create-refresh-token.command';
 import { Request, Response } from 'express';

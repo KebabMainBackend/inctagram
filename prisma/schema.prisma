@@ -9,12 +9,13 @@ datasource db {
 }
 
 model Post {
-  id          Int      @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   description String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @default(now()) @map("updated_at")
-  userId      Int      @map("user_id")
-  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @default(now()) @map("updated_at")
+  userId      Int        @map("user_id")
+  user        User       @relation(fields: [userId], references: [id])
+  status      PostStatus @default(ACTIVE)
   images      String[]
 }
 
@@ -32,7 +33,7 @@ model User {
   providers        OAuthProvider[]
   providerId       String?
   sessions         Session[]
-  profile          Profile[]
+  profile          Profile?
   posts            Post[]
 }
 
@@ -95,4 +96,12 @@ model OAuthProvider {
 
 model Blacklist {
   refreshToken String @unique
+}
+
+// ENUMS
+
+enum PostStatus {
+  ACTIVE
+  DELETED
+  BLOCKED
 }

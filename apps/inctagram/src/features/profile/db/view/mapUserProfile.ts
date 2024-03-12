@@ -7,8 +7,8 @@ export const mapUserProfile = (
   return {
     id: profile.userId,
     username: profile.user.username,
-    firstName: profile.firstname,
-    lastName: profile.lastname,
+    firstname: profile.firstname,
+    lastname: profile.lastname,
     city: profile.city,
     birthDate: profile.birthDate,
     aboutMe: profile.aboutMe,

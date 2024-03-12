@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongoose';
-import { FileImageAvatarTypeEnum } from '../../../../../types/file-image-enum.types';
+import { FileImageTypeEnum } from '../../../../../types/file-image-enum.types';
 
 export interface FileImageInterface extends Document {
   id: ObjectId;
@@ -7,7 +7,7 @@ export interface FileImageInterface extends Document {
   url: string;
   width: number;
   height: number;
-  type: FileImageAvatarTypeEnum;
+  type: FileImageTypeEnum;
   ownerId: number;
   createdAt: string;
   updatedAt: string;

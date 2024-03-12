@@ -5,17 +5,21 @@ import { S3StorageManager } from '../../adapters/s3-storage.adapter';
 import { Inject } from '@nestjs/common';
 import { Model } from 'mongoose';
 import * as sharp from 'sharp';
-import {
-  FileImageAvatarTypeEnum,
-  FileImageTypeEnum,
-} from '../../../../../types/file-image-enum.types';
+import { FileImageTypeEnum } from '../../../../../types/file-image-enum.types';
 
 type UploadFileCommandTypes = {
   buffer: Buffer;
   userId: number;
   imageType: FileImageTypeEnum;
-  suffix: FileImageAvatarTypeEnum;
   imageSize: number;
+};
+
+type UploadInDbAndCloudInputImageType = {
+  buffer: Buffer;
+  url: string;
+  ownerId: number;
+  fileSize: number;
+  type: FileImageTypeEnum;
 };
 
 export class UploadFileCommand {
@@ -33,42 +37,41 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
     return this.uploadIFile(data);
   }
   async uploadIFile({ data }: UploadFileCommand) {
-    const { buffer, userId: ownerId, imageSize, suffix, imageType } = data;
-    const url = this.createUrlForImage(ownerId, imageType, suffix);
+    const { buffer, userId: ownerId, imageSize, imageType } = data;
+    const url = this.createUrlForFileImage(ownerId, imageType);
     const fileBuffer = Buffer.from(buffer);
     const compressedBuffer = await this.compressImage(fileBuffer, imageSize);
-    const fileId = await this.uploadImageToCloud(
-      compressedBuffer,
+    const fileId = await this.uploadImageToCloud({
+      buffer: compressedBuffer,
       url,
       ownerId,
-      suffix,
-    );
+      type: imageType,
+    });
     return {
       fileId: fileId,
       url,
       width: imageSize,
       height: imageSize,
       fileSize: compressedBuffer.length,
-      type: suffix,
+      type: imageType,
     };
   }
-  async compressImage(imageBuffer: Buffer, size: number) {
+  private async compressImage(imageBuffer: Buffer, size: number) {
     return await sharp(imageBuffer).resize(size, size).webp().toBuffer();
   }
-  async uploadImageToCloud(
-    buffer: Buffer,
-    url: string,
-    ownerId: number,
-    type: FileImageAvatarTypeEnum,
-  ) {
-    const { width, height } = sizeOf(buffer);
+  private async uploadImageToCloud({
+    buffer,
+    url,
+    ownerId,
+    type,
+  }: Omit<UploadInDbAndCloudInputImageType, 'fileSize'>) {
     const fileSize = buffer.length;
     let currentImage = await this.fileImageModel.findOne({
       ownerId,
-      type,
+      type: type,
     });
     await this.s3Manager.saveImage(buffer, url);
-    if (currentImage) {
+    if (currentImage && currentImage.type !== FileImageTypeEnum.POST_IMAGE) {
       await this.fileImageModel.updateOne(
         {
           ownerId,
@@ -79,23 +82,33 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
         },
       );
     } else {
-      currentImage = new this.fileImageModel({
-        url,
-        width,
-        height,
-        ownerId,
+      currentImage = await this.createImageInDB({
+        type,
         fileSize,
-        type: type,
+        ownerId,
+        url,
+        buffer,
       });
-      await currentImage.save();
     }
     return currentImage.id;
   }
-  createUrlForImage(
-    userId: number,
-    type: FileImageTypeEnum,
-    suffix: FileImageAvatarTypeEnum,
-  ) {
-    return `media/users/${userId}/${type}/${userId}-${suffix}.webp`;
+  private createUrlForFileImage(userId: number, type: FileImageTypeEnum) {
+    return type === FileImageTypeEnum.POST_IMAGE
+      ? `media/users/${userId}/posts/${userId}-${Date.now()}.webp`
+      : `media/users/${userId}/avatars/${userId}-${Date.now()}.webp`;
+  }
+  private async createImageInDB(data: UploadInDbAndCloudInputImageType) {
+    const { buffer, url, ownerId, fileSize, type } = data;
+    const { width, height } = sizeOf(buffer);
+    const currentImage = new this.fileImageModel({
+      url,
+      width,
+      height,
+      ownerId,
+      fileSize,
+      type,
+    });
+    await currentImage.save();
+    return currentImage;
   }
 }

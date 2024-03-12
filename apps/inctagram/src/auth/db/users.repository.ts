@@ -119,6 +119,14 @@ export class UsersRepository {
   getUserById(id: number) {
     return this.prisma.user.findFirst({
       where: { id },
+      include: {
+        profile: {
+          select: {
+            lastname: true,
+            firstname: true,
+          },
+        },
+      },
     });
   }
   getUserProviderByIdAndType(providerId: string, providerType: string) {

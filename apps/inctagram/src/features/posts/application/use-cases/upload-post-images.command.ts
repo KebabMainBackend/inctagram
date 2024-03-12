@@ -19,12 +19,10 @@ export class UploadPostImagesHandler
   constructor(@Inject('FILES_SERVICE') private client: ClientProxy) {}
 
   async execute({ buffers, userId }: UploadPostImagesCommand) {
-    console.log(buffers);
     const data = await firstValueFrom(
       await this.createFileImage(buffers, userId),
     );
-    const images = data.avatars.images;
-    return 'mapPostImages(images)';
+    return { images: mapPostImages(data.postImages) };
   }
   async createFileImage(buffers: Buffer[], userId: number) {
     const pattern = { cmd: MicroserviceMessagesEnum.UPLOAD_POST_IMAGES };
