@@ -25,13 +25,13 @@ export type DBProfileImageView = {
 };
 
 export const ProfileImagesViewExample = {
-  avatar: {
+  'avatar-medium': {
     url: 'https://example.com/image.jpg',
     width: 192,
     height: 192,
     fileSize: 300,
   },
-  thumbnail: {
+  'avatar-thumbnail': {
     url: 'https://example.com/image.jpg',
     width: 45,
     height: 45,

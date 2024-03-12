@@ -54,10 +54,10 @@ export class FilesService {
     const images = await this.getAvatarImagesByOwnerId(userId);
     if (images && images.length) {
       for (const image of images) {
-        console.log(image, 'images');
         await this.commandBus.execute(new DeleteFileCommand(image.url));
       }
     }
+    return;
   }
   async deletePostImage(imageId: string, userId: number) {
     const image = await this.getImageById(imageId);

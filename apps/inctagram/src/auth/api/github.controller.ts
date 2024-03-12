@@ -70,45 +70,9 @@ export class GithubController {
     );
     res
       .writeHead(301, {
-        Location: `${frontLink}/auth/redirect/github?code=${accessToken}`,
+        Location: `${frontLink}/general/redirect/github?code=${accessToken}`,
       })
 
       .end();
   }
-  // @Post('login1')
-  // @ApiOkResponse({
-  //   description: 'success',
-  //   content: {
-  //     'application/json': { example: { accessToken: 'string' } },
-  //   },
-  // })
-  // @UseGuards(ThrottlerGuard)
-  // @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
-  // @HttpCode(HttpStatus.OK)
-  // async login1(
-  //   @Req() req: Request,
-  //   @Res({ passthrough: true }) res: Response,
-  //   @Body() data: ProviderCodeDto,
-  // ) {
-  //   const userId = await this.commandBus.execute(
-  //     new SignInUserViaOauthProviderCommand1(data.code, ProviderType.GITHUB),
-  //   );
-  //   const title = req.get('User-Agent') || 'unknown user agent';
-  //   const ip = req.socket.remoteAddress || '';
-  //   const refreshToken = await this.commandBus.execute(
-  //     new CreateRefreshTokenCommand(userId, title, ip),
-  //   );
-  //   res.cookie('refreshToken', refreshToken, {
-  //     httpOnly: true,
-  //     secure: true,
-  //     sameSite: 'none',
-  //   });
-  //
-  //   const frontLink = process.env.FRONT_PROD;
-  //   res
-  //     .writeHead(301, {
-  //       Location: `${frontLink}/oauth`,
-  //     })
-  //     .end();
-  // }
 }

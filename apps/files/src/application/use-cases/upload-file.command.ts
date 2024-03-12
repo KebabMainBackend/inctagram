@@ -66,36 +66,37 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
     type,
   }: Omit<UploadInDbAndCloudInputImageType, 'fileSize'>) {
     const fileSize = buffer.length;
-    let currentImage = await this.fileImageModel.findOne({
-      ownerId,
-      type: type,
-    });
+    // let currentImage = await this.fileImageModel.findOne({
+    //   ownerId,
+    //   type: type,
+    // });
+    // console.log(currentImage, 'ccce');
     await this.s3Manager.saveImage(buffer, url);
-    if (currentImage && currentImage.type !== FileImageTypeEnum.POST_IMAGE) {
-      await this.fileImageModel.updateOne(
-        {
-          ownerId,
-          type,
-        },
-        {
-          fileSize,
-        },
-      );
-    } else {
-      currentImage = await this.createImageInDB({
-        type,
-        fileSize,
-        ownerId,
-        url,
-        buffer,
-      });
-    }
+    // if (currentImage && currentImage.type !== FileImageTypeEnum.POST_IMAGE) {
+    //   await this.fileImageModel.updateOne(
+    //     {
+    //       ownerId,
+    //       type,
+    //     },
+    //     {
+    //       fileSize,
+    //     },
+    //   );
+    // } else {
+    const currentImage = await this.createImageInDB({
+      type,
+      fileSize,
+      ownerId,
+      url,
+      buffer,
+    });
+    // }
     return currentImage.id;
   }
   private createUrlForFileImage(userId: number, type: FileImageTypeEnum) {
     return type === FileImageTypeEnum.POST_IMAGE
       ? `media/users/${userId}/posts/${userId}-${Date.now()}.webp`
-      : `media/users/${userId}/avatars/${userId}-${Date.now()}.webp`;
+      : `media/users/${userId}/avatars/${userId}-${Date.now()}-${type}.webp`;
   }
   private async createImageInDB(data: UploadInDbAndCloudInputImageType) {
     const { buffer, url, ownerId, fileSize, type } = data;
