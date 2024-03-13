@@ -33,7 +33,7 @@ import {
   BadRequestResponseOptions,
   NoContentResponseOptions,
   UnauthorizedRequestResponseOptions,
-} from '../../../utils/swagger-constants';
+} from '../../../utils/constants/swagger-constants';
 import { CommandBus } from '@nestjs/cqrs';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ProfileQueryRepository } from '../db/profile.query-repository';

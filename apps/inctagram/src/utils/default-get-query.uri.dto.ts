@@ -3,7 +3,6 @@ import {
   IsInt,
   IsOptional,
   IsString,
-  IsUUID,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -11,9 +10,9 @@ import { Type } from 'class-transformer';
 import {
   PAGE_SIZE_DEFAULT,
   SortDirection,
-} from '../../../../../utils/constants';
+} from './constants/default-query-params';
 
-export class GetPostsUriInputModel {
+export class GetDefaultUriDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
@@ -22,7 +21,7 @@ export class GetPostsUriInputModel {
   @IsOptional()
   @IsEnum(SortDirection)
   @MaxLength(4)
-  sortDirection: SortDirection = SortDirection.Desc;
+  sortDirection: SortDirection = SortDirection.DESC;
 
   @IsOptional()
   @Type(() => Number)
@@ -31,6 +30,5 @@ export class GetPostsUriInputModel {
   pageSize: number = PAGE_SIZE_DEFAULT;
 
   @IsOptional()
-  @IsUUID()
   cursor: string;
 }

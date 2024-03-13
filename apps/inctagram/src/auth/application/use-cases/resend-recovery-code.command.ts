@@ -33,10 +33,8 @@ export class ResendRecoveryCodeHandler
           const confirmationData = await this.usersRepo.getUserConfirmation(
             user.confirmationData.id,
           );
-          console.log(confirmationData.confirmationCode);
           confirmationData.updateConfirmationData();
           await this.usersRepo.updateConfirmationDate(confirmationData);
-          console.log(confirmationData.confirmationCode);
           await this.emailService.sendRecoveryCodeEmail(
             email,
             confirmationData.confirmationCode,

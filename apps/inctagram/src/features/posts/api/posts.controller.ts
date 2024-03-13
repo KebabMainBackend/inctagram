@@ -6,48 +6,77 @@ import {
   ForbiddenException,
   Get,
   HttpCode,
-  HttpException,
   HttpStatus,
   Inject,
   Param,
+  ParseFilePipeBuilder,
+  ParseIntPipe,
   Post,
   Put,
   Query,
-  Res,
   UnauthorizedException,
-  UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { DeviceSessionHeaderInputModel } from '../utils/models/input/device-session.header.input-model';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { CommandBus } from '@nestjs/cqrs';
-import { DeletePostImageUriInputModel } from '../utils/models/input/delete-post-image.uri.input-model';
-import { CreatePostBodyInputModel } from '../utils/models/input/create-post.body.input-model';
-import { CreatePostCommand } from '../app/use-cases/create-post.use.case';
-import { UpdatePostUriInputModel } from '../utils/models/input/update-post.uri.input-model';
-import { UpdatePostCommand } from '../app/use-cases/update-post.use.case';
+import { CreatePostBodyDto } from './dto/create-post.body.dto';
+import { UpdatePostUriDto } from './dto/update-post.uri.dto';
 import { ClientProxy } from '@nestjs/microservices';
-import { PostsQueryRepository } from '../rep/posts.repository';
-import { DeviceSessionOptionalHeaderInputModel } from '../utils/models/input/device-session-optional.header.input-model';
-import { GetPostsUriInputModel } from '../utils/models/input/get-posts.uri.input-model';
-import { Response } from 'express';
+import { PostsQueryRepository } from '../db/posts.query-repository';
 import { BearerAuthGuard } from '../../../auth/guards/bearer-auth.guard';
-import { ErrorEnum } from '../../../utils/error-enum';
-import { DeviceSessionGuard } from '../../../auth/guards/device-session.guard';
-import { UploadPostImagePipe } from '../../../modules/pipes/upload-post-image.pipe';
-import { outputMessageException } from '../../../utils/output-message-exception';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiCreatedResponse,
+  ApiForbiddenResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { User } from '../../../utils/decorators/user.decorator';
+import { UserTypes } from '../../../types';
+import { CreatePostCommand } from '../application/use-cases/create-post.command';
+import { UpdatePostCommand } from '../application/use-cases/update-post.command';
+import {
+  BadRequestResponseOptions,
+  CursorQueryOptions,
+  ForbiddenRequestResponseOptions,
+  NoContentResponseOptions,
+  NotFoundResponseOptions,
+  PageSizeQueryOptions,
+  SortByQueryOptions,
+  SortDirectionQueryOptions,
+  UnauthorizedRequestResponseOptions,
+} from '../../../utils/constants/swagger-constants';
+import { CheckMimetype } from '../../../utils/custom-validators/file.validator';
+import { POST_IMAGE_NORMAL_SIZE } from '../../../utils/constants/default-query-params';
+import { UploadPostImagesCommand } from '../application/use-cases/upload-post-images.command';
+import { MicroserviceMessagesEnum } from '../../../../../../types/messages';
+import { GetDefaultUriDto } from '../../../utils/default-get-query.uri.dto';
+import { createErrorMessage } from '../../../utils/create-error-object';
+import { DeletePostCommand } from '../application/use-cases/delete-post.command';
+import {
+  PostImagesViewExample,
+  GetRequestPostsViewExample,
+  PostViewExample,
+} from './swagger-constants/response-examples';
+import { UpdatePostBodyDto } from './dto/update-post.body.dto';
+import { UploadPostImageDto } from './dto/upload-image.dto';
 
-@ApiTags('posts')
+@ApiTags('Posts')
 @Controller('posts')
+@ApiBearerAuth()
+@UseGuards(BearerAuthGuard)
+@ApiUnauthorizedResponse(UnauthorizedRequestResponseOptions)
 export class PostsController {
   constructor(
     protected commandBus: CommandBus,
@@ -55,104 +84,166 @@ export class PostsController {
     @Inject('FILES_SERVICE') private clientProxy: ClientProxy,
   ) {}
   @ApiOperation({ summary: 'Get posts' })
-  @ApiResponse({ status: 200, description: 'Success' })
-  @ApiBearerAuth()
-  @UseGuards(BearerAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    content: {
+      'application/json': { example: GetRequestPostsViewExample },
+    },
+  })
   @Get()
+  @ApiQuery(
+    CursorQueryOptions(
+      'ID of the last uploaded post. If endCursorPostId not provided, the first set of posts is returned.',
+    ),
+  )
+  @ApiQuery(SortDirectionQueryOptions)
+  @ApiQuery(SortByQueryOptions)
+  @ApiQuery(PageSizeQueryOptions)
   async getPosts(
-    @Res() res: Response,
-    @DeviceSessionGuard() deviceSession: DeviceSessionOptionalHeaderInputModel,
-    @Query() queryPost: GetPostsUriInputModel,
+    @User() user: UserTypes,
+    @Query() queryPost: GetDefaultUriDto,
   ) {
-    const result = await this.postsQueryRepository.findPosts(
-      queryPost,
-      deviceSession.userId,
-    );
-    res.header('X-Cursor', result.cursor);
-    return {
-      pageSize: result.pageSize,
-      totalCount: result.totalCount,
-      items: result.items,
-    };
-  }
-  @ApiOperation({ summary: 'Create a new post' })
-  @ApiResponse({ status: 201, description: 'Post created' })
-  @ApiBadRequestResponse({ description: 'Bad Request' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiBearerAuth()
-  @UseGuards(BearerAuthGuard)
-  @Post()
-  async createPost(
-    @DeviceSessionGuard() deviceSession: DeviceSessionHeaderInputModel,
-    @Body() body: CreatePostBodyInputModel,
-  ) {
-    const createResult = await this.commandBus.execute(
-      new CreatePostCommand(deviceSession.userId, body.description),
-    );
-
-    if (createResult === ErrorEnum.NOT_FOUND) throw new UnauthorizedException();
-    return createResult;
-  }
-
-  @UseGuards(BearerAuthGuard)
-  @Put(':id')
-  async updatePost(
-    @DeviceSessionGuard() deviceSession: DeviceSessionHeaderInputModel,
-    @Body() body: CreatePostBodyInputModel,
-    @Param() param: UpdatePostUriInputModel,
-  ) {
-    const updateResult = await this.commandBus.execute(
-      new UpdatePostCommand(deviceSession.userId, param.id, body.description),
-    );
-
-    if (updateResult === ErrorEnum.USER_NOT_FOUND)
-      throw new UnauthorizedException();
-    if (updateResult === ErrorEnum.NOT_FOUND)
-      throw new BadRequestException(
-        outputMessageException(ErrorEnum.NOT_FOUND, 'id'),
-      );
-    if (updateResult === ErrorEnum.FORBIDDEN) throw new ForbiddenException();
-    return updateResult;
-  }
-
-  @UseGuards(BearerAuthGuard)
-  @Post('image')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadPostImage(
-    @DeviceSessionGuard() deviceSession: DeviceSessionHeaderInputModel,
-    @UploadedFile(UploadPostImagePipe) file: Express.Multer.File,
-  ) {
-    try {
-      return this.clientProxy.send<any>(
-        { cmd: 'uploadPostImage' },
-        { userId: deviceSession.userId, file },
-      );
-    } catch (err) {
-      if (err.message === ErrorEnum.NOT_FOUND)
-        throw new HttpException(ErrorEnum.UNAUTHORIZED, 411);
+    if (user.id) {
+      return await this.postsQueryRepository.findPosts(queryPost, user.id);
     }
   }
 
-  @UseGuards(BearerAuthGuard)
-  @Delete('image/:id')
+  @ApiOperation({ summary: 'Create a new post' })
+  @ApiResponse({
+    status: 201,
+    description: 'Post created',
+    content: {
+      'application/json': { example: PostViewExample },
+    },
+  })
+  @ApiBadRequestResponse(BadRequestResponseOptions)
+  @Post()
+  async createPost(@User() user: UserTypes, @Body() body: CreatePostBodyDto) {
+    const createResult = await this.commandBus.execute(
+      new CreatePostCommand({
+        userId: user.id,
+        description: body.description,
+        images: body.images,
+      }),
+    );
+    if (createResult === HttpStatus.NOT_FOUND) {
+      throw new UnauthorizedException();
+    }
+    return createResult;
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update existing post' })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse(NoContentResponseOptions)
+  @ApiForbiddenResponse(ForbiddenRequestResponseOptions)
+  @ApiNotFoundResponse(NotFoundResponseOptions)
+  async updatePost(
+    @User() user: UserTypes,
+    @Body() body: UpdatePostBodyDto,
+    @Param('id', ParseIntPipe) postId: number,
+  ) {
+    const updateResult = await this.commandBus.execute(
+      new UpdatePostCommand({
+        userId: user.id,
+        postId,
+        description: body.description,
+      }),
+    );
+    if (updateResult === HttpStatus.NOT_FOUND) {
+      const error = createErrorMessage('wrong id', 'id');
+      throw new BadRequestException(error);
+    }
+    if (updateResult === HttpStatus.FORBIDDEN) {
+      throw new ForbiddenException();
+    }
+    return;
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete existing post' })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse(NoContentResponseOptions)
+  @ApiNotFoundResponse(NotFoundResponseOptions)
+  @ApiForbiddenResponse(ForbiddenRequestResponseOptions)
+  async deletePost(
+    @User() user: UserTypes,
+    @Param('id', ParseIntPipe) postId: number,
+  ) {
+    const updateResult = await this.commandBus.execute(
+      new DeletePostCommand({
+        userId: user.id,
+        postId,
+      }),
+    );
+    if (updateResult === HttpStatus.NOT_FOUND) {
+      const error = createErrorMessage('wrong id', 'id');
+      throw new BadRequestException(error);
+    }
+    if (updateResult === HttpStatus.FORBIDDEN) {
+      throw new ForbiddenException();
+    }
+    return;
+  }
+
+  @Post('images')
+  @ApiOperation({ summary: 'Upload image to new post' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Profile avatar',
+    type: UploadPostImageDto,
+  })
+  @HttpCode(HttpStatus.CREATED)
+  @ApiUnprocessableEntityResponse({
+    description: 'invalid file, wrong fileType or maxSize',
+  })
+  @ApiCreatedResponse({
+    description: 'Uploaded images information object.',
+    content: {
+      'application/json': { example: PostImagesViewExample },
+    },
+  })
+  @UseInterceptors(FilesInterceptor('files', 10))
+  async uploadPostImage(
+    @User() user: UserTypes,
+    @UploadedFiles(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /^.+(jpeg|png)$/,
+        })
+        .addValidator(new CheckMimetype({ mimetype: 'jpeg' }))
+        .addMaxSizeValidator({
+          maxSize: POST_IMAGE_NORMAL_SIZE,
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    files: Express.Multer.File[],
+  ) {
+    const buffers = files.map((file) => file.buffer);
+    return this.commandBus.execute(
+      new UploadPostImagesCommand(buffers, user.id),
+    );
+  }
+
+  @Delete('images/:imageId')
+  @ApiOperation({ summary: 'Delete post`s image' })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse(NoContentResponseOptions)
+  @ApiForbiddenResponse(ForbiddenRequestResponseOptions)
   async deletePostImage(
-    @DeviceSessionGuard() deviceSession: DeviceSessionHeaderInputModel,
-    @Param() param: DeletePostImageUriInputModel,
+    @User() user: UserTypes,
+    @Param('imageId') imageId: string,
   ) {
     try {
-      return this.clientProxy.send<any>(
-        { cmd: 'deletePostImage' },
-        { userId: deviceSession.userId, imageId: param.id },
+      return this.clientProxy.send(
+        { cmd: MicroserviceMessagesEnum.DELETE_POST_IMAGE },
+        { userId: user.id, imageId },
       );
     } catch (err) {
-      if (err.message === ErrorEnum.USER_NOT_FOUND)
-        throw new HttpException(ErrorEnum.UNAUTHORIZED, 411);
-      if (err.message === ErrorEnum.POST_NOT_FOUND)
-        throw new HttpException(ErrorEnum.UNAUTHORIZED, 411);
-      if (err.message === ErrorEnum.FORBIDDEN)
-        throw new HttpException(ErrorEnum.UNAUTHORIZED, 411);
+      console.log('error on deleting post image');
     }
   }
 }

@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ProfileRepository } from '../../db/profile.repository';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { MicroserviceMessagesEnum } from '../messages';
+import { MicroserviceMessagesEnum } from '../../../../../../../types/messages';
 
 export class DeleteAvatarCommand {
   constructor(public userId: number) {}

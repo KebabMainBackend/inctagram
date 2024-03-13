@@ -117,6 +117,11 @@ spec:
                  secretKeyRef:
                    name: main-service-production-config-secret
                    key: FILES_SERVICE_HOST
+             - name: FILES_STORAGE_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: FILES_STORAGE_URL
              - name: DATABASE_URL
                valueFrom:
                  secretKeyRef:

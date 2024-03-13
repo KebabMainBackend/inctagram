@@ -7,13 +7,23 @@ import { Model } from 'mongoose';
 import * as sharp from 'sharp';
 import { FileImageTypeEnum } from '../../../../../types/file-image-enum.types';
 
+type UploadFileCommandTypes = {
+  buffer: Buffer;
+  userId: number;
+  imageType: FileImageTypeEnum;
+  imageSize: number;
+};
+
+type UploadInDbAndCloudInputImageType = {
+  buffer: Buffer;
+  url: string;
+  ownerId: number;
+  fileSize: number;
+  type: FileImageTypeEnum;
+};
+
 export class UploadFileCommand {
-  constructor(
-    public buffer: Buffer,
-    public userId: number,
-    public imageType: FileImageTypeEnum,
-    public imageSize: number,
-  ) {}
+  constructor(public data: UploadFileCommandTypes) {}
 }
 
 @CommandHandler(UploadFileCommand)
@@ -26,17 +36,17 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
   execute(data: UploadFileCommand) {
     return this.uploadIFile(data);
   }
-  async uploadIFile(data: UploadFileCommand) {
+  async uploadIFile({ data }: UploadFileCommand) {
     const { buffer, userId: ownerId, imageSize, imageType } = data;
-    const url = this.createUrlForImage(ownerId, imageType);
+    const url = this.createUrlForFileImage(ownerId, imageType);
     const fileBuffer = Buffer.from(buffer);
     const compressedBuffer = await this.compressImage(fileBuffer, imageSize);
-    const fileId = await this.uploadImageToCloud(
-      compressedBuffer,
+    const fileId = await this.uploadImageToCloud({
+      buffer: compressedBuffer,
       url,
       ownerId,
-      imageType,
-    );
+      type: imageType,
+    });
     return {
       fileId: fileId,
       url,
@@ -46,46 +56,60 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
       type: imageType,
     };
   }
-  async compressImage(imageBuffer: Buffer, size: number) {
+  private async compressImage(imageBuffer: Buffer, size: number) {
     return await sharp(imageBuffer).resize(size, size).webp().toBuffer();
   }
-  async uploadImageToCloud(
-    buffer: Buffer,
-    url: string,
-    ownerId: number,
-    type: FileImageTypeEnum,
-  ) {
-    const { width, height } = sizeOf(buffer);
+  private async uploadImageToCloud({
+    buffer,
+    url,
+    ownerId,
+    type,
+  }: Omit<UploadInDbAndCloudInputImageType, 'fileSize'>) {
     const fileSize = buffer.length;
-    let currentImage = await this.fileImageModel.findOne({
-      ownerId,
-      type,
-    });
+    // let currentImage = await this.fileImageModel.findOne({
+    //   ownerId,
+    //   type: type,
+    // });
+    // console.log(currentImage, 'ccce');
     await this.s3Manager.saveImage(buffer, url);
-    if (currentImage) {
-      await this.fileImageModel.updateOne(
-        {
-          ownerId,
-          type,
-        },
-        {
-          fileSize,
-        },
-      );
-    } else {
-      currentImage = new this.fileImageModel({
-        url,
-        width,
-        height,
-        ownerId,
-        fileSize,
-        type: type,
-      });
-      await currentImage.save();
-    }
+    // if (currentImage && currentImage.type !== FileImageTypeEnum.POST_IMAGE) {
+    //   await this.fileImageModel.updateOne(
+    //     {
+    //       ownerId,
+    //       type,
+    //     },
+    //     {
+    //       fileSize,
+    //     },
+    //   );
+    // } else {
+    const currentImage = await this.createImageInDB({
+      type,
+      fileSize,
+      ownerId,
+      url,
+      buffer,
+    });
+    // }
     return currentImage.id;
   }
-  createUrlForImage(userId: number, type: FileImageTypeEnum) {
-    return `media/users/${userId}/avatars/${userId}-${type}.webp`;
+  private createUrlForFileImage(userId: number, type: FileImageTypeEnum) {
+    return type === FileImageTypeEnum.POST_IMAGE
+      ? `media/users/${userId}/posts/${userId}-${Date.now()}.webp`
+      : `media/users/${userId}/avatars/${userId}-${Date.now()}-${type}.webp`;
+  }
+  private async createImageInDB(data: UploadInDbAndCloudInputImageType) {
+    const { buffer, url, ownerId, fileSize, type } = data;
+    const { width, height } = sizeOf(buffer);
+    const currentImage = new this.fileImageModel({
+      url,
+      width,
+      height,
+      ownerId,
+      fileSize,
+      type,
+    });
+    await currentImage.save();
+    return currentImage;
   }
 }

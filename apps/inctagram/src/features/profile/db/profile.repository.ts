@@ -8,6 +8,13 @@ export class ProfileRepository {
   getUserProfile(userId: number) {
     return this.prisma.profile.findUnique({
       where: { userId },
+      include: {
+        user: {
+          select: {
+            username: true,
+          },
+        },
+      },
     });
   }
 
