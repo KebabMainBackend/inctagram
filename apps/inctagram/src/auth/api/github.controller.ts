@@ -22,11 +22,15 @@ import { CreateAccessTokenCommand } from '../application/use-cases/create-access
 import { CommandBus } from '@nestjs/cqrs';
 import { SignInUserViaOauthProviderCommand } from '../application/use-cases/create-user-via-oauth-provider.command';
 import { ProviderType } from '../domain/entities/oauth-provider.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth/github')
 @ApiTags('Github-OAuth2')
 export class GithubController {
-  constructor(private commandBus: CommandBus) {}
+  constructor(
+    private commandBus: CommandBus,
+    private configService: ConfigService,
+  ) {}
 
   @ApiOkResponse({
     description:
@@ -64,7 +68,7 @@ export class GithubController {
       sameSite: 'none',
     });
     await this.commandBus.execute(new CreateAccessTokenCommand(userId));
-    const frontLink = process.env.FRONT_PROD;
+    const frontLink = this.configService.get('FRONT_PROD');
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );

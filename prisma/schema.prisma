@@ -17,7 +17,20 @@ model Post {
   user        User       @relation(fields: [userId], references: [id])
   status      PostStatus @default(ACTIVE)
   images      String[]
+  // images      PostImage[]
 }
+
+// model PostImage {
+//   id        String   @unique
+//   createdAt DateTime @default(now())
+//   imageId   String
+//   url       String
+//   post      Post     @relation(fields: [postId], references: [id])
+//   postId    Int
+//   width     Int
+//   height    Int
+//   fileSize  Int
+// }
 
 model User {
   id               Int               @id @unique @default(autoincrement())

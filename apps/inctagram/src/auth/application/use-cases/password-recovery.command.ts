@@ -4,6 +4,7 @@ import { EmailService } from '../../managers/email.manager';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { createErrorMessage } from '../../../utils/create-error-object';
 import { UsersRepository } from '../../db/users.repository';
+import { ConfigService } from '@nestjs/config';
 
 export class PasswordRecoveryCommand {
   constructor(
@@ -20,9 +21,10 @@ export class PasswordRecoveryHandler
     private prisma: PrismaService,
     private emailService: EmailService,
     private usersRepo: UsersRepository,
+    private configService: ConfigService,
   ) {}
   async execute({ email, recaptcha }: PasswordRecoveryCommand) {
-    const secretKey = process.env['RECAPTCHA_SECRET'];
+    const secretKey = this.configService.get('RECAPTCHA_SECRET');
     const verifyCaptchaBodyString = `secret=${secretKey}&response=${recaptcha}`;
     const res = await fetch('https://www.google.com/recaptcha/api/siteverify', {
       method: 'POST',

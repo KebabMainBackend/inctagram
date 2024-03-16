@@ -1,6 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
 import { SecurityDevicesQueryRepository } from '../../../features/security-devices/db/security-devices.query-repository';
+import { ConfigService } from '@nestjs/config';
 
 export class DecodeRefreshTokenCommand {
   constructor(public refresh: string) {}
@@ -13,11 +14,12 @@ export class DecodeRefreshTokenHandler
   constructor(
     private readonly securityDevicesQueryRepository: SecurityDevicesQueryRepository,
     private readonly jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
   async execute({ refresh }: DecodeRefreshTokenCommand) {
     try {
       const result: any = await this.jwtService.verifyAsync(refresh, {
-        secret: process.env.JWT_REFRESH_KEY,
+        secret: this.configService.get('JWT_REFRESH_KEY'),
       });
       const isInBlackList =
         await this.securityDevicesQueryRepository.getBlackList(refresh);

@@ -50,7 +50,7 @@ export class PostsQueryRepository {
       const mappedPost = mapPostsWithImages({
         post,
         profile: userProfile,
-        userAvatar: userAvatar.url,
+        userAvatar: userAvatar?.url,
         postImages,
       });
       items.push(mappedPost);

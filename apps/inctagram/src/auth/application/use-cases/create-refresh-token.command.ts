@@ -5,6 +5,7 @@ import {
   DeviceEntity,
   SessionEntity,
 } from '../../domain/entities/session.entity';
+import { ConfigService } from '@nestjs/config';
 
 export class CreateRefreshTokenCommand {
   constructor(
@@ -21,6 +22,7 @@ export class CreateRefreshTokenHandler
   constructor(
     private jwtService: JwtService,
     private securityDevicesRepository: SecurityDevicesRepository,
+    private configService: ConfigService,
   ) {}
   async execute({ userId, deviceTitle, deviceIp }: CreateRefreshTokenCommand) {
     const device = DeviceEntity.create({
@@ -35,8 +37,8 @@ export class CreateRefreshTokenHandler
     return await this.jwtService.signAsync(
       { userId, sessionId },
       {
-        expiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME,
-        secret: process.env.JWT_REFRESH_KEY,
+        expiresIn: this.configService.get('JWT_REFRESH_EXPIRATION_TIME'),
+        secret: this.configService.get('JWT_REFRESH_KEY'),
       },
     );
   }

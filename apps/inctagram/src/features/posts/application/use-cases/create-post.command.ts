@@ -27,7 +27,7 @@ export class CreatePostHandler implements ICommandHandler<CreatePostCommand> {
     const newPost = PostEntity.create(data);
     const res = await this.postsRepo.createPost(newPost);
     const images = await firstValueFrom(this.getImages(data.images));
-    const userAvatar = await this.getUserThumbnailAvatar(
+    const userAvatar: string | null = await this.getUserThumbnailAvatar(
       userProfile.thumbnailId,
     );
 
@@ -54,6 +54,6 @@ export class CreatePostHandler implements ICommandHandler<CreatePostCommand> {
   }
   private async getUserThumbnailAvatar(imageId: string) {
     const thumbnail = await firstValueFrom(this.getUserAvatar(imageId));
-    return thumbnail.url;
+    return thumbnail?.url;
   }
 }

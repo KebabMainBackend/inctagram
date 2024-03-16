@@ -104,9 +104,7 @@ export class PostsController {
     @User() user: UserTypes,
     @Query() queryPost: GetDefaultUriDto,
   ) {
-    if (user.id) {
-      return await this.postsQueryRepository.findPosts(queryPost, user.id);
-    }
+    return await this.postsQueryRepository.findPosts(queryPost, user.id);
   }
 
   @ApiOperation({ summary: 'Create a new post' })
