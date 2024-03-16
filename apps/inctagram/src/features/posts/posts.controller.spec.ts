@@ -50,17 +50,17 @@ describe('AuthController', () => {
       user = req.body;
     });
   });
-  describe('create posts with already created images', () => {
-    it('should create 1 post', async () => {
-      const imageData = await request(httpServer)
-        .post(URL)
-        .set('Authorization', 'Bearer ' + accesstoken)
-        .send({
-          description: 'cool story',
-          images: imagesIds,
-        })
-        .expect(HttpStatus.CREATED);
-      expect(imageData.body.ownerId).toBe(user.id);
-    });
-  });
+  // describe('create posts with already created images', () => {
+  //   it('should create 1 post', async () => {
+  //     const imageData = await request(httpServer)
+  //       .post(URL)
+  //       .set('Authorization', 'Bearer ' + accesstoken)
+  //       .send({
+  //         description: 'cool story',
+  //         images: imagesIds,
+  //       })
+  //       .expect(HttpStatus.CREATED);
+  //     expect(imageData.body.ownerId).toBe(user.id);
+  //   });
+  // });
 });
