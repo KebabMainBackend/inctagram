@@ -12,6 +12,7 @@ import { DeleteAvatarHandler } from './application/use-cases/delete-avatar.comma
 import { ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TcpClientOptions } from '@nestjs/microservices/interfaces/client-metadata.interface';
+import { PublicProfileController } from './api/public-profile.controller';
 
 const CommandHandlers = [
   UpdateProfileHandler,
@@ -21,7 +22,7 @@ const CommandHandlers = [
 const Repos = [UsersRepository, ProfileRepository, ProfileQueryRepository];
 @Module({
   imports: [CqrsModule, JwtModule, ConfigModule],
-  controllers: [ProfileController],
+  controllers: [ProfileController, PublicProfileController],
   providers: [
     {
       provide: 'FILES_SERVICE',

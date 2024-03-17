@@ -2882,7 +2882,7 @@ const messages_1 = __webpack_require__(/*! ../../../../../../types/messages */ "
 const default_get_query_uri_dto_1 = __webpack_require__(/*! ../../../utils/default-get-query.uri.dto */ "./apps/inctagram/src/utils/default-get-query.uri.dto.ts");
 const create_error_object_1 = __webpack_require__(/*! ../../../utils/create-error-object */ "./apps/inctagram/src/utils/create-error-object.ts");
 const delete_post_command_1 = __webpack_require__(/*! ../application/use-cases/delete-post.command */ "./apps/inctagram/src/features/posts/application/use-cases/delete-post.command.ts");
-const response_examples_1 = __webpack_require__(/*! ./swagger-constants/response-examples */ "./apps/inctagram/src/features/posts/api/swagger-constants/response-examples.ts");
+const response_examples_1 = __webpack_require__(/*! ./swagger-examples/response-examples */ "./apps/inctagram/src/features/posts/api/swagger-examples/response-examples.ts");
 const update_post_body_dto_1 = __webpack_require__(/*! ./dto/update-post.body.dto */ "./apps/inctagram/src/features/posts/api/dto/update-post.body.dto.ts");
 const upload_image_dto_1 = __webpack_require__(/*! ./dto/upload-image.dto */ "./apps/inctagram/src/features/posts/api/dto/upload-image.dto.ts");
 let PostsController = exports.PostsController = class PostsController {
@@ -3071,10 +3071,115 @@ exports.PostsController = PostsController = __decorate([
 
 /***/ }),
 
-/***/ "./apps/inctagram/src/features/posts/api/swagger-constants/response-examples.ts":
-/*!**************************************************************************************!*\
-  !*** ./apps/inctagram/src/features/posts/api/swagger-constants/response-examples.ts ***!
-  \**************************************************************************************/
+/***/ "./apps/inctagram/src/features/posts/api/public-posts.controller.ts":
+/*!**************************************************************************!*\
+  !*** ./apps/inctagram/src/features/posts/api/public-posts.controller.ts ***!
+  \**************************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var _a, _b, _c;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.PublicPostsController = void 0;
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const posts_query_repository_1 = __webpack_require__(/*! ../db/posts.query-repository */ "./apps/inctagram/src/features/posts/db/posts.query-repository.ts");
+const swagger_1 = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const swagger_constants_1 = __webpack_require__(/*! ../../../utils/constants/swagger-constants */ "./apps/inctagram/src/utils/constants/swagger-constants.ts");
+const default_get_query_uri_dto_1 = __webpack_require__(/*! ../../../utils/default-get-query.uri.dto */ "./apps/inctagram/src/utils/default-get-query.uri.dto.ts");
+const response_examples_1 = __webpack_require__(/*! ./swagger-examples/response-examples */ "./apps/inctagram/src/features/posts/api/swagger-examples/response-examples.ts");
+let PublicPostsController = exports.PublicPostsController = class PublicPostsController {
+    constructor(postsQueryRepository) {
+        this.postsQueryRepository = postsQueryRepository;
+    }
+    async getUserPosts(queryPost, userId) {
+        return await this.postsQueryRepository.findPosts(queryPost, userId);
+    }
+    async getAllPublicPosts(queryPost) {
+        return await this.postsQueryRepository.findPosts(queryPost);
+    }
+    async getPostById(postId) {
+        return await this.postsQueryRepository.getPostById(postId);
+    }
+};
+__decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'Get all user`s posts' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Success',
+        content: {
+            'application/json': { example: response_examples_1.GetRequestPostsViewExample },
+        },
+    }),
+    (0, common_1.Get)('user/:userId'),
+    (0, swagger_1.ApiQuery)((0, swagger_constants_1.CursorQueryOptions)('ID of the last uploaded post. If endCursorPostId not provided, the first set of posts is returned.')),
+    (0, swagger_1.ApiQuery)(swagger_constants_1.SortDirectionQueryOptions),
+    (0, swagger_1.ApiQuery)(swagger_constants_1.SortByQueryOptions),
+    (0, swagger_1.ApiQuery)(swagger_constants_1.PageSizeQueryOptions),
+    __param(0, (0, common_1.Query)()),
+    __param(1, (0, common_1.Param)('userId', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [typeof (_b = typeof default_get_query_uri_dto_1.GetDefaultUriDto !== "undefined" && default_get_query_uri_dto_1.GetDefaultUriDto) === "function" ? _b : Object, Number]),
+    __metadata("design:returntype", Promise)
+], PublicPostsController.prototype, "getUserPosts", null);
+__decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'Get all public posts' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Success',
+        content: {
+            'application/json': { example: response_examples_1.GetRequestPostsViewExample },
+        },
+    }),
+    (0, common_1.Get)('all'),
+    (0, swagger_1.ApiQuery)((0, swagger_constants_1.CursorQueryOptions)('ID of the last uploaded post. If endCursorPostId not provided, the first set of posts is returned.')),
+    (0, swagger_1.ApiQuery)(swagger_constants_1.SortDirectionQueryOptions),
+    (0, swagger_1.ApiQuery)(swagger_constants_1.SortByQueryOptions),
+    (0, swagger_1.ApiQuery)(swagger_constants_1.PageSizeQueryOptions),
+    __param(0, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [typeof (_c = typeof default_get_query_uri_dto_1.GetDefaultUriDto !== "undefined" && default_get_query_uri_dto_1.GetDefaultUriDto) === "function" ? _c : Object]),
+    __metadata("design:returntype", Promise)
+], PublicPostsController.prototype, "getAllPublicPosts", null);
+__decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'Get post by id' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Success',
+        content: {
+            'application/json': { example: response_examples_1.GetRequestPostsViewExample },
+        },
+    }),
+    (0, common_1.Get)(':postId'),
+    __param(0, (0, common_1.Param)('postId', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", Promise)
+], PublicPostsController.prototype, "getPostById", null);
+exports.PublicPostsController = PublicPostsController = __decorate([
+    (0, swagger_1.ApiTags)('Public-Posts'),
+    (0, common_1.Controller)('public-posts'),
+    __metadata("design:paramtypes", [typeof (_a = typeof posts_query_repository_1.PostsQueryRepository !== "undefined" && posts_query_repository_1.PostsQueryRepository) === "function" ? _a : Object])
+], PublicPostsController);
+
+
+/***/ }),
+
+/***/ "./apps/inctagram/src/features/posts/api/swagger-examples/response-examples.ts":
+/*!*************************************************************************************!*\
+  !*** ./apps/inctagram/src/features/posts/api/swagger-examples/response-examples.ts ***!
+  \*************************************************************************************/
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -3411,8 +3516,14 @@ let PostsQueryRepository = exports.PostsQueryRepository = class PostsQueryReposi
     }
     async findPosts(queryPost, userId) {
         const { pageSize, cursor, sortBy, sortDirection } = (0, get_request_mapper_helper_1.getRequestQueryMapper)(queryPost);
+        const filterByStatusAndOptionalUserId = {
+            status: post_enum_1.PostStatusEnum.ACTIVE,
+        };
+        if (userId) {
+            filterByStatusAndOptionalUserId.userId = userId;
+        }
         const filter = {
-            where: { userId, status: post_enum_1.PostStatusEnum.ACTIVE },
+            where: filterByStatusAndOptionalUserId,
             take: pageSize,
             orderBy: { [sortBy]: sortDirection },
         };
@@ -3421,17 +3532,22 @@ let PostsQueryRepository = exports.PostsQueryRepository = class PostsQueryReposi
             filter.cursor = { id: Number(cursor) };
         }
         const totalCount = await this.prismaClient.post.count({
-            where: {
-                status: post_enum_1.PostStatusEnum.ACTIVE,
-                userId,
-            },
+            where: filterByStatusAndOptionalUserId,
         });
         const postsNPostImages = await this.prismaClient.post.findMany(filter);
         const lastPostId = postsNPostImages.length ? postsNPostImages.at(-1).id : 0;
-        const userProfile = await this.getUserProfile(userId);
-        const userAvatar = await (0, rxjs_1.firstValueFrom)(this.getUserThumbnailAvatar(userProfile.thumbnailId));
+        let userProfile;
+        let userAvatar;
+        if (userId) {
+            userProfile = await this.getUserProfile(userId);
+            userAvatar = await (0, rxjs_1.firstValueFrom)(this.getUserThumbnailAvatar(userProfile?.thumbnailId));
+        }
         const items = [];
         for (const post of postsNPostImages) {
+            if (!userId) {
+                userProfile = await this.getUserProfile(post.userId);
+                userAvatar = await (0, rxjs_1.firstValueFrom)(this.getUserThumbnailAvatar(userProfile?.thumbnailId));
+            }
             const postImages = await (0, rxjs_1.firstValueFrom)(this.getPostImages(post.images));
             const mappedPost = (0, mapPost_1.mapPostsWithImages)({
                 post,
@@ -3446,6 +3562,20 @@ let PostsQueryRepository = exports.PostsQueryRepository = class PostsQueryReposi
             items,
             cursor: lastPostId,
             pageSize,
+        });
+    }
+    async getPostById(postId) {
+        const post = await this.prismaClient.post.findUnique({
+            where: { id: postId },
+        });
+        const userProfile = await this.getUserProfile(post.userId);
+        const userAvatar = await (0, rxjs_1.firstValueFrom)(this.getUserThumbnailAvatar(userProfile?.thumbnailId));
+        const postImages = await (0, rxjs_1.firstValueFrom)(this.getPostImages(post.images));
+        return (0, mapPost_1.mapPostsWithImages)({
+            post,
+            profile: userProfile,
+            userAvatar: userAvatar?.url,
+            postImages,
         });
     }
     getUserProfile(userId) {
@@ -3665,6 +3795,7 @@ const profile_repository_1 = __webpack_require__(/*! ../profile/db/profile.repos
 const delete_post_command_1 = __webpack_require__(/*! ./application/use-cases/delete-post.command */ "./apps/inctagram/src/features/posts/application/use-cases/delete-post.command.ts");
 const update_post_command_1 = __webpack_require__(/*! ./application/use-cases/update-post.command */ "./apps/inctagram/src/features/posts/application/use-cases/update-post.command.ts");
 const users_repository_1 = __webpack_require__(/*! ../../auth/db/users.repository */ "./apps/inctagram/src/auth/db/users.repository.ts");
+const public_posts_controller_1 = __webpack_require__(/*! ./api/public-posts.controller */ "./apps/inctagram/src/features/posts/api/public-posts.controller.ts");
 const CommandHandlers = [
     upload_post_images_command_1.UploadPostImagesHandler,
     create_post_command_1.CreatePostHandler,
@@ -3682,7 +3813,7 @@ let PostsModule = exports.PostsModule = class PostsModule {
 exports.PostsModule = PostsModule = __decorate([
     (0, common_1.Module)({
         imports: [cqrs_1.CqrsModule, config_1.ConfigModule],
-        controllers: [posts_controller_1.PostsController],
+        controllers: [posts_controller_1.PostsController, public_posts_controller_1.PublicPostsController],
         providers: [
             {
                 provide: 'FILES_SERVICE',
@@ -3868,7 +3999,6 @@ const swagger_constants_1 = __webpack_require__(/*! ../../../utils/constants/swa
 const cqrs_1 = __webpack_require__(/*! @nestjs/cqrs */ "@nestjs/cqrs");
 const platform_express_1 = __webpack_require__(/*! @nestjs/platform-express */ "@nestjs/platform-express");
 const profile_query_repository_1 = __webpack_require__(/*! ../db/profile.query-repository */ "./apps/inctagram/src/features/profile/db/profile.query-repository.ts");
-const profile_view_1 = __webpack_require__(/*! ../db/view/profile.view */ "./apps/inctagram/src/features/profile/db/view/profile.view.ts");
 const update_profile_command_1 = __webpack_require__(/*! ../application/use-cases/update-profile.command */ "./apps/inctagram/src/features/profile/application/use-cases/update-profile.command.ts");
 const upload_avatar_command_1 = __webpack_require__(/*! ../application/use-cases/upload-avatar.command */ "./apps/inctagram/src/features/profile/application/use-cases/upload-avatar.command.ts");
 const upload_avatar_dto_1 = __webpack_require__(/*! ./dto/upload-avatar.dto */ "./apps/inctagram/src/features/profile/api/dto/upload-avatar.dto.ts");
@@ -3877,6 +4007,7 @@ const user_decorator_1 = __webpack_require__(/*! ../../../utils/decorators/user.
 const types_1 = __webpack_require__(/*! ../../../types */ "./apps/inctagram/src/types/index.ts");
 const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
 const file_validator_1 = __webpack_require__(/*! ../../../utils/custom-validators/file.validator */ "./apps/inctagram/src/utils/custom-validators/file.validator.ts");
+const response_examples_1 = __webpack_require__(/*! ./swagger-examples/response-examples */ "./apps/inctagram/src/features/profile/api/swagger-examples/response-examples.ts");
 let ProfileController = exports.ProfileController = class ProfileController {
     constructor(commandBus, profileQueryRepo, client) {
         this.commandBus = commandBus;
@@ -3923,7 +4054,7 @@ __decorate([
     (0, swagger_1.ApiOkResponse)({
         description: 'success',
         content: {
-            'application/json': { example: profile_view_1.ProfileViewExample },
+            'application/json': { example: response_examples_1.ProfileViewExample },
         },
     }),
     __param(0, (0, user_decorator_1.User)()),
@@ -3956,7 +4087,7 @@ __decorate([
     (0, swagger_1.ApiCreatedResponse)({
         description: 'Uploaded image information object.',
         content: {
-            'application/json': { example: profile_view_1.ProfileImagesViewExample },
+            'application/json': { example: response_examples_1.ProfileImagesViewExample },
         },
     }),
     __param(0, (0, user_decorator_1.User)()),
@@ -3993,6 +4124,118 @@ exports.ProfileController = ProfileController = __decorate([
     __param(2, (0, common_1.Inject)('FILES_SERVICE')),
     __metadata("design:paramtypes", [typeof (_a = typeof cqrs_1.CommandBus !== "undefined" && cqrs_1.CommandBus) === "function" ? _a : Object, typeof (_b = typeof profile_query_repository_1.ProfileQueryRepository !== "undefined" && profile_query_repository_1.ProfileQueryRepository) === "function" ? _b : Object, typeof (_c = typeof microservices_1.ClientProxy !== "undefined" && microservices_1.ClientProxy) === "function" ? _c : Object])
 ], ProfileController);
+
+
+/***/ }),
+
+/***/ "./apps/inctagram/src/features/profile/api/public-profile.controller.ts":
+/*!******************************************************************************!*\
+  !*** ./apps/inctagram/src/features/profile/api/public-profile.controller.ts ***!
+  \******************************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var _a;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.PublicProfileController = void 0;
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const swagger_1 = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const profile_query_repository_1 = __webpack_require__(/*! ../db/profile.query-repository */ "./apps/inctagram/src/features/profile/db/profile.query-repository.ts");
+const response_examples_1 = __webpack_require__(/*! ./swagger-examples/response-examples */ "./apps/inctagram/src/features/profile/api/swagger-examples/response-examples.ts");
+let PublicProfileController = exports.PublicProfileController = class PublicProfileController {
+    constructor(profileQueryRepo) {
+        this.profileQueryRepo = profileQueryRepo;
+    }
+    getRegisteredUsers() {
+        return this.profileQueryRepo.getAllUsersCount();
+    }
+    findProfile(userId) {
+        return this.profileQueryRepo.getUserPublicProfile(userId);
+    }
+};
+__decorate([
+    (0, common_1.Get)('/total'),
+    (0, swagger_1.ApiOkResponse)({
+        description: 'success',
+        content: {
+            'application/json': { example: response_examples_1.PublicProfilesTotalCountViewExample },
+        },
+    }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], PublicProfileController.prototype, "getRegisteredUsers", null);
+__decorate([
+    (0, common_1.Get)('/:userId'),
+    (0, swagger_1.ApiOkResponse)({
+        description: 'success',
+        content: {
+            'application/json': { example: response_examples_1.ProfileViewExample },
+        },
+    }),
+    __param(0, (0, common_1.Param)('userId', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", void 0)
+], PublicProfileController.prototype, "findProfile", null);
+exports.PublicProfileController = PublicProfileController = __decorate([
+    (0, common_1.Controller)('public-profile'),
+    (0, swagger_1.ApiTags)('Public-profile'),
+    __metadata("design:paramtypes", [typeof (_a = typeof profile_query_repository_1.ProfileQueryRepository !== "undefined" && profile_query_repository_1.ProfileQueryRepository) === "function" ? _a : Object])
+], PublicProfileController);
+
+
+/***/ }),
+
+/***/ "./apps/inctagram/src/features/profile/api/swagger-examples/response-examples.ts":
+/*!***************************************************************************************!*\
+  !*** ./apps/inctagram/src/features/profile/api/swagger-examples/response-examples.ts ***!
+  \***************************************************************************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.PublicProfilesTotalCountViewExample = exports.ProfileViewExample = exports.ProfileImagesViewExample = void 0;
+exports.ProfileImagesViewExample = {
+    'avatar-medium': {
+        url: 'https://example.com/image.jpg',
+        width: 192,
+        height: 192,
+        fileSize: 300,
+    },
+    'avatar-thumbnail': {
+        url: 'https://example.com/image.jpg',
+        width: 45,
+        height: 45,
+        fileSize: 300,
+    },
+};
+exports.ProfileViewExample = {
+    id: 1,
+    username: 'user1',
+    firstname: 'John',
+    lastname: 'Doe',
+    city: 'London',
+    dateOfBirth: '01-01-2000',
+    aboutMe: 'About me',
+    avatars: exports.ProfileImagesViewExample,
+    createdAt: '2024-02-13T16:27:51.919Z',
+};
+exports.PublicProfilesTotalCountViewExample = {
+    totalUsersCount: 50,
+};
 
 
 /***/ }),
@@ -4247,10 +4490,15 @@ const mapUserProfile_1 = __webpack_require__(/*! ./view/mapUserProfile */ "./app
 const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
 const messages_1 = __webpack_require__(/*! ../../../../../../types/messages */ "./types/messages.ts");
 const rxjs_1 = __webpack_require__(/*! rxjs */ "rxjs");
+const post_enum_1 = __webpack_require__(/*! ../../posts/domain/types/post.enum */ "./apps/inctagram/src/features/posts/domain/types/post.enum.ts");
 let ProfileQueryRepository = exports.ProfileQueryRepository = class ProfileQueryRepository {
     constructor(prisma, client) {
         this.prisma = prisma;
         this.client = client;
+    }
+    async getAllUsersCount() {
+        const total = await this.prisma.profile.count({});
+        return { totalUsersCount: total };
     }
     async getUserProfile(userId) {
         const profile = await this.prisma.profile.findUnique({
@@ -4265,6 +4513,24 @@ let ProfileQueryRepository = exports.ProfileQueryRepository = class ProfileQuery
         });
         const fileImage = await (0, rxjs_1.firstValueFrom)(this.getUserProfileImages(userId));
         return (0, mapUserProfile_1.mapUserProfile)(profile, fileImage);
+    }
+    async getUserPublicProfile(userId) {
+        const publicUser = await this.getUserProfile(userId);
+        const postsCount = await this.prisma.post.count({
+            where: {
+                userId,
+                status: post_enum_1.PostStatusEnum.ACTIVE,
+            },
+        });
+        return {
+            id: publicUser.id,
+            username: publicUser.username,
+            aboutMe: publicUser.aboutMe,
+            avatars: publicUser.avatars,
+            following: 0,
+            followers: 0,
+            posts: postsCount,
+        };
     }
     getUserProfileImages(userId) {
         const pattern = { cmd: messages_1.MicroserviceMessagesEnum.GET_AVATAR };
@@ -4403,44 +4669,6 @@ exports.mapUserImages = mapUserImages;
 
 /***/ }),
 
-/***/ "./apps/inctagram/src/features/profile/db/view/profile.view.ts":
-/*!*********************************************************************!*\
-  !*** ./apps/inctagram/src/features/profile/db/view/profile.view.ts ***!
-  \*********************************************************************/
-/***/ ((__unused_webpack_module, exports) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ProfileViewExample = exports.ProfileImagesViewExample = void 0;
-exports.ProfileImagesViewExample = {
-    'avatar-medium': {
-        url: 'https://example.com/image.jpg',
-        width: 192,
-        height: 192,
-        fileSize: 300,
-    },
-    'avatar-thumbnail': {
-        url: 'https://example.com/image.jpg',
-        width: 45,
-        height: 45,
-        fileSize: 300,
-    },
-};
-exports.ProfileViewExample = {
-    id: 1,
-    username: 'user1',
-    firstname: 'John',
-    lastname: 'Doe',
-    city: 'London',
-    dateOfBirth: '01-01-2000',
-    aboutMe: 'About me',
-    avatars: exports.ProfileImagesViewExample,
-    createdAt: '2024-02-13T16:27:51.919Z',
-};
-
-
-/***/ }),
-
 /***/ "./apps/inctagram/src/features/profile/domain/entities/profile.entity.ts":
 /*!*******************************************************************************!*\
   !*** ./apps/inctagram/src/features/profile/domain/entities/profile.entity.ts ***!
@@ -4503,6 +4731,7 @@ const upload_avatar_command_1 = __webpack_require__(/*! ./application/use-cases/
 const delete_avatar_command_1 = __webpack_require__(/*! ./application/use-cases/delete-avatar.command */ "./apps/inctagram/src/features/profile/application/use-cases/delete-avatar.command.ts");
 const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
 const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+const public_profile_controller_1 = __webpack_require__(/*! ./api/public-profile.controller */ "./apps/inctagram/src/features/profile/api/public-profile.controller.ts");
 const CommandHandlers = [
     update_profile_command_1.UpdateProfileHandler,
     upload_avatar_command_1.UploadAvatarHandler,
@@ -4514,7 +4743,7 @@ let ProfileModule = exports.ProfileModule = class ProfileModule {
 exports.ProfileModule = ProfileModule = __decorate([
     (0, common_1.Module)({
         imports: [cqrs_1.CqrsModule, jwt_1.JwtModule, config_1.ConfigModule],
-        controllers: [profile_controller_1.ProfileController],
+        controllers: [profile_controller_1.ProfileController, public_profile_controller_1.PublicProfileController],
         providers: [
             {
                 provide: 'FILES_SERVICE',

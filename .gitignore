@@ -25,4 +25,4 @@ yarn-error.log*
 /.env.dev
 prisma/migrations
 
-dist/apps
+/dist/apps

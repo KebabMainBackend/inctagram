@@ -15,6 +15,7 @@ import { DeletePostHandler } from './application/use-cases/delete-post.command';
 import { UpdatePostHandler } from './application/use-cases/update-post.command';
 import { UsersRepository } from '../../auth/db/users.repository';
 import { TcpClientOptions } from '@nestjs/microservices/interfaces/client-metadata.interface';
+import { PublicPostsController } from './api/public-posts.controller';
 
 const CommandHandlers = [
   UploadPostImagesHandler,
@@ -32,7 +33,7 @@ const Repos = [
 
 @Module({
   imports: [CqrsModule, ConfigModule],
-  controllers: [PostsController],
+  controllers: [PostsController, PublicPostsController],
   providers: [
     {
       provide: 'FILES_SERVICE',
