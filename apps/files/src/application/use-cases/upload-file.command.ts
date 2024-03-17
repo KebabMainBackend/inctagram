@@ -33,9 +33,8 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
     @Inject('FILE_MODEL')
     private fileImageModel: Model<FileImageInterface>,
   ) {}
-  async execute(data: UploadFileCommand) {
-    console.log('dwdwdw');
-    return await this.uploadIFile(data);
+  execute(data: UploadFileCommand) {
+    return this.uploadIFile(data);
   }
   async uploadIFile({ data }: UploadFileCommand) {
     const { buffer, userId: ownerId, imageSize, imageType } = data;
