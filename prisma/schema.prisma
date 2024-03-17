@@ -62,6 +62,7 @@ model Profile {
   city        String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  accountType String?
 }
 
 model UserConfirmation {
@@ -112,10 +113,22 @@ model Blacklist {
 }
 
 model Subscription {
-  id Int @id @unique @default(autoincrement())
+  id                String   @id @unique @default(uuid())
+  userId            Int
+  subscriptionType  String
+  dateOfSubscribe   DateTime @default(now())
+  dateOfNextPayment DateTime
+  autoRenewal       Boolean  @default(false)
 }
 
-// ENUMS
+model Payments {
+  id                    String   @id @unique @default(uuid())
+  userId                Int
+  dateOfPayments        DateTime @default(now())
+  endDateOfSubscription DateTime
+  price                 Int
+  paymentType           String
+}
 
 enum PostStatus {
   ACTIVE
