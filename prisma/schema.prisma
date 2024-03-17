@@ -111,6 +111,10 @@ model Blacklist {
   refreshToken String @unique
 }
 
+model Subscription {
+  id Int @id @unique @default(autoincrement())
+}
+
 // ENUMS
 
 enum PostStatus {
