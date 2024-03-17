@@ -5,7 +5,7 @@ type PostMapperInput = {
   post: DBPostType;
   profile: DBProfileView;
   postImages: DBPostImageType[];
-  userAvatar: string;
+  userAvatar: string | null;
 };
 
 export const mapPostsWithImages = ({
@@ -23,7 +23,7 @@ export const mapPostsWithImages = ({
     ownerId: post.userId,
     username: profile.user.username,
     location: 'location',
-    avatarOwner: process.env.FILES_STORAGE_URL + userAvatar,
+    avatarOwner: userAvatar ? process.env.FILES_STORAGE_URL + userAvatar : null,
     owner: {
       lastname: profile.lastname,
       firstname: profile.firstname,
@@ -33,7 +33,7 @@ export const mapPostsWithImages = ({
 
 export const mapPostImages = (images: DBPostImageType[]) => {
   return images.map((image) => ({
-    url: 'https://storage.yandexcloud.net/kebab-inctagram/' + image.url,
+    url: process.env.FILES_STORAGE_URL + image.url,
     width: image.width,
     height: image.height,
     fileSize: image.fileSize,

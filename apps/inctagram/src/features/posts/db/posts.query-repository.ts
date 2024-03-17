@@ -22,8 +22,14 @@ export class PostsQueryRepository {
   async findPosts(queryPost: GetDefaultUriDto, userId?: number) {
     const { pageSize, cursor, sortBy, sortDirection } =
       getRequestQueryMapper(queryPost);
+    const filterByStatusAndOptionalUserId: any = {
+      status: PostStatusEnum.ACTIVE,
+    };
+    if (userId) {
+      filterByStatusAndOptionalUserId.userId = userId;
+    }
     const filter: any = {
-      where: { userId, status: PostStatusEnum.ACTIVE },
+      where: filterByStatusAndOptionalUserId,
       take: pageSize,
       orderBy: { [sortBy]: sortDirection },
     };
@@ -32,25 +38,32 @@ export class PostsQueryRepository {
       filter.cursor = { id: Number(cursor) };
     }
     const totalCount = await this.prismaClient.post.count({
-      where: {
-        status: PostStatusEnum.ACTIVE,
-        userId,
-      },
+      where: filterByStatusAndOptionalUserId,
     });
 
     const postsNPostImages = await this.prismaClient.post.findMany(filter);
     const lastPostId = postsNPostImages.length ? postsNPostImages.at(-1).id : 0;
-    const userProfile = await this.getUserProfile(userId);
-    const userAvatar = await firstValueFrom(
-      this.getUserThumbnailAvatar(userProfile.thumbnailId),
-    );
+    let userProfile;
+    let userAvatar;
+    if (userId) {
+      userProfile = await this.getUserProfile(userId);
+      userAvatar = await firstValueFrom(
+        this.getUserThumbnailAvatar(userProfile?.thumbnailId),
+      );
+    }
     const items: PostView[] = [];
     for (const post of postsNPostImages) {
+      if (!userId) {
+        userProfile = await this.getUserProfile(post.userId);
+        userAvatar = await firstValueFrom(
+          this.getUserThumbnailAvatar(userProfile?.thumbnailId),
+        );
+      }
       const postImages = await firstValueFrom(this.getPostImages(post.images));
       const mappedPost = mapPostsWithImages({
         post,
         profile: userProfile,
-        userAvatar: userAvatar.url,
+        userAvatar: userAvatar?.url,
         postImages,
       });
       items.push(mappedPost);
@@ -89,5 +102,21 @@ export class PostsQueryRepository {
       imagesIds,
     };
     return this.client.send(pattern, payload);
+  }
+  async getPostById(postId: number) {
+    const post = await this.prismaClient.post.findUnique({
+      where: { id: postId },
+    });
+    const userProfile = await this.getUserProfile(post.userId);
+    const userAvatar = await firstValueFrom(
+      this.getUserThumbnailAvatar(userProfile?.thumbnailId),
+    );
+    const postImages = await firstValueFrom(this.getPostImages(post.images));
+    return mapPostsWithImages({
+      post,
+      profile: userProfile,
+      userAvatar: userAvatar?.url,
+      postImages,
+    });
   }
 }

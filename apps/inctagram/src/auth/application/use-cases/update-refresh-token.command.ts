@@ -2,6 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
 import { SecurityDevicesRepository } from '../../../features/security-devices/db/security-devices.repository';
 import { SessionEntity } from '../../domain/entities/session.entity';
+import { ConfigService } from '@nestjs/config';
 
 export class UpdateRefreshTokenCommand {
   constructor(
@@ -19,6 +20,7 @@ export class UpdateRefreshTokenHandler
   constructor(
     private jwtService: JwtService,
     private securityDevicesRepository: SecurityDevicesRepository,
+    private configService: ConfigService,
   ) {}
   async execute({ oldRefresh }: UpdateRefreshTokenCommand) {
     const { userId, sessionId } = oldRefresh;
@@ -34,8 +36,8 @@ export class UpdateRefreshTokenHandler
         sessionId: newSessionId,
       },
       {
-        expiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME,
-        secret: process.env.JWT_REFRESH_KEY,
+        expiresIn: this.configService.get('JWT_REFRESH_EXPIRATION_TIME'),
+        secret: this.configService.get('JWT_REFRESH_KEY'),
       },
     );
   }

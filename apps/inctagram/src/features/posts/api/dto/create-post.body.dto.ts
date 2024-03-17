@@ -5,10 +5,12 @@ import {
   IsOptional,
   IsString,
   MaxLength,
+  Validate,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { trimTransformer } from '../../../../utils/custom-validators/trim-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsObjectId } from '../../../../utils/custom-validators/is-object-id.validator';
 
 export class CreatePostBodyDto {
   @Transform(({ value }) => trimTransformer(value, 'description'))
@@ -27,6 +29,7 @@ export class CreatePostBodyDto {
   @IsArray()
   @IsString({ each: true })
   @ArrayMinSize(1)
+  @Validate(IsObjectId)
   @ApiProperty({
     description: 'previously created images ids',
     example: ['string'],

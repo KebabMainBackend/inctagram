@@ -4,6 +4,7 @@ import { mapUserProfile } from './view/mapUserProfile';
 import { ClientProxy } from '@nestjs/microservices';
 import { MicroserviceMessagesEnum } from '../../../../../../types/messages';
 import { firstValueFrom } from 'rxjs';
+import { PostStatusEnum } from '../../posts/domain/types/post.enum';
 
 @Injectable()
 export class ProfileQueryRepository {
@@ -11,6 +12,10 @@ export class ProfileQueryRepository {
     private prisma: PrismaService,
     @Inject('FILES_SERVICE') private client: ClientProxy,
   ) {}
+  async getAllUsersCount() {
+    const total = await this.prisma.profile.count({});
+    return { totalUsersCount: total };
+  }
 
   async getUserProfile(userId: number) {
     const profile = await this.prisma.profile.findUnique({
@@ -25,6 +30,24 @@ export class ProfileQueryRepository {
     });
     const fileImage = await firstValueFrom(this.getUserProfileImages(userId));
     return mapUserProfile(profile, fileImage);
+  }
+  async getUserPublicProfile(userId: number) {
+    const publicUser = await this.getUserProfile(userId);
+    const postsCount = await this.prisma.post.count({
+      where: {
+        userId,
+        status: PostStatusEnum.ACTIVE,
+      },
+    });
+    return {
+      id: publicUser.id,
+      username: publicUser.username,
+      aboutMe: publicUser.aboutMe,
+      avatars: publicUser.avatars,
+      following: 0,
+      followers: 0,
+      posts: postsCount,
+    };
   }
   private getUserProfileImages(userId: number) {
     const pattern = { cmd: MicroserviceMessagesEnum.GET_AVATAR };

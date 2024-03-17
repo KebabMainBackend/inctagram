@@ -22,7 +22,6 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreatePostBodyDto } from './dto/create-post.body.dto';
-import { UpdatePostUriDto } from './dto/update-post.uri.dto';
 import { ClientProxy } from '@nestjs/microservices';
 import { PostsQueryRepository } from '../db/posts.query-repository';
 import { BearerAuthGuard } from '../../../auth/guards/bearer-auth.guard';
@@ -68,7 +67,7 @@ import {
   PostImagesViewExample,
   GetRequestPostsViewExample,
   PostViewExample,
-} from './swagger-constants/response-examples';
+} from './swagger-examples/response-examples';
 import { UpdatePostBodyDto } from './dto/update-post.body.dto';
 import { UploadPostImageDto } from './dto/upload-image.dto';
 
@@ -104,9 +103,7 @@ export class PostsController {
     @User() user: UserTypes,
     @Query() queryPost: GetDefaultUriDto,
   ) {
-    if (user.id) {
-      return await this.postsQueryRepository.findPosts(queryPost, user.id);
-    }
+    return await this.postsQueryRepository.findPosts(queryPost, user.id);
   }
 
   @ApiOperation({ summary: 'Create a new post' })

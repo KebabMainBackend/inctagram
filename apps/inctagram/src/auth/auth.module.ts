@@ -30,6 +30,7 @@ import { VerifyConfirmationCodeHandler } from './application/use-cases/verify-co
 import { TestDeleteUserHandler } from './test/delete-user.command';
 import { CheckRecoveryCodeHandler } from './application/use-cases/check-recovery-code.command';
 import { ResendRecoveryCodeHandler } from './application/use-cases/resend-recovery-code.command';
+import { ConfigService } from '@nestjs/config';
 
 const CommandHandlers = [
   RegisterUserHandler,
@@ -56,10 +57,11 @@ const TestHandlers = [TestDeleteUserHandler];
     CqrsModule,
     PassportModule.register({ session: true }),
     JwtModule.registerAsync({
-      useFactory: async () => ({
-        secret: process.env.JWT_SECRET_KEY,
-        signOptions: { expiresIn: process.env.JWT_EXPIRATION_TIME },
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get('JWT_SECRET_KEY'),
+        signOptions: { expiresIn: configService.get('JWT_EXPIRATION_TIME') },
       }),
+      inject: [ConfigService],
     }),
   ],
   controllers: [AuthController, GithubController, GoogleController],

@@ -9,7 +9,10 @@ import { ProfileQueryRepository } from './db/profile.query-repository';
 import { UpdateProfileHandler } from './application/use-cases/update-profile.command';
 import { UploadAvatarHandler } from './application/use-cases/upload-avatar.command';
 import { DeleteAvatarHandler } from './application/use-cases/delete-avatar.command';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientProxyFactory, Transport } from '@nestjs/microservices';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TcpClientOptions } from '@nestjs/microservices/interfaces/client-metadata.interface';
+import { PublicProfileController } from './api/public-profile.controller';
 
 const CommandHandlers = [
   UpdateProfileHandler,
@@ -18,22 +21,26 @@ const CommandHandlers = [
 ];
 const Repos = [UsersRepository, ProfileRepository, ProfileQueryRepository];
 @Module({
-  imports: [
-    CqrsModule,
-    JwtModule,
-    ClientsModule.register([
-      {
-        name: 'FILES_SERVICE',
-        transport: Transport.TCP,
-        options: {
-          host: process.env.FILES_SERVICE_HOST || '0.0.0.0',
-          // host: process.env.FILES_SERVICE_HOST || 'files-service-service',
-          port: Number(process.env.FILES_SERVICE_PORT || 3262),
-        },
+  imports: [CqrsModule, JwtModule, ConfigModule],
+  controllers: [ProfileController, PublicProfileController],
+  providers: [
+    {
+      provide: 'FILES_SERVICE',
+      useFactory: (configService: ConfigService) => {
+        const options: TcpClientOptions = {
+          transport: Transport.TCP,
+          options: {
+            host: configService.get('FILES_SERVICE_HOST'),
+            port: configService.get('FILES_SERVICE_PORT'),
+          },
+        };
+        return ClientProxyFactory.create(options);
       },
-    ]),
+      inject: [ConfigService],
+    },
+    PrismaService,
+    ...Repos,
+    ...CommandHandlers,
   ],
-  controllers: [ProfileController],
-  providers: [PrismaService, ...Repos, ...CommandHandlers],
 })
 export class ProfileModule {}
