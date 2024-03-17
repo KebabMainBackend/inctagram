@@ -1,3 +1,5 @@
+import { FileImageTypeEnum } from '../../../../../../../types/file-image-enum.types';
+
 export type DBProfileView = {
   userId: number;
   firstname: string;
@@ -11,28 +13,13 @@ export type DBProfileView = {
     username: string;
   };
 };
-export type DBProfileAvatarView = {
+
+export type DBProfileUserImages = DBProfileImageView[];
+export type DBProfileImageView = {
+  id: string;
   url: string;
   width: number;
   height: number;
   fileSize: number;
-};
-
-export const ProfileViewExample = {
-  id: 1,
-  userName: 'user1',
-  firstName: 'John',
-  lastName: 'Doe',
-  city: 'London',
-  dateOfBirth: '2020-01-01',
-  aboutMe: 'About me',
-  avatars: [
-    {
-      url: 'https://example.com/image.jpg',
-      width: 300,
-      height: 300,
-      fileSize: 300,
-    },
-  ],
-  createdAt: '2024-02-13T16:27:51.919Z',
+  type: FileImageTypeEnum;
 };

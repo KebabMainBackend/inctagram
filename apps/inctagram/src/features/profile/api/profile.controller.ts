@@ -33,11 +33,11 @@ import {
   BadRequestResponseOptions,
   NoContentResponseOptions,
   UnauthorizedRequestResponseOptions,
-} from '../../../utils/swagger-constants';
+} from '../../../utils/constants/swagger-constants';
 import { CommandBus } from '@nestjs/cqrs';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ProfileQueryRepository } from '../db/profile.query-repository';
-import { ProfileViewExample } from '../db/view/profile.view';
+
 import { UpdateProfileCommand } from '../application/use-cases/update-profile.command';
 import { UploadAvatarCommand } from '../application/use-cases/upload-avatar.command';
 import { UploadAvatarDto } from './dto/upload-avatar.dto';
@@ -46,6 +46,10 @@ import { User } from '../../../utils/decorators/user.decorator';
 import { UserTypes } from '../../../types';
 import { ClientProxy } from '@nestjs/microservices';
 import { CheckMimetype } from '../../../utils/custom-validators/file.validator';
+import {
+  ProfileImagesViewExample,
+  ProfileViewExample,
+} from './swagger-examples/response-examples';
 
 @Controller('profile')
 @ApiTags('Profile')
@@ -110,7 +114,12 @@ export class ProfileController {
   @ApiUnprocessableEntityResponse({
     description: 'invalid file, wrong fileType or maxSize',
   })
-  @ApiCreatedResponse(NoContentResponseOptions)
+  @ApiCreatedResponse({
+    description: 'Uploaded image information object.',
+    content: {
+      'application/json': { example: ProfileImagesViewExample },
+    },
+  })
   async uploadFile(
     @User() user: UserTypes,
     @UploadedFile(
@@ -128,14 +137,8 @@ export class ProfileController {
     )
     file: Express.Multer.File,
   ) {
-    const extension = file.originalname.split('.');
     return this.commandBus.execute(
-      new UploadAvatarCommand(
-        file.buffer,
-        extension.at(-1),
-        user.id,
-        file.size,
-      ),
+      new UploadAvatarCommand(file.buffer, user.id),
     );
   }
 

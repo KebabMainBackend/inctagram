@@ -1,17 +1,16 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PrismaService } from '../../../../prisma.service';
 import { ProfileRepository } from '../../db/profile.repository';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { MicroserviceMessagesEnum } from '../messages';
+import { MicroserviceMessagesEnum } from '../../../../../../../types/messages';
 import { firstValueFrom } from 'rxjs';
+import { mapUserImages } from '../../db/view/mapUserProfile';
+import { FileImageTypeEnum } from '../../../../../../../types/file-image-enum.types';
 
 export class UploadAvatarCommand {
   constructor(
     public buffer: Buffer,
-    public extension: string,
     public userId: number,
-    public fileSize: number,
   ) {}
 }
 
@@ -20,47 +19,39 @@ export class UploadAvatarHandler
   implements ICommandHandler<UploadAvatarCommand>
 {
   constructor(
-    private prisma: PrismaService,
     private profileRepo: ProfileRepository,
     @Inject('FILES_SERVICE') private client: ClientProxy,
   ) {}
 
-  async execute({ buffer, userId, extension, fileSize }: UploadAvatarCommand) {
+  async execute({ buffer, userId }: UploadAvatarCommand) {
     const userProfile = await this.profileRepo.getUserProfile(userId);
     if (userProfile.avatarId) {
-      this.deleteFileImage(userProfile.avatarId).subscribe();
+      this.deleteFileImage(userId).subscribe();
     }
-    const { avatarId, url, width, height } = await firstValueFrom(
-      await this.createFileImage(fileSize, buffer, userId, extension),
+    const data = await firstValueFrom(
+      await this.createFileImage(buffer, userId),
     );
-    await this.profileRepo.addAvatarToProfile(avatarId, userId);
-    return {
-      url,
-      width,
-      height,
-      fileSize,
-    };
+    const avatarId = data.avatars.find(
+      (x) => x.type === FileImageTypeEnum.AVATAR_MEDIUM,
+    ).fileId;
+    const thumbnailId = data.avatars.find(
+      (x) => x.type === FileImageTypeEnum.AVATAR_THUMBNAIL,
+    ).fileId;
+    await this.profileRepo.addAvatarToProfile(avatarId, thumbnailId, userId);
+    return mapUserImages(data.avatars);
   }
-  async createFileImage(
-    fileSize: number,
-    buffer: Buffer,
-    userId: number,
-    extension: string,
-  ) {
-    const url = `media/users/${userId}/avatars/${userId}-avatar-${Date.now()}.${extension}`;
+  async createFileImage(buffer: Buffer, userId: number) {
     const pattern = { cmd: MicroserviceMessagesEnum.UPLOAD_AVATAR };
     const payload = {
       userId,
       buffer,
-      url,
-      fileSize,
     };
     return this.client.send(pattern, payload);
   }
-  deleteFileImage(avatarId: string) {
+  deleteFileImage(userId: number) {
     const pattern = { cmd: MicroserviceMessagesEnum.DELETE_AVATAR };
     const payload = {
-      fileId: avatarId,
+      ownerId: userId,
     };
     return this.client.send(pattern, payload);
   }

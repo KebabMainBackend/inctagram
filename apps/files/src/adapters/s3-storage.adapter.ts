@@ -4,21 +4,23 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class S3StorageManager {
   private s3client;
-  private bucketName = process.env.YANDEX_BUCKET;
-  constructor() {
+  private bucketName: string;
+  constructor(private configService: ConfigService) {
     const region = 'us-east-1';
     this.s3client = new S3Client({
       region,
       endpoint: 'https://storage.yandexcloud.net',
       credentials: {
-        accessKeyId: process.env.YANDEX_ID,
-        secretAccessKey: process.env.YANDEX_SECRET,
+        accessKeyId: this.configService.get('YANDEX_ID'),
+        secretAccessKey: this.configService.get('YANDEX_SECRET'),
       },
     });
+    this.bucketName = this.configService.get('YANDEX_BUCKET');
   }
   async saveImage(buffer: Buffer, url: string) {
     const options = {

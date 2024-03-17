@@ -12,7 +12,6 @@ export class CheckMimetype extends FileValidator<{ mimetype: string }> {
     if ('buffer' in file) {
       try {
         const { type } = sizeOf(file.buffer);
-        console.log(type);
         this.currentType = type;
         return !(type !== 'jpg' && type !== 'png');
       } catch (e) {
