@@ -2,19 +2,19 @@ import { Inject, Injectable } from '@nestjs/common';
 import { UploadAvatarDto } from './api/dto/upload-avatar.dto';
 import { Model, Types } from 'mongoose';
 import { FileImageInterface } from './db/interfaces/file-image.interface';
-import { UploadFileCommand } from './application/use-cases/upload-file.command';
 import { CommandBus } from '@nestjs/cqrs';
 import { FileImageTypeEnum } from '../../../types/file-image-enum.types';
 import { UploadPostImagesDto } from './api/dto/upload-post-images.dto';
 import { FILE_IMAGE_SIZE } from './utils/constants';
 import { DeleteFileCommand } from './application/use-cases/delete-file.command';
+import { UploadFileCommand } from './application/use-cases/upload-file.command';
 
 @Injectable()
 export class FilesService {
   constructor(
+    private commandBus: CommandBus,
     @Inject('FILE_MODEL')
     private fileImageModel: Model<FileImageInterface>,
-    private readonly commandBus: CommandBus,
   ) {}
   async uploadUserAvatar({ userId, buffer }: UploadAvatarDto) {
     const avatarImage = await this.commandBus.execute(

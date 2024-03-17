@@ -33,8 +33,9 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
     @Inject('FILE_MODEL')
     private fileImageModel: Model<FileImageInterface>,
   ) {}
-  execute(data: UploadFileCommand) {
-    return this.uploadIFile(data);
+  async execute(data: UploadFileCommand) {
+    console.log('dwdwdw');
+    return await this.uploadIFile(data);
   }
   async uploadIFile({ data }: UploadFileCommand) {
     const { buffer, userId: ownerId, imageSize, imageType } = data;
@@ -90,7 +91,6 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
       url,
       buffer,
     });
-    // }
     return currentImage.id;
   }
   private createUrlForFileImage(userId: number, type: FileImageTypeEnum) {

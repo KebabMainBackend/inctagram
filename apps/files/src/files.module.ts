@@ -6,10 +6,10 @@ import { S3StorageManager } from './adapters/s3-storage.adapter';
 import { ConfigModule } from '@nestjs/config';
 import { filesProviders } from './providers/files.provider';
 import { CqrsModule } from '@nestjs/cqrs';
-import { UploadFileHandler } from './application/use-cases/upload-file.command';
 import { DeleteFileHandler } from './application/use-cases/delete-file.command';
+import { UploadFileHandler } from './application/use-cases/upload-file.command';
 
-const CommandHandlers = [UploadFileHandler, DeleteFileHandler];
+const CommandHandlers = [DeleteFileHandler, UploadFileHandler];
 
 @Module({
   imports: [
@@ -23,9 +23,9 @@ const CommandHandlers = [UploadFileHandler, DeleteFileHandler];
   providers: [
     FilesService,
     S3StorageManager,
+    ...CommandHandlers,
     ...databaseProviders,
     ...filesProviders,
-    ...CommandHandlers,
   ],
 })
 export class FilesModule {}
