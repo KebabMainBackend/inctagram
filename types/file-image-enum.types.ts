@@ -1,4 +1,5 @@
 export enum FileImageTypeEnum {
-  AVATAR_MEDIUM = 'avatar',
-  AVATAR_THUMBNAIL = 'thumbnail',
+  AVATAR_MEDIUM = 'avatar-medium',
+  POST_IMAGE = 'post-image',
+  AVATAR_THUMBNAIL = 'avatar-thumbnail',
 }

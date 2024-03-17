@@ -1,11 +1,11 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PrismaService } from '../../../../prisma.service';
 import { ProfileRepository } from '../../db/profile.repository';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { MicroserviceMessagesEnum } from '../messages';
+import { MicroserviceMessagesEnum } from '../../../../../../../types/messages';
 import { firstValueFrom } from 'rxjs';
 import { mapUserImages } from '../../db/view/mapUserProfile';
+import { FileImageTypeEnum } from '../../../../../../../types/file-image-enum.types';
 
 export class UploadAvatarCommand {
   constructor(
@@ -19,7 +19,6 @@ export class UploadAvatarHandler
   implements ICommandHandler<UploadAvatarCommand>
 {
   constructor(
-    private prisma: PrismaService,
     private profileRepo: ProfileRepository,
     @Inject('FILES_SERVICE') private client: ClientProxy,
   ) {}
@@ -27,13 +26,17 @@ export class UploadAvatarHandler
   async execute({ buffer, userId }: UploadAvatarCommand) {
     const userProfile = await this.profileRepo.getUserProfile(userId);
     if (userProfile.avatarId) {
-      this.deleteFileImage(userProfile.avatarId).subscribe();
+      this.deleteFileImage(userId).subscribe();
     }
     const data = await firstValueFrom(
       await this.createFileImage(buffer, userId),
     );
-    const avatarId = data.avatars.find((x) => x.type === 'avatar').fileId;
-    const thumbnailId = data.avatars.find((x) => x.type === 'thumbnail').fileId;
+    const avatarId = data.avatars.find(
+      (x) => x.type === FileImageTypeEnum.AVATAR_MEDIUM,
+    ).fileId;
+    const thumbnailId = data.avatars.find(
+      (x) => x.type === FileImageTypeEnum.AVATAR_THUMBNAIL,
+    ).fileId;
     await this.profileRepo.addAvatarToProfile(avatarId, thumbnailId, userId);
     return mapUserImages(data.avatars);
   }
@@ -45,10 +48,10 @@ export class UploadAvatarHandler
     };
     return this.client.send(pattern, payload);
   }
-  deleteFileImage(avatarId: string) {
+  deleteFileImage(userId: number) {
     const pattern = { cmd: MicroserviceMessagesEnum.DELETE_AVATAR };
     const payload = {
-      fileId: avatarId,
+      ownerId: userId,
     };
     return this.client.send(pattern, payload);
   }

@@ -29,7 +29,7 @@ import {
   NoContentResponseOptions,
   TooManyRequestsResponseOptions,
   UnauthorizedRequestResponseOptions,
-} from '../../utils/swagger-constants';
+} from '../../utils/constants/swagger-constants';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { CreateRefreshTokenCommand } from '../application/use-cases/create-refresh-token.command';
 import { CreateAccessTokenCommand } from '../application/use-cases/create-access-token.command';

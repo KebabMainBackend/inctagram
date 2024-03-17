@@ -33,14 +33,11 @@ import {
   BadRequestResponseOptions,
   NoContentResponseOptions,
   UnauthorizedRequestResponseOptions,
-} from '../../../utils/swagger-constants';
+} from '../../../utils/constants/swagger-constants';
 import { CommandBus } from '@nestjs/cqrs';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ProfileQueryRepository } from '../db/profile.query-repository';
-import {
-  ProfileImagesViewExample,
-  ProfileViewExample,
-} from '../db/view/profile.view';
+
 import { UpdateProfileCommand } from '../application/use-cases/update-profile.command';
 import { UploadAvatarCommand } from '../application/use-cases/upload-avatar.command';
 import { UploadAvatarDto } from './dto/upload-avatar.dto';
@@ -49,6 +46,10 @@ import { User } from '../../../utils/decorators/user.decorator';
 import { UserTypes } from '../../../types';
 import { ClientProxy } from '@nestjs/microservices';
 import { CheckMimetype } from '../../../utils/custom-validators/file.validator';
+import {
+  ProfileImagesViewExample,
+  ProfileViewExample,
+} from './swagger-examples/response-examples';
 
 @Controller('profile')
 @ApiTags('Profile')

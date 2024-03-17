@@ -14,7 +14,7 @@ import {
   ApiTooManyRequestsResponse,
 } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { TooManyRequestsResponseOptions } from '../../utils/swagger-constants';
+import { TooManyRequestsResponseOptions } from '../../utils/constants/swagger-constants';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateRefreshTokenCommand } from '../application/use-cases/create-refresh-token.command';
 import { Request, Response } from 'express';
@@ -22,11 +22,15 @@ import { CommandBus } from '@nestjs/cqrs';
 import { SignInUserViaOauthProviderCommand } from '../application/use-cases/create-user-via-oauth-provider.command';
 import { ProviderType } from '../domain/entities/oauth-provider.entity';
 import { CreateAccessTokenCommand } from '../application/use-cases/create-access-token.command';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth/google')
 @ApiTags('Google-OAuth2')
 export class GoogleController {
-  constructor(private commandBus: CommandBus) {}
+  constructor(
+    private commandBus: CommandBus,
+    private configService: ConfigService,
+  ) {}
 
   @ApiOkResponse({
     description:
@@ -64,13 +68,13 @@ export class GoogleController {
       sameSite: 'none',
     });
 
-    const frontLink = process.env.FRONT_PROD;
+    const frontLink = this.configService.get('FRONT_PROD');
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );
     res
       .writeHead(301, {
-        Location: `${frontLink}/auth/redirect/google?code=${accessToken}`,
+        Location: `${frontLink}/general/redirect/google?code=${accessToken}`,
       })
 
       .end();

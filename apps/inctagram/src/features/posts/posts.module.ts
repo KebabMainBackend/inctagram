@@ -1,45 +1,61 @@
 import { Module } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
 import { PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../prisma.service';
 import { PostsController } from './api/posts.controller';
+import { ClientProxyFactory, Transport } from '@nestjs/microservices';
+import { PostsQueryRepository } from './db/posts.query-repository';
+import { UploadPostImagesHandler } from './application/use-cases/upload-post-images.command';
+import { CreatePostHandler } from './application/use-cases/create-post.command';
+import { PostsRepository } from './db/posts.repository';
+import { ProfileRepository } from '../profile/db/profile.repository';
+import { DeletePostHandler } from './application/use-cases/delete-post.command';
+import { UpdatePostHandler } from './application/use-cases/update-post.command';
 import { UsersRepository } from '../../auth/db/users.repository';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { PostsQueryRepository } from './rep/posts.repository';
+import { TcpClientOptions } from '@nestjs/microservices/interfaces/client-metadata.interface';
+import { PublicPostsController } from './api/public-posts.controller';
+
+const CommandHandlers = [
+  UploadPostImagesHandler,
+  CreatePostHandler,
+  DeletePostHandler,
+  UpdatePostHandler,
+];
+
+const Repos = [
+  PostsQueryRepository,
+  PostsRepository,
+  ProfileRepository,
+  UsersRepository,
+];
 
 @Module({
-  imports: [
-    CqrsModule,
-    ClientsModule.register([
-      {
-        name: 'FILES_SERVICE',
-        transport: Transport.RMQ,
-        options: {
-          urls: [
-            'amqps://faqtdshr:G9jGzo6PGzV8RMQqVr6F1G0mk0Ze39uz@dingo.rmq.cloudamqp.com/faqtdshr',
-          ],
-          queue: 'file-upload',
-          queueOptions: {
-            durable: false,
-          },
-        },
-      },
-    ]),
-  ],
-  controllers: [PostsController],
+  imports: [CqrsModule, ConfigModule],
+  controllers: [PostsController, PublicPostsController],
   providers: [
-    PostsQueryRepository,
-    UsersRepository,
+    {
+      provide: 'FILES_SERVICE',
+      useFactory: (configService: ConfigService) => {
+        const options: TcpClientOptions = {
+          transport: Transport.TCP,
+          options: {
+            host: configService.get('FILES_SERVICE_HOST'),
+            port: configService.get('FILES_SERVICE_PORT'),
+          },
+        };
+        return ClientProxyFactory.create(options);
+      },
+      inject: [ConfigService],
+    },
+
     PrismaClient,
     PrismaService,
     JwtService,
     ConfigService,
-    // FirebaseAdapter,
-    // Base64Service,
-    // UploadPostImageUseCase,
-    // DeletePostImageCommand
+    ...CommandHandlers,
+    ...Repos,
   ],
 })
 export class PostsModule {}

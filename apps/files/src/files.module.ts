@@ -7,8 +7,9 @@ import { ConfigModule } from '@nestjs/config';
 import { filesProviders } from './providers/files.provider';
 import { CqrsModule } from '@nestjs/cqrs';
 import { UploadFileHandler } from './application/use-cases/upload-file.command';
+import { DeleteFileHandler } from './application/use-cases/delete-file.command';
 
-const CommandHandlers = [UploadFileHandler];
+const CommandHandlers = [UploadFileHandler, DeleteFileHandler];
 
 @Module({
   imports: [

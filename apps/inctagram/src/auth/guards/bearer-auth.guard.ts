@@ -7,12 +7,14 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { UsersRepository } from '../db/users.repository';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BearerAuthGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private usersRepo: UsersRepository,
+    private configService: ConfigService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -24,7 +26,7 @@ export class BearerAuthGuard implements CanActivate {
     }
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET_KEY,
+        secret: this.configService.get('JWT_SECRET_KEY'),
       });
 
       if (payload.userId) {
