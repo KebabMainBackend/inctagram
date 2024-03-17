@@ -19,6 +19,5 @@ export class DeleteFileHandler implements ICommandHandler<DeleteFileCommand> {
     await this.fileImageModel.deleteOne({
       url,
     });
-    return true;
   }
 }
