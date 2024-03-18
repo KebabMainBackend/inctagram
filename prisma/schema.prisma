@@ -119,6 +119,7 @@ model Subscription {
   dateOfSubscribe   DateTime @default(now())
   dateOfNextPayment DateTime
   autoRenewal       Boolean  @default(false)
+  paymentMethod     String
 }
 
 model Payments {

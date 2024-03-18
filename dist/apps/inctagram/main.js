@@ -3564,20 +3564,6 @@ let PostsQueryRepository = exports.PostsQueryRepository = class PostsQueryReposi
             pageSize,
         });
     }
-    async getPostById(postId) {
-        const post = await this.prismaClient.post.findUnique({
-            where: { id: postId },
-        });
-        const userProfile = await this.getUserProfile(post.userId);
-        const userAvatar = await (0, rxjs_1.firstValueFrom)(this.getUserThumbnailAvatar(userProfile?.thumbnailId));
-        const postImages = await (0, rxjs_1.firstValueFrom)(this.getPostImages(post.images));
-        return (0, mapPost_1.mapPostsWithImages)({
-            post,
-            profile: userProfile,
-            userAvatar: userAvatar?.url,
-            postImages,
-        });
-    }
     getUserProfile(userId) {
         return this.prismaClient.profile.findUnique({
             where: {
@@ -3605,6 +3591,20 @@ let PostsQueryRepository = exports.PostsQueryRepository = class PostsQueryReposi
             imagesIds,
         };
         return this.client.send(pattern, payload);
+    }
+    async getPostById(postId) {
+        const post = await this.prismaClient.post.findUnique({
+            where: { id: postId },
+        });
+        const userProfile = await this.getUserProfile(post.userId);
+        const userAvatar = await (0, rxjs_1.firstValueFrom)(this.getUserThumbnailAvatar(userProfile?.thumbnailId));
+        const postImages = await (0, rxjs_1.firstValueFrom)(this.getPostImages(post.images));
+        return (0, mapPost_1.mapPostsWithImages)({
+            post,
+            profile: userProfile,
+            userAvatar: userAvatar?.url,
+            postImages,
+        });
     }
 };
 exports.PostsQueryRepository = PostsQueryRepository = __decorate([
