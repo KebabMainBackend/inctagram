@@ -101,4 +101,27 @@ export class EmailService {
       throw Error('second error');
     }
   }
+
+  async sendSubscriptionHasExpiredEmail(userEmail) {
+    const messageTemplate = `
+            <h1>Your subscription has expired!</h1>
+            <p>The subscription has expired. To
+renew your subscription, change
+your account type to business
+            </p>`;
+    const options = {
+      from: 'Johnny <johnny178917@gmail.com>',
+      to: userEmail,
+      subject: 'Successful registration',
+      html: messageTemplate,
+    };
+    try {
+      await this.sendMail(options, () => {
+        console.log('notification Email is delivered successfully');
+        return true;
+      });
+    } catch (e) {
+      throw Error('second error');
+    }
+  }
 }

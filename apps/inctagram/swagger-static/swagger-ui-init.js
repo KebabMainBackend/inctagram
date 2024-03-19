@@ -1,1 +1,1 @@
-{"message":"Cannot GET /swagger/swagger-ui-init.js","error":"Not Found","statusCode":404}
+{"statusCode":404,"message":"ENOENT: no such file or directory, stat 'D:\\job\\inctagram\\apps\\inctagram\\swagger-static\\index.html'"}

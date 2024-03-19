@@ -73,13 +73,14 @@ const auth_module_1 = __webpack_require__(/*! ./auth/auth.module */ "./apps/inct
 const security_devices_module_1 = __webpack_require__(/*! ./features/security-devices/security-devices.module */ "./apps/inctagram/src/features/security-devices/security-devices.module.ts");
 const profile_module_1 = __webpack_require__(/*! ./features/profile/profile.module */ "./apps/inctagram/src/features/profile/profile.module.ts");
 const posts_module_1 = __webpack_require__(/*! ./features/posts/posts.module */ "./apps/inctagram/src/features/posts/posts.module.ts");
+const subscriptions_module_1 = __webpack_require__(/*! ./features/subscriptions/subscriptions.module */ "./apps/inctagram/src/features/subscriptions/subscriptions.module.ts");
 let AppModule = exports.AppModule = class AppModule {
 };
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
             serve_static_1.ServeStaticModule.forRoot({
-                rootPath: (0, path_1.join)('D:\\job\\inctagram\\apps\\inctagram\\swagger-static'),
+                rootPath: (0, path_1.join)('C:\\Projects\\inctagram\\apps\\inctagram\\swagger-static'),
                 serveRoot: process.env.NODE_ENV === 'development' ? '/' : '/swagger',
             }),
             auth_module_1.AuthModule,
@@ -96,6 +97,7 @@ exports.AppModule = AppModule = __decorate([
             ]),
             posts_module_1.PostsModule,
             profile_module_1.ProfileModule,
+            subscriptions_module_1.SubscriptionsModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
@@ -2465,6 +2467,29 @@ let EmailService = exports.EmailService = class EmailService {
             <h1>Congratulations!</h1>
             <p>You registered in our service
                 <a href='https://inctagram.fun'>Inctagram</a>
+            </p>`;
+        const options = {
+            from: 'Johnny <johnny178917@gmail.com>',
+            to: userEmail,
+            subject: 'Successful registration',
+            html: messageTemplate,
+        };
+        try {
+            await this.sendMail(options, () => {
+                console.log('notification Email is delivered successfully');
+                return true;
+            });
+        }
+        catch (e) {
+            throw Error('second error');
+        }
+    }
+    async sendSubscriptionHasExpiredEmail(userEmail) {
+        const messageTemplate = `
+            <h1>Your subscription has expired!</h1>
+            <p>The subscription has expired. To
+renew your subscription, change
+your account type to business
             </p>`;
         const options = {
             from: 'Johnny <johnny178917@gmail.com>',
@@ -5014,6 +5039,351 @@ let SecurityDevicesService = exports.SecurityDevicesService = class SecurityDevi
 exports.SecurityDevicesService = SecurityDevicesService = __decorate([
     (0, common_1.Injectable)()
 ], SecurityDevicesService);
+
+
+/***/ }),
+
+/***/ "./apps/inctagram/src/features/subscriptions/api/dto.ts":
+/*!**************************************************************!*\
+  !*** ./apps/inctagram/src/features/subscriptions/api/dto.ts ***!
+  \**************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var _a;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.createPaymentDto = exports.updateAutoRenewalStatusDto = exports.purchaseSubscriptionDto = void 0;
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+class purchaseSubscriptionDto {
+}
+exports.purchaseSubscriptionDto = purchaseSubscriptionDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], purchaseSubscriptionDto.prototype, "subscriptionType", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], purchaseSubscriptionDto.prototype, "paymentMethod", void 0);
+class updateAutoRenewalStatusDto {
+}
+exports.updateAutoRenewalStatusDto = updateAutoRenewalStatusDto;
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], updateAutoRenewalStatusDto.prototype, "autoRenewal", void 0);
+class createPaymentDto {
+}
+exports.createPaymentDto = createPaymentDto;
+__decorate([
+    (0, class_validator_1.IsInt)(),
+    __metadata("design:type", Number)
+], createPaymentDto.prototype, "price", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], createPaymentDto.prototype, "paymentType", void 0);
+__decorate([
+    (0, class_validator_1.IsDate)(),
+    __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
+], createPaymentDto.prototype, "endDateOfSubscription", void 0);
+
+
+/***/ }),
+
+/***/ "./apps/inctagram/src/features/subscriptions/api/subscriptions.controller.ts":
+/*!***********************************************************************************!*\
+  !*** ./apps/inctagram/src/features/subscriptions/api/subscriptions.controller.ts ***!
+  \***********************************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var _a, _b, _c;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SubscriptionsController = void 0;
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const bearer_auth_guard_1 = __webpack_require__(/*! ../../../auth/guards/bearer-auth.guard */ "./apps/inctagram/src/auth/guards/bearer-auth.guard.ts");
+const dto_1 = __webpack_require__(/*! ./dto */ "./apps/inctagram/src/features/subscriptions/api/dto.ts");
+const subscription_repository_1 = __webpack_require__(/*! ../db/subscription.repository */ "./apps/inctagram/src/features/subscriptions/db/subscription.repository.ts");
+let SubscriptionsController = exports.SubscriptionsController = class SubscriptionsController {
+    constructor(SubscriptionRepo) {
+        this.SubscriptionRepo = SubscriptionRepo;
+    }
+    get() {
+    }
+    async getCurrentSubscribeInfo(req) {
+        return this.SubscriptionRepo.getCurrentSubscribeInfo(req.owner.id);
+    }
+    async buySubscription(payload, req) {
+        return await this.SubscriptionRepo.buySubscription(payload, req.owner.id);
+    }
+    async updateAutoRenewalStatus(payload, req) {
+    }
+};
+__decorate([
+    (0, common_1.Get)(''),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], SubscriptionsController.prototype, "get", null);
+__decorate([
+    (0, common_1.Get)('current'),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], SubscriptionsController.prototype, "getCurrentSubscribeInfo", null);
+__decorate([
+    (0, common_1.Post)('purchase'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [typeof (_b = typeof dto_1.purchaseSubscriptionDto !== "undefined" && dto_1.purchaseSubscriptionDto) === "function" ? _b : Object, Object]),
+    __metadata("design:returntype", Promise)
+], SubscriptionsController.prototype, "buySubscription", null);
+__decorate([
+    (0, common_1.Put)('auto-renewal'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [typeof (_c = typeof dto_1.updateAutoRenewalStatusDto !== "undefined" && dto_1.updateAutoRenewalStatusDto) === "function" ? _c : Object, Object]),
+    __metadata("design:returntype", Promise)
+], SubscriptionsController.prototype, "updateAutoRenewalStatus", null);
+exports.SubscriptionsController = SubscriptionsController = __decorate([
+    (0, common_1.Controller)('subscription'),
+    (0, common_1.UseGuards)(bearer_auth_guard_1.BearerAuthGuard),
+    __metadata("design:paramtypes", [typeof (_a = typeof subscription_repository_1.SubscriptionRepository !== "undefined" && subscription_repository_1.SubscriptionRepository) === "function" ? _a : Object])
+], SubscriptionsController);
+
+
+/***/ }),
+
+/***/ "./apps/inctagram/src/features/subscriptions/db/subscription.repository.ts":
+/*!*********************************************************************************!*\
+  !*** ./apps/inctagram/src/features/subscriptions/db/subscription.repository.ts ***!
+  \*********************************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var _a, _b;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SubscriptionRepository = void 0;
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const prisma_service_1 = __webpack_require__(/*! ../../../prisma.service */ "./apps/inctagram/src/prisma.service.ts");
+const email_manager_1 = __webpack_require__(/*! ../../../auth/managers/email.manager */ "./apps/inctagram/src/auth/managers/email.manager.ts");
+const subscription_entity_1 = __webpack_require__(/*! ../domain/subscription.entity */ "./apps/inctagram/src/features/subscriptions/domain/subscription.entity.ts");
+let SubscriptionRepository = exports.SubscriptionRepository = class SubscriptionRepository {
+    constructor(prisma, EmailService) {
+        this.prisma = prisma;
+        this.EmailService = EmailService;
+    }
+    async getCurrentSubscribeInfo(userId) {
+        const current = await this.prisma.subscription.findUnique({
+            where: { userId },
+            include: {
+                profile: {
+                    include: {
+                        user: {
+                            select: {
+                                email: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        if (current.expireAt < new Date()) {
+            await this.prisma.profile.update({
+                where: { userId },
+                data: {
+                    accountType: 'Personal'
+                }
+            });
+            return await this.EmailService
+                .sendSubscriptionHasExpiredEmail(current.profile.user.email);
+        }
+        if (current.autoRenewal)
+            return {
+                expireAt: current.expireAt
+            };
+        else
+            return {
+                expireAt: current.expireAt,
+                nextPayment: current.dateOfNextPayment
+            };
+    }
+    async buySubscription(payload, userId) {
+        const sub = subscription_entity_1.SubscriptionEntity.create(payload, userId);
+        console.log(sub);
+    }
+};
+exports.SubscriptionRepository = SubscriptionRepository = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [typeof (_a = typeof prisma_service_1.PrismaService !== "undefined" && prisma_service_1.PrismaService) === "function" ? _a : Object, typeof (_b = typeof email_manager_1.EmailService !== "undefined" && email_manager_1.EmailService) === "function" ? _b : Object])
+], SubscriptionRepository);
+
+
+/***/ }),
+
+/***/ "./apps/inctagram/src/features/subscriptions/domain/subscription.entity.ts":
+/*!*********************************************************************************!*\
+  !*** ./apps/inctagram/src/features/subscriptions/domain/subscription.entity.ts ***!
+  \*********************************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var _a, _b, _c;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SubscriptionEntity = void 0;
+const date_fns_1 = __webpack_require__(/*! date-fns */ "date-fns");
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+class SubscriptionEntity {
+    static create(data, userId) {
+        const { subscriptionType, paymentMethod } = data;
+        const subscription = new SubscriptionEntity();
+        subscription.userId = userId;
+        subscription.subscriptionType = subscriptionType;
+        subscription.paymentMethod = paymentMethod;
+        subscription.autoRenewal = false;
+        subscription.dateOfSubscribe = new Date();
+        if (subscription.subscriptionType === '1')
+            subscription.dateOfNextPayment = (0, date_fns_1.addDays)(new Date(), 1);
+        else if (subscription.subscriptionType === '7')
+            subscription.dateOfNextPayment = (0, date_fns_1.addDays)(new Date(), 7);
+        else if (subscription.subscriptionType === '31')
+            subscription.dateOfNextPayment = (0, date_fns_1.addMonths)(new Date(), 1);
+        subscription.expireAt = (0, date_fns_1.addDays)(new Date(), Number(subscriptionType));
+        return subscription;
+    }
+}
+exports.SubscriptionEntity = SubscriptionEntity;
+__decorate([
+    (0, class_validator_1.IsInt)(),
+    __metadata("design:type", Number)
+], SubscriptionEntity.prototype, "userId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SubscriptionEntity.prototype, "subscriptionType", void 0);
+__decorate([
+    (0, class_validator_1.IsDate)(),
+    __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
+], SubscriptionEntity.prototype, "dateOfSubscribe", void 0);
+__decorate([
+    (0, class_validator_1.IsDate)(),
+    __metadata("design:type", typeof (_b = typeof Date !== "undefined" && Date) === "function" ? _b : Object)
+], SubscriptionEntity.prototype, "dateOfNextPayment", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], SubscriptionEntity.prototype, "autoRenewal", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SubscriptionEntity.prototype, "paymentMethod", void 0);
+__decorate([
+    (0, class_validator_1.IsDate)(),
+    __metadata("design:type", typeof (_c = typeof Date !== "undefined" && Date) === "function" ? _c : Object)
+], SubscriptionEntity.prototype, "expireAt", void 0);
+
+
+/***/ }),
+
+/***/ "./apps/inctagram/src/features/subscriptions/subscriptions.module.ts":
+/*!***************************************************************************!*\
+  !*** ./apps/inctagram/src/features/subscriptions/subscriptions.module.ts ***!
+  \***************************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SubscriptionsModule = void 0;
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const cqrs_1 = __webpack_require__(/*! @nestjs/cqrs */ "@nestjs/cqrs");
+const jwt_1 = __webpack_require__(/*! @nestjs/jwt */ "@nestjs/jwt");
+const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+const prisma_service_1 = __webpack_require__(/*! ../../prisma.service */ "./apps/inctagram/src/prisma.service.ts");
+const email_manager_1 = __webpack_require__(/*! ../../auth/managers/email.manager */ "./apps/inctagram/src/auth/managers/email.manager.ts");
+const subscription_repository_1 = __webpack_require__(/*! ./db/subscription.repository */ "./apps/inctagram/src/features/subscriptions/db/subscription.repository.ts");
+const subscriptions_controller_1 = __webpack_require__(/*! ./api/subscriptions.controller */ "./apps/inctagram/src/features/subscriptions/api/subscriptions.controller.ts");
+const users_repository_1 = __webpack_require__(/*! ../../auth/db/users.repository */ "./apps/inctagram/src/auth/db/users.repository.ts");
+const Repos = [
+    email_manager_1.EmailService,
+    subscription_repository_1.SubscriptionRepository,
+    users_repository_1.UsersRepository
+];
+let SubscriptionsModule = exports.SubscriptionsModule = class SubscriptionsModule {
+};
+exports.SubscriptionsModule = SubscriptionsModule = __decorate([
+    (0, common_1.Module)({
+        imports: [cqrs_1.CqrsModule, jwt_1.JwtModule, config_1.ConfigModule],
+        controllers: [subscriptions_controller_1.SubscriptionsController],
+        providers: [
+            {
+                provide: 'FILES_SERVICE',
+                useFactory: (configService) => {
+                    const options = {
+                        transport: microservices_1.Transport.TCP,
+                        options: {
+                            host: configService.get('FILES_SERVICE_HOST'),
+                            port: configService.get('FILES_SERVICE_PORT'),
+                        },
+                    };
+                    return microservices_1.ClientProxyFactory.create(options);
+                },
+                inject: [config_1.ConfigService],
+            },
+            prisma_service_1.PrismaService,
+            ...Repos,
+        ],
+    })
+], SubscriptionsModule);
 
 
 /***/ }),
