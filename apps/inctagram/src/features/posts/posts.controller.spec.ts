@@ -6,14 +6,14 @@ import { AppModule } from '../../app.module';
 import { appSettings } from '../../app.settings';
 import { FilesModule } from '../../../../files/src/files.module';
 
-const URL = '/posts';
+// const URL = '/posts';
 const timeout = 10000;
 describe('AuthController', () => {
   let app: INestApplication;
   let httpServer;
   let accesstoken;
-  let user: { id: number; email: string };
-  const imagesIds = ['65f56c5702f9adf761f516d1', '65f56c5702f9adf761f516d3'];
+  // let user: { id: number; email: string };
+  // const imagesIds = ['65f56c5702f9adf761f516d1', '65f56c5702f9adf761f516d3'];
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -43,11 +43,10 @@ describe('AuthController', () => {
       accesstoken = data.body.accessToken;
     });
     it('should get current user from token', async () => {
-      const req = await request(httpServer)
+      await request(httpServer)
         .get('/auth/me')
         .set('Authorization', 'Bearer ' + accesstoken)
         .expect(HttpStatus.OK);
-      user = req.body;
     });
   });
   // describe('create posts with already created images', () => {
