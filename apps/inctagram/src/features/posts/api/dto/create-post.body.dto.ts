@@ -34,6 +34,7 @@ export class CreatePostBodyDto {
     description: 'previously created images ids',
     example: ['string'],
     minLength: 1,
+    maxLength: 10,
   })
   images: string[];
 }

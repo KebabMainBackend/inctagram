@@ -1,11 +1,10 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   HttpCode,
+  HttpException,
   HttpStatus,
   Inject,
   Param,
@@ -70,6 +69,7 @@ import {
 } from './swagger-examples/response-examples';
 import { UpdatePostBodyDto } from './dto/update-post.body.dto';
 import { UploadPostImageDto } from './dto/upload-image.dto';
+import { firstValueFrom } from 'rxjs';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -150,10 +150,13 @@ export class PostsController {
     );
     if (updateResult === HttpStatus.NOT_FOUND) {
       const error = createErrorMessage('wrong id', 'id');
-      throw new BadRequestException(error);
+      throw new HttpException(error, HttpStatus.NOT_FOUND);
     }
     if (updateResult === HttpStatus.FORBIDDEN) {
-      throw new ForbiddenException();
+      throw new HttpException(
+        'requested resource is forbidden',
+        HttpStatus.FORBIDDEN,
+      );
     }
     return;
   }
@@ -175,11 +178,17 @@ export class PostsController {
       }),
     );
     if (updateResult === HttpStatus.NOT_FOUND) {
-      const error = createErrorMessage('wrong id', 'id');
-      throw new BadRequestException(error);
+      const error = createErrorMessage(
+        'post with this id does not exist',
+        'id',
+      );
+      throw new HttpException(error, HttpStatus.NOT_FOUND);
     }
     if (updateResult === HttpStatus.FORBIDDEN) {
-      throw new ForbiddenException();
+      throw new HttpException(
+        'requested resource is forbidden',
+        HttpStatus.FORBIDDEN,
+      );
     }
     return;
   }
@@ -234,13 +243,18 @@ export class PostsController {
     @User() user: UserTypes,
     @Param('imageId') imageId: string,
   ) {
-    try {
-      return this.clientProxy.send(
+    const resp = await firstValueFrom(
+      this.clientProxy.send(
         { cmd: MicroserviceMessagesEnum.DELETE_POST_IMAGE },
         { userId: user.id, imageId },
-      );
-    } catch (err) {
-      console.log('error on deleting post image');
+      ),
+    );
+    if (resp === HttpStatus.NOT_FOUND) {
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     }
+    if (resp === HttpStatus.FORBIDDEN) {
+      throw new HttpException('forbidden resource', HttpStatus.FORBIDDEN);
+    }
+    return;
   }
 }
