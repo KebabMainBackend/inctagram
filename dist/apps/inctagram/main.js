@@ -99,7 +99,7 @@ exports.AppModule = AppModule = __decorate([
             posts_module_1.PostsModule,
             profile_module_1.ProfileModule,
             subscriptions_module_1.SubscriptionsModule,
-            stripe_module_1.ProductModule
+            stripe_module_1.ProductModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
@@ -5253,7 +5253,7 @@ let ProductRepository = exports.ProductRepository = class ProductRepository {
             line_items: [
                 {
                     price: priceId,
-                    quantity
+                    quantity,
                 },
             ],
             mode: 'payment',
@@ -5261,30 +5261,34 @@ let ProductRepository = exports.ProductRepository = class ProductRepository {
         return session.url;
     }
     async addNewProductToStripe(payload) {
-        const { productPrice, currency, productName, description, interval, type, category } = payload;
+        const { productPrice, currency, productName, description, interval, type, category, } = payload;
         const stripe = new stripe_1.default(process.env.STRIPE_API_KEY);
-        stripe.products.create({
+        stripe.products
+            .create({
             name: productName,
             description,
-        }).then(product => {
-            stripe.prices.create({
+        })
+            .then((product) => {
+            stripe.prices
+                .create({
                 unit_amount: productPrice * 100,
                 currency,
                 recurring: {
                     interval,
                 },
                 product: product.id,
-            }).then(price => {
+            })
+                .then((price) => {
                 const dto = {
                     priceId: price.id,
                     productId: product.id,
                     price: productPrice,
                     type,
-                    category
+                    category,
                 };
                 const newProduct = product_entity_1.ProductEntity.create(dto);
                 this.prisma.stripe.create({
-                    data: newProduct
+                    data: newProduct,
                 });
                 return newProduct;
             });
@@ -5379,10 +5383,7 @@ const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestj
 const prisma_service_1 = __webpack_require__(/*! ../../prisma.service */ "./apps/inctagram/src/prisma.service.ts");
 const product_repository_1 = __webpack_require__(/*! ./db/product.repository */ "./apps/inctagram/src/features/stripe/db/product.repository.ts");
 const product_controller_1 = __webpack_require__(/*! ./api/product.controller */ "./apps/inctagram/src/features/stripe/api/product.controller.ts");
-const Repos = [
-    product_repository_1.ProductRepository,
-    users_repository_1.UsersRepository
-];
+const Repos = [product_repository_1.ProductRepository, users_repository_1.UsersRepository];
 let ProductModule = exports.ProductModule = class ProductModule {
 };
 exports.ProductModule = ProductModule = __decorate([
@@ -5494,8 +5495,7 @@ let SubscriptionsController = exports.SubscriptionsController = class Subscripti
     constructor(SubscriptionRepo) {
         this.SubscriptionRepo = SubscriptionRepo;
     }
-    get() {
-    }
+    get() { }
     async getCurrentSubscribeInfo(req) {
         return this.SubscriptionRepo.getCurrentSubscribeInfo(req.owner.id);
     }
@@ -5503,8 +5503,7 @@ let SubscriptionsController = exports.SubscriptionsController = class Subscripti
         return await this.SubscriptionRepo.buySubscription(payload, req.owner.id);
     }
     async updateAutoRenewalStatus(payload, req) {
-        return await this.SubscriptionRepo
-            .updateAutoRenewalStatus(payload.autoRenewal, req.owner.id);
+        return await this.SubscriptionRepo.updateAutoRenewalStatus(payload.autoRenewal, req.owner.id);
     }
 };
 __decorate([
@@ -5585,12 +5584,12 @@ let SubscriptionRepository = exports.SubscriptionRepository = class Subscription
                     include: {
                         user: {
                             select: {
-                                email: true
-                            }
-                        }
-                    }
-                }
-            }
+                                email: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
         if (!current)
             throw new common_1.HttpException('Not Found', 404);
@@ -5598,38 +5597,39 @@ let SubscriptionRepository = exports.SubscriptionRepository = class Subscription
             await this.prisma.profile.update({
                 where: { userId },
                 data: {
-                    accountType: 'Personal'
-                }
+                    accountType: 'Personal',
+                },
             });
-            return await this.EmailService
-                .sendSubscriptionHasExpiredEmail(current.profile.user.email);
+            return await this.EmailService.sendSubscriptionHasExpiredEmail(current.profile.user.email);
         }
         const daysLeft = (0, date_fns_1.intervalToDuration)({
             start: new Date(),
-            end: current.expireAt
+            end: current.expireAt,
         });
         if (current.autoRenewal)
             return {
-                expireAt: daysLeft.days
+                expireAt: daysLeft.days,
             };
         else
             return {
                 expireAt: daysLeft.days,
-                nextPayment: current.dateOfNextPayment
+                nextPayment: current.dateOfNextPayment,
             };
     }
     async buySubscription(payload, userId, quantity = 1) {
-        const subscription = await this.prisma.subscription.findUnique({ where: { userId } });
+        const subscription = await this.prisma.subscription.findUnique({
+            where: { userId },
+        });
         const newSubscription = subscription_entity_1.SubscriptionEntity.create(payload, userId);
         const productInfo = await this.prisma.stripe.findFirst({
-            where: { type: payload.subscriptionType }
+            where: { type: payload.subscriptionType },
         });
         await this.ProductRepository.makeAPurchase(productInfo.priceId, quantity);
         if (subscription) {
             const { dateOfNextPayment, expireAt, paymentType } = subscription_entity_1.SubscriptionEntity.renewSubscription(subscription, payload);
             await this.prisma.subscription.update({
                 where: { userId },
-                data: { dateOfNextPayment, expireAt, paymentType }
+                data: { dateOfNextPayment, expireAt, paymentType },
             });
         }
         if (!subscription) {
@@ -5642,7 +5642,7 @@ let SubscriptionRepository = exports.SubscriptionRepository = class Subscription
     async updateAutoRenewalStatus(autoRenewal, userId) {
         await this.prisma.subscription.update({
             where: { userId },
-            data: { autoRenewal }
+            data: { autoRenewal },
         });
     }
 };
@@ -5753,8 +5753,7 @@ class SubscriptionEntity {
     static renewSubscription(existingSubscription, data) {
         const { subscriptionType, paymentType } = data;
         const expireAt = (0, date_fns_1.addDays)(existingSubscription.dateOfNextPayment, Number(subscriptionType));
-        return { dateOfNextPayment: expireAt,
-            expireAt, paymentType };
+        return { dateOfNextPayment: expireAt, expireAt, paymentType };
     }
 }
 exports.SubscriptionEntity = SubscriptionEntity;
@@ -5820,7 +5819,7 @@ const Repos = [
     email_manager_1.EmailService,
     subscription_repository_1.SubscriptionRepository,
     users_repository_1.UsersRepository,
-    product_repository_1.ProductRepository
+    product_repository_1.ProductRepository,
 ];
 let SubscriptionsModule = exports.SubscriptionsModule = class SubscriptionsModule {
 };
