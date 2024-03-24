@@ -52,7 +52,7 @@
     "passport": "0.7.0",
     "passport-github": "^1.1.0",
     "passport-google-oauth20": "^2.0.0",
-    "prisma": "^5.11.0",
+    "prisma": "5.9.1",
     "reflect-metadata": "0.1.13",
     "rxjs": "7.8.1",
     "sharp": "0.32.6",
