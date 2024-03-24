@@ -1,25 +1,24 @@
+import {EmailService} from "../../auth/managers/email.manager";
+import {SubscriptionRepository} from "../subscriptions/db/subscription.repository";
+import {UsersRepository} from "../../auth/db/users.repository";
 import {Module} from "@nestjs/common";
 import {CqrsModule} from "@nestjs/cqrs";
 import {JwtModule} from "@nestjs/jwt";
 import {ConfigModule, ConfigService} from "@nestjs/config";
+import {SubscriptionsController} from "../subscriptions/api/subscriptions.controller";
 import {TcpClientOptions} from "@nestjs/microservices/interfaces/client-metadata.interface";
 import {ClientProxyFactory, Transport} from "@nestjs/microservices";
 import {PrismaService} from "../../prisma.service";
-import {EmailService} from "../../auth/managers/email.manager";
-import {SubscriptionRepository} from "./db/subscription.repository";
-import {SubscriptionsController} from "./api/subscriptions.controller";
-import {UsersRepository} from "../../auth/db/users.repository";
-import {ProductRepository} from "../stripe/db/product.repository";
+import {ProductRepository} from "./db/product.repository";
+import {ProductController} from "./api/product.controller";
 
 const Repos = [
-    EmailService,
-    SubscriptionRepository,
-    UsersRepository,
-    ProductRepository
+    ProductRepository,
+    UsersRepository
 ]
 @Module({
     imports: [CqrsModule, JwtModule, ConfigModule],
-    controllers: [SubscriptionsController],
+    controllers: [ProductController],
     providers: [
         {
             provide: 'FILES_SERVICE',
@@ -39,4 +38,4 @@ const Repos = [
         ...Repos,
     ],
 })
-export class SubscriptionsModule {}
+export class ProductModule {}

@@ -10,6 +10,7 @@ import { SecurityDevicesModule } from './features/security-devices/security-devi
 import { ProfileModule } from './features/profile/profile.module';
 import { PostsModule } from './features/posts/posts.module';
 import {SubscriptionsModule} from "./features/subscriptions/subscriptions.module";
+import {ProductModule} from "./features/stripe/stripe.module";
 
 @Module({
   imports: [
@@ -31,7 +32,8 @@ import {SubscriptionsModule} from "./features/subscriptions/subscriptions.module
     ]),
     PostsModule,
     ProfileModule,
-    SubscriptionsModule
+    SubscriptionsModule,
+      ProductModule
   ],
   controllers: [AppController],
   providers: [AppService],

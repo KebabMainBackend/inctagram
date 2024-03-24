@@ -6,7 +6,7 @@ export class SubscriptionEntity {
     @IsInt()
     userId: number;
     @IsString()
-    subscriptionType: '1' | '7' | '31';
+    subscriptionType: string
     @IsDate()
     dateOfSubscribe: Date
     @IsDate()
@@ -14,17 +14,17 @@ export class SubscriptionEntity {
     @IsBoolean()
     autoRenewal: boolean
     @IsString()
-    paymentMethod: 'PayPall' | 'Stripe'
+    paymentType: 'PayPall' | 'Stripe'
     @IsDate()
     expireAt: Date
-    static create(data: purchaseSubscriptionDto, userId) {
-        const { subscriptionType, paymentMethod } = data;
+    static create(data: purchaseSubscriptionDto, userId: number) {
+        const { subscriptionType, paymentType } = data;
         const subscription = new SubscriptionEntity();
 
         subscription.userId = userId
 
         subscription.subscriptionType = subscriptionType
-        subscription.paymentMethod = paymentMethod
+        subscription.paymentType = paymentType
         subscription.autoRenewal = false
 
         subscription.dateOfSubscribe = new Date()
@@ -39,5 +39,16 @@ export class SubscriptionEntity {
         subscription.expireAt = addDays(new Date(), Number(subscriptionType))
 
         return subscription
+    }
+
+    static renewSubscription(existingSubscription: SubscriptionEntity,
+                             data: purchaseSubscriptionDto) {
+        const { subscriptionType, paymentType } = data;
+
+        const expireAt = addDays(existingSubscription.dateOfNextPayment,
+            Number(subscriptionType))
+
+        return {dateOfNextPayment: expireAt,
+            expireAt, paymentType}
     }
 }

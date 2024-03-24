@@ -1,7 +1,5 @@
-import {IsDate, IsIn, IsInt, IsString} from "class-validator";
-import {CreatePostTypes} from "../../posts/domain/types/create-post.types";
-import {PostStatusEnum} from "../../posts/domain/types/post.enum";
-import {createPaymentDto} from "../api/dto";
+import {IsDate, IsInt, IsString} from "class-validator";
+import {purchaseSubscriptionDto} from "../api/dto";
 
 export class PaymentsEntity {
     @IsInt()
@@ -15,7 +13,7 @@ export class PaymentsEntity {
     @IsString()
     paymentType: 'PayPall' | 'Stripe'
 
-    static create(data: createPaymentDto, userId) {
+    static create(data: purchaseSubscriptionDto, userId) {
         const { price, paymentType, endDateOfSubscription } = data;
         const payment = new PaymentsEntity();
         payment.userId = userId;

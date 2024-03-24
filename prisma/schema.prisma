@@ -108,20 +108,34 @@ model Subscription {
   dateOfSubscribe   DateTime @default(now())
   dateOfNextPayment DateTime
   autoRenewal       Boolean  @default(false)
-  paymentMethod     String
+  paymentType       AllowedPaymentTypes @default(PayPall)
+  expireAt          DateTime
 }
 
 model Payments {
-  userId            Int      @unique
-  profile           Profile  @relation(fields: [userId], references: [userId])
+  userId                Int      @unique
+  profile               Profile  @relation(fields: [userId], references: [userId])
   dateOfPayments        DateTime @default(now())
   endDateOfSubscription DateTime
   price                 Int
-  paymentType           String
+  paymentType           AllowedPaymentTypes @default(PayPall)
+}
+
+model Stripe {
+  productId       String @id @unique
+  type     String
+  priceId  String @unique
+  price    Int
+  category String
 }
 
 enum PostStatus {
   ACTIVE
   DELETED
   BLOCKED
+}
+
+enum AllowedPaymentTypes {
+  PayPall
+  Stripe
 }

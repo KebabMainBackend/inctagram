@@ -1,9 +1,7 @@
 import {Body, Controller, Get, Post, Put, Req, UseGuards} from "@nestjs/common";
-import {PrismaService} from "../../../prisma.service";
 import {BearerAuthGuard} from "../../../auth/guards/bearer-auth.guard";
 import {purchaseSubscriptionDto, updateAutoRenewalStatusDto} from "./dto";
 import {SubscriptionRepository} from "../db/subscription.repository";
-import {SubscriptionEntity} from "../domain/subscription.entity";
 
 @Controller('subscription')
 @UseGuards(BearerAuthGuard)
@@ -30,6 +28,7 @@ export class SubscriptionsController {
     @Put('auto-renewal')
     async updateAutoRenewalStatus(@Body() payload: updateAutoRenewalStatusDto,
                                   @Req() req: any){
-
+        return await this.SubscriptionRepo
+            .updateAutoRenewalStatus(payload.autoRenewal, req.owner.id)
     }
 }

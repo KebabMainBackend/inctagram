@@ -74,6 +74,7 @@ const security_devices_module_1 = __webpack_require__(/*! ./features/security-de
 const profile_module_1 = __webpack_require__(/*! ./features/profile/profile.module */ "./apps/inctagram/src/features/profile/profile.module.ts");
 const posts_module_1 = __webpack_require__(/*! ./features/posts/posts.module */ "./apps/inctagram/src/features/posts/posts.module.ts");
 const subscriptions_module_1 = __webpack_require__(/*! ./features/subscriptions/subscriptions.module */ "./apps/inctagram/src/features/subscriptions/subscriptions.module.ts");
+const stripe_module_1 = __webpack_require__(/*! ./features/stripe/stripe.module */ "./apps/inctagram/src/features/stripe/stripe.module.ts");
 let AppModule = exports.AppModule = class AppModule {
 };
 exports.AppModule = AppModule = __decorate([
@@ -97,7 +98,8 @@ exports.AppModule = AppModule = __decorate([
             ]),
             posts_module_1.PostsModule,
             profile_module_1.ProfileModule,
-            subscriptions_module_1.SubscriptionsModule
+            subscriptions_module_1.SubscriptionsModule,
+            stripe_module_1.ProductModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
@@ -5043,6 +5045,374 @@ exports.SecurityDevicesService = SecurityDevicesService = __decorate([
 
 /***/ }),
 
+/***/ "./apps/inctagram/src/features/stripe/api/dto.ts":
+/*!*******************************************************!*\
+  !*** ./apps/inctagram/src/features/stripe/api/dto.ts ***!
+  \*******************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.makeAPurchaseDto = exports.addNewProductDto = exports.addNewSubscriptionTypeDto = void 0;
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+class addNewSubscriptionTypeDto {
+}
+exports.addNewSubscriptionTypeDto = addNewSubscriptionTypeDto;
+__decorate([
+    (0, class_validator_1.IsInt)(),
+    __metadata("design:type", Number)
+], addNewSubscriptionTypeDto.prototype, "productPrice", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], addNewSubscriptionTypeDto.prototype, "currency", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], addNewSubscriptionTypeDto.prototype, "productName", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], addNewSubscriptionTypeDto.prototype, "description", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], addNewSubscriptionTypeDto.prototype, "interval", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], addNewSubscriptionTypeDto.prototype, "type", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], addNewSubscriptionTypeDto.prototype, "category", void 0);
+class addNewProductDto {
+}
+exports.addNewProductDto = addNewProductDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], addNewProductDto.prototype, "productId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], addNewProductDto.prototype, "priceId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], addNewProductDto.prototype, "type", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], addNewProductDto.prototype, "category", void 0);
+__decorate([
+    (0, class_validator_1.IsInt)(),
+    __metadata("design:type", Number)
+], addNewProductDto.prototype, "price", void 0);
+class makeAPurchaseDto {
+}
+exports.makeAPurchaseDto = makeAPurchaseDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], makeAPurchaseDto.prototype, "priceId", void 0);
+__decorate([
+    (0, class_validator_1.IsInt)(),
+    __metadata("design:type", Number)
+], makeAPurchaseDto.prototype, "quantity", void 0);
+
+
+/***/ }),
+
+/***/ "./apps/inctagram/src/features/stripe/api/product.controller.ts":
+/*!**********************************************************************!*\
+  !*** ./apps/inctagram/src/features/stripe/api/product.controller.ts ***!
+  \**********************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var _a, _b, _c;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ProductController = void 0;
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const bearer_auth_guard_1 = __webpack_require__(/*! ../../../auth/guards/bearer-auth.guard */ "./apps/inctagram/src/auth/guards/bearer-auth.guard.ts");
+const product_repository_1 = __webpack_require__(/*! ../db/product.repository */ "./apps/inctagram/src/features/stripe/db/product.repository.ts");
+const dto_1 = __webpack_require__(/*! ./dto */ "./apps/inctagram/src/features/stripe/api/dto.ts");
+let ProductController = exports.ProductController = class ProductController {
+    constructor(ProductRepository) {
+        this.ProductRepository = ProductRepository;
+    }
+    async addNewProductToStripe(payload) {
+        return this.ProductRepository.addNewProductToStripe(payload);
+    }
+    async makeAPurchase(payload) {
+        return this.ProductRepository.makeAPurchase(payload.priceId, payload.quantity);
+    }
+    paymentSuccessfully() {
+        return this.ProductRepository.stripeSuccess();
+    }
+    paymentCanceled() {
+        return this.ProductRepository.stripeCanceled();
+    }
+};
+__decorate([
+    (0, common_1.Post)('create-product'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [typeof (_b = typeof dto_1.addNewSubscriptionTypeDto !== "undefined" && dto_1.addNewSubscriptionTypeDto) === "function" ? _b : Object]),
+    __metadata("design:returntype", Promise)
+], ProductController.prototype, "addNewProductToStripe", null);
+__decorate([
+    (0, common_1.Post)('purchase'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [typeof (_c = typeof dto_1.makeAPurchaseDto !== "undefined" && dto_1.makeAPurchaseDto) === "function" ? _c : Object]),
+    __metadata("design:returntype", Promise)
+], ProductController.prototype, "makeAPurchase", null);
+__decorate([
+    (0, common_1.Get)('success'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], ProductController.prototype, "paymentSuccessfully", null);
+__decorate([
+    (0, common_1.Get)('canceled'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], ProductController.prototype, "paymentCanceled", null);
+exports.ProductController = ProductController = __decorate([
+    (0, common_1.Controller)('stripe'),
+    (0, common_1.UseGuards)(bearer_auth_guard_1.BearerAuthGuard),
+    __metadata("design:paramtypes", [typeof (_a = typeof product_repository_1.ProductRepository !== "undefined" && product_repository_1.ProductRepository) === "function" ? _a : Object])
+], ProductController);
+
+
+/***/ }),
+
+/***/ "./apps/inctagram/src/features/stripe/db/product.repository.ts":
+/*!*********************************************************************!*\
+  !*** ./apps/inctagram/src/features/stripe/db/product.repository.ts ***!
+  \*********************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var _a;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ProductRepository = void 0;
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const prisma_service_1 = __webpack_require__(/*! ../../../prisma.service */ "./apps/inctagram/src/prisma.service.ts");
+const stripe_1 = __webpack_require__(/*! stripe */ "stripe");
+const product_entity_1 = __webpack_require__(/*! ../domain/product.entity */ "./apps/inctagram/src/features/stripe/domain/product.entity.ts");
+const process = __webpack_require__(/*! process */ "process");
+let ProductRepository = exports.ProductRepository = class ProductRepository {
+    constructor(prisma) {
+        this.prisma = prisma;
+    }
+    stripeSuccess() {
+        return 'Payment was successful!';
+    }
+    stripeCanceled() {
+        return 'Transaction failed, please try again';
+    }
+    async makeAPurchase(priceId, quantity) {
+        const stripe = new stripe_1.default(process.env.STRIPE_API_KEY);
+        const session = await stripe.checkout.sessions.create({
+            success_url: 'https://localhost:3000/stripe/success',
+            cancel_url: 'https://localhost:3000/stripe/canceled',
+            line_items: [
+                {
+                    price: priceId,
+                    quantity
+                },
+            ],
+            mode: 'payment',
+        });
+        return session.url;
+    }
+    async addNewProductToStripe(payload) {
+        const { productPrice, currency, productName, description, interval, type, category } = payload;
+        const stripe = new stripe_1.default(process.env.STRIPE_API_KEY);
+        stripe.products.create({
+            name: productName,
+            description,
+        }).then(product => {
+            stripe.prices.create({
+                unit_amount: productPrice * 100,
+                currency,
+                recurring: {
+                    interval,
+                },
+                product: product.id,
+            }).then(price => {
+                const dto = {
+                    priceId: price.id,
+                    productId: product.id,
+                    price: productPrice,
+                    type,
+                    category
+                };
+                const newProduct = product_entity_1.ProductEntity.create(dto);
+                this.prisma.stripe.create({
+                    data: newProduct
+                });
+                return newProduct;
+            });
+        });
+    }
+};
+exports.ProductRepository = ProductRepository = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [typeof (_a = typeof prisma_service_1.PrismaService !== "undefined" && prisma_service_1.PrismaService) === "function" ? _a : Object])
+], ProductRepository);
+
+
+/***/ }),
+
+/***/ "./apps/inctagram/src/features/stripe/domain/product.entity.ts":
+/*!*********************************************************************!*\
+  !*** ./apps/inctagram/src/features/stripe/domain/product.entity.ts ***!
+  \*********************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ProductEntity = void 0;
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+class ProductEntity {
+    static create(data) {
+        const { productId, priceId, price, category, type } = data;
+        const product = new ProductEntity();
+        product.productId = productId;
+        product.priceId = priceId;
+        product.category = category;
+        product.price = price;
+        product.type = type;
+        return product;
+    }
+}
+exports.ProductEntity = ProductEntity;
+__decorate([
+    (0, class_validator_1.IsInt)(),
+    __metadata("design:type", Number)
+], ProductEntity.prototype, "price", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], ProductEntity.prototype, "type", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], ProductEntity.prototype, "category", void 0);
+__decorate([
+    (0, class_validator_1.IsInt)(),
+    __metadata("design:type", String)
+], ProductEntity.prototype, "priceId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], ProductEntity.prototype, "productId", void 0);
+
+
+/***/ }),
+
+/***/ "./apps/inctagram/src/features/stripe/stripe.module.ts":
+/*!*************************************************************!*\
+  !*** ./apps/inctagram/src/features/stripe/stripe.module.ts ***!
+  \*************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ProductModule = void 0;
+const users_repository_1 = __webpack_require__(/*! ../../auth/db/users.repository */ "./apps/inctagram/src/auth/db/users.repository.ts");
+const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const cqrs_1 = __webpack_require__(/*! @nestjs/cqrs */ "@nestjs/cqrs");
+const jwt_1 = __webpack_require__(/*! @nestjs/jwt */ "@nestjs/jwt");
+const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+const prisma_service_1 = __webpack_require__(/*! ../../prisma.service */ "./apps/inctagram/src/prisma.service.ts");
+const product_repository_1 = __webpack_require__(/*! ./db/product.repository */ "./apps/inctagram/src/features/stripe/db/product.repository.ts");
+const product_controller_1 = __webpack_require__(/*! ./api/product.controller */ "./apps/inctagram/src/features/stripe/api/product.controller.ts");
+const Repos = [
+    product_repository_1.ProductRepository,
+    users_repository_1.UsersRepository
+];
+let ProductModule = exports.ProductModule = class ProductModule {
+};
+exports.ProductModule = ProductModule = __decorate([
+    (0, common_1.Module)({
+        imports: [cqrs_1.CqrsModule, jwt_1.JwtModule, config_1.ConfigModule],
+        controllers: [product_controller_1.ProductController],
+        providers: [
+            {
+                provide: 'FILES_SERVICE',
+                useFactory: (configService) => {
+                    const options = {
+                        transport: microservices_1.Transport.TCP,
+                        options: {
+                            host: configService.get('FILES_SERVICE_HOST'),
+                            port: configService.get('FILES_SERVICE_PORT'),
+                        },
+                    };
+                    return microservices_1.ClientProxyFactory.create(options);
+                },
+                inject: [config_1.ConfigService],
+            },
+            prisma_service_1.PrismaService,
+            ...Repos,
+        ],
+    })
+], ProductModule);
+
+
+/***/ }),
+
 /***/ "./apps/inctagram/src/features/subscriptions/api/dto.ts":
 /*!**************************************************************!*\
   !*** ./apps/inctagram/src/features/subscriptions/api/dto.ts ***!
@@ -5061,7 +5431,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createPaymentDto = exports.updateAutoRenewalStatusDto = exports.purchaseSubscriptionDto = void 0;
+exports.updateAutoRenewalStatusDto = exports.purchaseSubscriptionDto = void 0;
 const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
 class purchaseSubscriptionDto {
 }
@@ -5073,7 +5443,16 @@ __decorate([
 __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], purchaseSubscriptionDto.prototype, "paymentMethod", void 0);
+], purchaseSubscriptionDto.prototype, "paymentType", void 0);
+__decorate([
+    (0, class_validator_1.IsInt)(),
+    __metadata("design:type", Number)
+], purchaseSubscriptionDto.prototype, "price", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsDate)(),
+    __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
+], purchaseSubscriptionDto.prototype, "endDateOfSubscription", void 0);
 class updateAutoRenewalStatusDto {
 }
 exports.updateAutoRenewalStatusDto = updateAutoRenewalStatusDto;
@@ -5081,21 +5460,6 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], updateAutoRenewalStatusDto.prototype, "autoRenewal", void 0);
-class createPaymentDto {
-}
-exports.createPaymentDto = createPaymentDto;
-__decorate([
-    (0, class_validator_1.IsInt)(),
-    __metadata("design:type", Number)
-], createPaymentDto.prototype, "price", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], createPaymentDto.prototype, "paymentType", void 0);
-__decorate([
-    (0, class_validator_1.IsDate)(),
-    __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
-], createPaymentDto.prototype, "endDateOfSubscription", void 0);
 
 
 /***/ }),
@@ -5139,6 +5503,8 @@ let SubscriptionsController = exports.SubscriptionsController = class Subscripti
         return await this.SubscriptionRepo.buySubscription(payload, req.owner.id);
     }
     async updateAutoRenewalStatus(payload, req) {
+        return await this.SubscriptionRepo
+            .updateAutoRenewalStatus(payload.autoRenewal, req.owner.id);
     }
 };
 __decorate([
@@ -5195,17 +5561,21 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a, _b;
+var _a, _b, _c;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SubscriptionRepository = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const prisma_service_1 = __webpack_require__(/*! ../../../prisma.service */ "./apps/inctagram/src/prisma.service.ts");
 const email_manager_1 = __webpack_require__(/*! ../../../auth/managers/email.manager */ "./apps/inctagram/src/auth/managers/email.manager.ts");
 const subscription_entity_1 = __webpack_require__(/*! ../domain/subscription.entity */ "./apps/inctagram/src/features/subscriptions/domain/subscription.entity.ts");
+const payments_entity_1 = __webpack_require__(/*! ../domain/payments.entity */ "./apps/inctagram/src/features/subscriptions/domain/payments.entity.ts");
+const date_fns_1 = __webpack_require__(/*! date-fns */ "date-fns");
+const product_repository_1 = __webpack_require__(/*! ../../stripe/db/product.repository */ "./apps/inctagram/src/features/stripe/db/product.repository.ts");
 let SubscriptionRepository = exports.SubscriptionRepository = class SubscriptionRepository {
-    constructor(prisma, EmailService) {
+    constructor(prisma, EmailService, ProductRepository) {
         this.prisma = prisma;
         this.EmailService = EmailService;
+        this.ProductRepository = ProductRepository;
     }
     async getCurrentSubscribeInfo(userId) {
         const current = await this.prisma.subscription.findUnique({
@@ -5222,6 +5592,8 @@ let SubscriptionRepository = exports.SubscriptionRepository = class Subscription
                 }
             }
         });
+        if (!current)
+            throw new common_1.HttpException('Not Found', 404);
         if (current.expireAt < new Date()) {
             await this.prisma.profile.update({
                 where: { userId },
@@ -5232,25 +5604,109 @@ let SubscriptionRepository = exports.SubscriptionRepository = class Subscription
             return await this.EmailService
                 .sendSubscriptionHasExpiredEmail(current.profile.user.email);
         }
+        const daysLeft = (0, date_fns_1.intervalToDuration)({
+            start: new Date(),
+            end: current.expireAt
+        });
         if (current.autoRenewal)
             return {
-                expireAt: current.expireAt
+                expireAt: daysLeft.days
             };
         else
             return {
-                expireAt: current.expireAt,
+                expireAt: daysLeft.days,
                 nextPayment: current.dateOfNextPayment
             };
     }
-    async buySubscription(payload, userId) {
-        const sub = subscription_entity_1.SubscriptionEntity.create(payload, userId);
-        console.log(sub);
+    async buySubscription(payload, userId, quantity = 1) {
+        const subscription = await this.prisma.subscription.findUnique({ where: { userId } });
+        const newSubscription = subscription_entity_1.SubscriptionEntity.create(payload, userId);
+        const productInfo = await this.prisma.stripe.findFirst({
+            where: { type: payload.subscriptionType }
+        });
+        await this.ProductRepository.makeAPurchase(productInfo.priceId, quantity);
+        if (subscription) {
+            const { dateOfNextPayment, expireAt, paymentType } = subscription_entity_1.SubscriptionEntity.renewSubscription(subscription, payload);
+            await this.prisma.subscription.update({
+                where: { userId },
+                data: { dateOfNextPayment, expireAt, paymentType }
+            });
+        }
+        if (!subscription) {
+            await this.prisma.subscription.create({ data: newSubscription });
+        }
+        const payment = payments_entity_1.PaymentsEntity.create(payload, userId);
+        await this.prisma.payments.create({ data: payment });
+        return newSubscription;
+    }
+    async updateAutoRenewalStatus(autoRenewal, userId) {
+        await this.prisma.subscription.update({
+            where: { userId },
+            data: { autoRenewal }
+        });
     }
 };
 exports.SubscriptionRepository = SubscriptionRepository = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [typeof (_a = typeof prisma_service_1.PrismaService !== "undefined" && prisma_service_1.PrismaService) === "function" ? _a : Object, typeof (_b = typeof email_manager_1.EmailService !== "undefined" && email_manager_1.EmailService) === "function" ? _b : Object])
+    __metadata("design:paramtypes", [typeof (_a = typeof prisma_service_1.PrismaService !== "undefined" && prisma_service_1.PrismaService) === "function" ? _a : Object, typeof (_b = typeof email_manager_1.EmailService !== "undefined" && email_manager_1.EmailService) === "function" ? _b : Object, typeof (_c = typeof product_repository_1.ProductRepository !== "undefined" && product_repository_1.ProductRepository) === "function" ? _c : Object])
 ], SubscriptionRepository);
+
+
+/***/ }),
+
+/***/ "./apps/inctagram/src/features/subscriptions/domain/payments.entity.ts":
+/*!*****************************************************************************!*\
+  !*** ./apps/inctagram/src/features/subscriptions/domain/payments.entity.ts ***!
+  \*****************************************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var _a, _b;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.PaymentsEntity = void 0;
+const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
+class PaymentsEntity {
+    static create(data, userId) {
+        const { price, paymentType, endDateOfSubscription } = data;
+        const payment = new PaymentsEntity();
+        payment.userId = userId;
+        payment.dateOfPayments = new Date();
+        payment.endDateOfSubscription = endDateOfSubscription;
+        payment.price = price;
+        payment.paymentType = paymentType;
+        return payment;
+    }
+}
+exports.PaymentsEntity = PaymentsEntity;
+__decorate([
+    (0, class_validator_1.IsInt)(),
+    __metadata("design:type", Number)
+], PaymentsEntity.prototype, "userId", void 0);
+__decorate([
+    (0, class_validator_1.IsDate)(),
+    __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
+], PaymentsEntity.prototype, "dateOfPayments", void 0);
+__decorate([
+    (0, class_validator_1.IsDate)(),
+    __metadata("design:type", typeof (_b = typeof Date !== "undefined" && Date) === "function" ? _b : Object)
+], PaymentsEntity.prototype, "endDateOfSubscription", void 0);
+__decorate([
+    (0, class_validator_1.IsInt)(),
+    __metadata("design:type", Number)
+], PaymentsEntity.prototype, "price", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], PaymentsEntity.prototype, "paymentType", void 0);
 
 
 /***/ }),
@@ -5278,11 +5734,11 @@ const date_fns_1 = __webpack_require__(/*! date-fns */ "date-fns");
 const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
 class SubscriptionEntity {
     static create(data, userId) {
-        const { subscriptionType, paymentMethod } = data;
+        const { subscriptionType, paymentType } = data;
         const subscription = new SubscriptionEntity();
         subscription.userId = userId;
         subscription.subscriptionType = subscriptionType;
-        subscription.paymentMethod = paymentMethod;
+        subscription.paymentType = paymentType;
         subscription.autoRenewal = false;
         subscription.dateOfSubscribe = new Date();
         if (subscription.subscriptionType === '1')
@@ -5293,6 +5749,12 @@ class SubscriptionEntity {
             subscription.dateOfNextPayment = (0, date_fns_1.addMonths)(new Date(), 1);
         subscription.expireAt = (0, date_fns_1.addDays)(new Date(), Number(subscriptionType));
         return subscription;
+    }
+    static renewSubscription(existingSubscription, data) {
+        const { subscriptionType, paymentType } = data;
+        const expireAt = (0, date_fns_1.addDays)(existingSubscription.dateOfNextPayment, Number(subscriptionType));
+        return { dateOfNextPayment: expireAt,
+            expireAt, paymentType };
     }
 }
 exports.SubscriptionEntity = SubscriptionEntity;
@@ -5319,7 +5781,7 @@ __decorate([
 __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], SubscriptionEntity.prototype, "paymentMethod", void 0);
+], SubscriptionEntity.prototype, "paymentType", void 0);
 __decorate([
     (0, class_validator_1.IsDate)(),
     __metadata("design:type", typeof (_c = typeof Date !== "undefined" && Date) === "function" ? _c : Object)
@@ -5353,10 +5815,12 @@ const email_manager_1 = __webpack_require__(/*! ../../auth/managers/email.manage
 const subscription_repository_1 = __webpack_require__(/*! ./db/subscription.repository */ "./apps/inctagram/src/features/subscriptions/db/subscription.repository.ts");
 const subscriptions_controller_1 = __webpack_require__(/*! ./api/subscriptions.controller */ "./apps/inctagram/src/features/subscriptions/api/subscriptions.controller.ts");
 const users_repository_1 = __webpack_require__(/*! ../../auth/db/users.repository */ "./apps/inctagram/src/auth/db/users.repository.ts");
+const product_repository_1 = __webpack_require__(/*! ../stripe/db/product.repository */ "./apps/inctagram/src/features/stripe/db/product.repository.ts");
 const Repos = [
     email_manager_1.EmailService,
     subscription_repository_1.SubscriptionRepository,
-    users_repository_1.UsersRepository
+    users_repository_1.UsersRepository,
+    product_repository_1.ProductRepository
 ];
 let SubscriptionsModule = exports.SubscriptionsModule = class SubscriptionsModule {
 };
@@ -6199,6 +6663,16 @@ module.exports = require("passport-google-oauth20");
 /***/ ((module) => {
 
 module.exports = require("rxjs");
+
+/***/ }),
+
+/***/ "stripe":
+/*!*************************!*\
+  !*** external "stripe" ***!
+  \*************************/
+/***/ ((module) => {
+
+module.exports = require("stripe");
 
 /***/ }),
 
