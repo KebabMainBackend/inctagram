@@ -5,4 +5,4 @@ export enum SortDirection {
   DESC = 'desc',
 }
 
-export const POST_IMAGE_NORMAL_SIZE = 20000 * 2 ** 10; // 20 000 KB (20МB)
+export const POST_IMAGE_NORMAL_SIZE = 20971520; // 20 000 KB (20МB)
