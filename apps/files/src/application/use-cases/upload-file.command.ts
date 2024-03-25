@@ -90,7 +90,6 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
       url,
       buffer,
     });
-    // }
     return currentImage.id;
   }
   private createUrlForFileImage(userId: number, type: FileImageTypeEnum) {
