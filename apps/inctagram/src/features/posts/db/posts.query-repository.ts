@@ -11,7 +11,7 @@ import { PostView } from './view/post.view';
 import { MicroserviceMessagesEnum } from '../../../../../../types/messages';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-
+const availableQueryParams = ['createdAt', 'description', 'userId', 'id'];
 @Injectable()
 export class PostsQueryRepository {
   constructor(
@@ -20,11 +20,15 @@ export class PostsQueryRepository {
   ) {}
 
   async findPosts(queryPost: GetDefaultUriDto, userId?: number) {
-    const { pageSize, cursor, sortBy, sortDirection } =
+    const { pageSize, cursor, sortDirection } =
       getRequestQueryMapper(queryPost);
+    let { sortBy } = getRequestQueryMapper(queryPost);
     const filterByStatusAndOptionalUserId: any = {
       status: PostStatusEnum.ACTIVE,
     };
+    if (!availableQueryParams.includes(sortBy)) {
+      sortBy = 'createdAt';
+    }
     if (userId) {
       filterByStatusAndOptionalUserId.userId = userId;
     }
