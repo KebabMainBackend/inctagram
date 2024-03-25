@@ -1,7 +1,6 @@
 import {
   ArrayMinSize,
   IsArray,
-  IsNotEmpty,
   IsOptional,
   IsString,
   MaxLength,
@@ -15,7 +14,6 @@ import { IsObjectId } from '../../../../utils/custom-validators/is-object-id.val
 export class CreatePostBodyDto {
   @Transform(({ value }) => trimTransformer(value, 'description'))
   @IsString()
-  @IsNotEmpty()
   @IsOptional()
   @ApiProperty({
     description: 'post description',
