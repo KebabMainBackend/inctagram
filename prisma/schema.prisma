@@ -14,23 +14,10 @@ model Post {
   createdAt   DateTime   @default(now()) @map("created_at")
   updatedAt   DateTime   @default(now()) @map("updated_at")
   userId      Int        @map("user_id")
-  user        User       @relation(fields: [userId], references: [id])
   status      PostStatus @default(ACTIVE)
   images      String[]
-  // images      PostImage[]
+  user        User       @relation(fields: [userId], references: [id])
 }
-
-// model PostImage {
-//   id        String   @unique
-//   createdAt DateTime @default(now())
-//   imageId   String
-//   url       String
-//   post      Post     @relation(fields: [postId], references: [id])
-//   postId    Int
-//   width     Int
-//   height    Int
-//   fileSize  Int
-// }
 
 model User {
   id               Int               @id @unique @default(autoincrement())
@@ -42,17 +29,16 @@ model User {
   updatedAt        DateTime          @updatedAt
   isConfirmed      Boolean           @default(false)
   isDeleted        Boolean           @default(false)
-  confirmationData UserConfirmation?
-  providers        OAuthProvider[]
   providerId       String?
-  sessions         Session[]
-  profile          Profile?
+  providers        OAuthProvider[]
   posts            Post[]
+  profile          Profile?
+  sessions         Session[]
+  confirmationData UserConfirmation?
 }
 
 model Profile {
   userId      Int      @id @unique
-  user        User     @relation(fields: [userId], references: [id])
   firstname   String?
   lastname    String?
   birthDate   String?
@@ -63,6 +49,9 @@ model Profile {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   accountType String?
+  user        User     @relation(fields: [userId], references: [id])
+  subscription Subscription?
+  payments Payments[]
 }
 
 model UserConfirmation {
@@ -70,31 +59,31 @@ model UserConfirmation {
   confirmationCode   String
   codeExpirationDate DateTime
   userId             Int      @unique
-  User               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+  User               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Session {
   id             String   @id @unique @default(uuid())
   userId         Int
-  User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   lastActiveDate DateTime
   aliveTill      DateTime
-  device         Devices? @relation(fields: [deviceId], references: [deviceId])
   deviceId       String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  device         Devices  @relation(fields: [deviceId], references: [deviceId])
+  User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Devices {
   title     String
   ip        String
   deviceId  String    @id @unique
-  session   Session[]
   sessionId String?   @unique
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  session   Session[]
 }
 
 model OAuthProvider {
@@ -103,9 +92,9 @@ model OAuthProvider {
   providerType String
   email        String?
   userId       Int
-  user         User     @relation(fields: [userId], references: [id])
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id])
 }
 
 model Blacklist {
@@ -113,25 +102,40 @@ model Blacklist {
 }
 
 model Subscription {
-  id                String   @id @unique @default(uuid())
-  userId            Int
+  userId            Int      @unique
+  profile           Profile  @relation(fields: [userId], references: [userId])
   subscriptionType  String
   dateOfSubscribe   DateTime @default(now())
   dateOfNextPayment DateTime
   autoRenewal       Boolean  @default(false)
+  paymentType       AllowedPaymentTypes @default(PayPall)
+  expireAt          DateTime
 }
 
 model Payments {
-  id                    String   @id @unique @default(uuid())
-  userId                Int
+  userId                Int      @unique
+  profile               Profile  @relation(fields: [userId], references: [userId])
   dateOfPayments        DateTime @default(now())
   endDateOfSubscription DateTime
   price                 Int
-  paymentType           String
+  paymentType           AllowedPaymentTypes @default(PayPall)
+}
+
+model Stripe {
+  productId       String @id @unique
+  type     String
+  priceId  String @unique
+  price    Int
+  category String
 }
 
 enum PostStatus {
   ACTIVE
   DELETED
   BLOCKED
+}
+
+enum AllowedPaymentTypes {
+  PayPall
+  Stripe
 }
