@@ -23,6 +23,7 @@ export class PostsQueryRepository {
     const { pageSize, cursor, sortDirection } =
       getRequestQueryMapper(queryPost);
     let { sortBy } = getRequestQueryMapper(queryPost);
+    let hasMore = false;
     const filterByStatusAndOptionalUserId: any = {
       status: PostStatusEnum.ACTIVE,
     };
@@ -34,7 +35,7 @@ export class PostsQueryRepository {
     }
     const filter: any = {
       where: filterByStatusAndOptionalUserId,
-      take: pageSize,
+      take: pageSize + 1,
       orderBy: { [sortBy]: sortDirection },
     };
     if (cursor) {
@@ -54,6 +55,10 @@ export class PostsQueryRepository {
       userAvatar = await firstValueFrom(
         this.getUserThumbnailAvatar(userProfile?.thumbnailId),
       );
+    }
+    if (postsNPostImages.length > pageSize) {
+      hasMore = true;
+      postsNPostImages.pop(); // Remove the extra post used to check for more
     }
     const items: PostView[] = [];
     for (const post of postsNPostImages) {
@@ -77,6 +82,7 @@ export class PostsQueryRepository {
       items,
       cursor: lastPostId,
       pageSize,
+      hasMore,
     });
   }
   private getUserProfile(userId: number) {
