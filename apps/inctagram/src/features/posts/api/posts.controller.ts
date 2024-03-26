@@ -71,7 +71,7 @@ import {
 import { UpdatePostBodyDto } from './dto/update-post.body.dto';
 import { UploadPostImageDto } from './dto/upload-image.dto';
 import { firstValueFrom } from 'rxjs';
-import { ObjectIdValidationPipe } from '../../../utils/custom-validators/is-object-id.validator';
+import { ObjectIdValidationPipe } from '../../../utils/pipes/is-object-id.pipe';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -237,16 +237,14 @@ export class PostsController {
   }
 
   @Delete('images/:imageId')
-  @UsePipes(new ObjectIdValidationPipe())
   @ApiOperation({ summary: 'Delete post`s image' })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse(NoContentResponseOptions)
   @ApiForbiddenResponse(ForbiddenRequestResponseOptions)
   async deletePostImage(
     @User() user: UserTypes,
-    @Param('imageId') imageId: string,
+    @Param('imageId', ObjectIdValidationPipe) imageId: string,
   ) {
-    console.log(imageId);
     const resp = await firstValueFrom(
       this.clientProxy.send(
         { cmd: MicroserviceMessagesEnum.DELETE_POST_IMAGE },
