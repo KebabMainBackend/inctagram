@@ -47,7 +47,10 @@ export class PasswordRecoveryHandler
   private async recoverPassword(email: string) {
     const user = await this.usersRepo.getUserByEmail(email);
     if (!user) {
-      const error = createErrorMessage('incorrect email', 'email');
+      const error = createErrorMessage(
+        'User with this email does not exist',
+        'email',
+      );
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
     return this.prisma.$transaction(

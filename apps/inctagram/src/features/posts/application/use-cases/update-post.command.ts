@@ -20,7 +20,7 @@ export class UpdatePostHandler implements ICommandHandler<UpdatePostCommand> {
     if (post.userId !== data.userId) return HttpStatus.FORBIDDEN;
 
     await this.postsRepo.updatePost(data.postId, {
-      description: data.description,
+      description: data.description || null,
     });
 
     return true;
