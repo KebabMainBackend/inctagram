@@ -42,7 +42,10 @@ export class CheckCredentialsHandler
         return user.id;
       }
     }
-    const error = createErrorMessage('wrong email or password', '');
+    const error = createErrorMessage(
+      'incorrect email or password',
+      'email/password',
+    );
     throw new HttpException(error, HttpStatus.BAD_REQUEST);
   }
 }
