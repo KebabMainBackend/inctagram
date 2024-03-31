@@ -2,6 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UserHashingManager } from '../../managers/user-hashing.manager';
 import { UsersRepository } from '../../db/users.repository';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { createErrorMessage } from '../../../utils/create-error-object';
 
 export class CheckCredentialsCommand {
   constructor(
@@ -41,6 +42,10 @@ export class CheckCredentialsHandler
         return user.id;
       }
     }
-    throw new HttpException('wrong email or password', HttpStatus.BAD_REQUEST);
+    const error = createErrorMessage(
+      'incorrect email or password',
+      'email/password',
+    );
+    throw new HttpException(error, HttpStatus.BAD_REQUEST);
   }
 }
