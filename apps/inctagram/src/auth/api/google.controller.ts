@@ -41,6 +41,7 @@ export class GoogleController {
   })
   @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
   @Get('login')
+  // en + ru lang
   @UseGuards(ThrottlerGuard)
   @UseGuards(AuthGuard('google'))
   @HttpCode(HttpStatus.OK)
