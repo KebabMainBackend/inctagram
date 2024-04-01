@@ -81,7 +81,7 @@ exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
             serve_static_1.ServeStaticModule.forRoot({
-                rootPath: (0, path_1.join)('C:\\Projects\\inctagram\\apps\\inctagram\\swagger-static'),
+                rootPath: (0, path_1.join)('D:\\job\\inctagram\\\\apps\\\\inctagram\\\\swagger-static'),
                 serveRoot: process.env.NODE_ENV === 'development' ? '/' : '/swagger',
             }),
             auth_module_1.AuthModule,
@@ -99,7 +99,7 @@ exports.AppModule = AppModule = __decorate([
             posts_module_1.PostsModule,
             profile_module_1.ProfileModule,
             subscriptions_module_1.SubscriptionsModule,
-            stripe_module_1.ProductModule
+            stripe_module_1.ProductModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
@@ -5253,7 +5253,7 @@ let ProductRepository = exports.ProductRepository = class ProductRepository {
             line_items: [
                 {
                     price: priceId,
-                    quantity
+                    quantity,
                 },
             ],
             mode: 'payment',
@@ -5261,30 +5261,34 @@ let ProductRepository = exports.ProductRepository = class ProductRepository {
         return session.url;
     }
     async addNewProductToStripe(payload) {
-        const { productPrice, currency, productName, description, interval, type, category } = payload;
+        const { productPrice, currency, productName, description, interval, type, category, } = payload;
         const stripe = new stripe_1.default(process.env.STRIPE_API_KEY);
-        stripe.products.create({
+        stripe.products
+            .create({
             name: productName,
             description,
-        }).then(product => {
-            stripe.prices.create({
+        })
+            .then((product) => {
+            stripe.prices
+                .create({
                 unit_amount: productPrice * 100,
                 currency,
                 recurring: {
                     interval,
                 },
                 product: product.id,
-            }).then(price => {
+            })
+                .then((price) => {
                 const dto = {
                     priceId: price.id,
                     productId: product.id,
                     price: productPrice,
                     type,
-                    category
+                    category,
                 };
                 const newProduct = product_entity_1.ProductEntity.create(dto);
                 this.prisma.stripe.create({
-                    data: newProduct
+                    data: newProduct,
                 });
                 return newProduct;
             });
@@ -5379,10 +5383,7 @@ const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestj
 const prisma_service_1 = __webpack_require__(/*! ../../prisma.service */ "./apps/inctagram/src/prisma.service.ts");
 const product_repository_1 = __webpack_require__(/*! ./db/product.repository */ "./apps/inctagram/src/features/stripe/db/product.repository.ts");
 const product_controller_1 = __webpack_require__(/*! ./api/product.controller */ "./apps/inctagram/src/features/stripe/api/product.controller.ts");
-const Repos = [
-    product_repository_1.ProductRepository,
-    users_repository_1.UsersRepository
-];
+const Repos = [product_repository_1.ProductRepository, users_repository_1.UsersRepository];
 let ProductModule = exports.ProductModule = class ProductModule {
 };
 exports.ProductModule = ProductModule = __decorate([
@@ -5483,18 +5484,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b, _c;
+var _a, _b, _c, _d;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SubscriptionsController = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const bearer_auth_guard_1 = __webpack_require__(/*! ../../../auth/guards/bearer-auth.guard */ "./apps/inctagram/src/auth/guards/bearer-auth.guard.ts");
 const dto_1 = __webpack_require__(/*! ./dto */ "./apps/inctagram/src/features/subscriptions/api/dto.ts");
 const subscription_repository_1 = __webpack_require__(/*! ../db/subscription.repository */ "./apps/inctagram/src/features/subscriptions/db/subscription.repository.ts");
+const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
 let SubscriptionsController = exports.SubscriptionsController = class SubscriptionsController {
-    constructor(SubscriptionRepo) {
+    constructor(SubscriptionRepo, clientProxy) {
         this.SubscriptionRepo = SubscriptionRepo;
+        this.clientProxy = clientProxy;
     }
     get() {
+        return this.clientProxy.send({ cmd: 'hello-rmq' }, { lol: 123 });
     }
     async getCurrentSubscribeInfo(req) {
         return this.SubscriptionRepo.getCurrentSubscribeInfo(req.owner.id);
@@ -5503,8 +5507,7 @@ let SubscriptionsController = exports.SubscriptionsController = class Subscripti
         return await this.SubscriptionRepo.buySubscription(payload, req.owner.id);
     }
     async updateAutoRenewalStatus(payload, req) {
-        return await this.SubscriptionRepo
-            .updateAutoRenewalStatus(payload.autoRenewal, req.owner.id);
+        return await this.SubscriptionRepo.updateAutoRenewalStatus(payload.autoRenewal, req.owner.id);
     }
 };
 __decorate([
@@ -5525,7 +5528,7 @@ __decorate([
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_b = typeof dto_1.purchaseSubscriptionDto !== "undefined" && dto_1.purchaseSubscriptionDto) === "function" ? _b : Object, Object]),
+    __metadata("design:paramtypes", [typeof (_c = typeof dto_1.purchaseSubscriptionDto !== "undefined" && dto_1.purchaseSubscriptionDto) === "function" ? _c : Object, Object]),
     __metadata("design:returntype", Promise)
 ], SubscriptionsController.prototype, "buySubscription", null);
 __decorate([
@@ -5533,13 +5536,14 @@ __decorate([
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_c = typeof dto_1.updateAutoRenewalStatusDto !== "undefined" && dto_1.updateAutoRenewalStatusDto) === "function" ? _c : Object, Object]),
+    __metadata("design:paramtypes", [typeof (_d = typeof dto_1.updateAutoRenewalStatusDto !== "undefined" && dto_1.updateAutoRenewalStatusDto) === "function" ? _d : Object, Object]),
     __metadata("design:returntype", Promise)
 ], SubscriptionsController.prototype, "updateAutoRenewalStatus", null);
 exports.SubscriptionsController = SubscriptionsController = __decorate([
     (0, common_1.Controller)('subscription'),
     (0, common_1.UseGuards)(bearer_auth_guard_1.BearerAuthGuard),
-    __metadata("design:paramtypes", [typeof (_a = typeof subscription_repository_1.SubscriptionRepository !== "undefined" && subscription_repository_1.SubscriptionRepository) === "function" ? _a : Object])
+    __param(1, (0, common_1.Inject)('PAYMENTS_SERVICE')),
+    __metadata("design:paramtypes", [typeof (_a = typeof subscription_repository_1.SubscriptionRepository !== "undefined" && subscription_repository_1.SubscriptionRepository) === "function" ? _a : Object, typeof (_b = typeof microservices_1.ClientProxy !== "undefined" && microservices_1.ClientProxy) === "function" ? _b : Object])
 ], SubscriptionsController);
 
 
@@ -5585,12 +5589,12 @@ let SubscriptionRepository = exports.SubscriptionRepository = class Subscription
                     include: {
                         user: {
                             select: {
-                                email: true
-                            }
-                        }
-                    }
-                }
-            }
+                                email: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
         if (!current)
             throw new common_1.HttpException('Not Found', 404);
@@ -5598,38 +5602,39 @@ let SubscriptionRepository = exports.SubscriptionRepository = class Subscription
             await this.prisma.profile.update({
                 where: { userId },
                 data: {
-                    accountType: 'Personal'
-                }
+                    accountType: 'Personal',
+                },
             });
-            return await this.EmailService
-                .sendSubscriptionHasExpiredEmail(current.profile.user.email);
+            return await this.EmailService.sendSubscriptionHasExpiredEmail(current.profile.user.email);
         }
         const daysLeft = (0, date_fns_1.intervalToDuration)({
             start: new Date(),
-            end: current.expireAt
+            end: current.expireAt,
         });
         if (current.autoRenewal)
             return {
-                expireAt: daysLeft.days
+                expireAt: daysLeft.days,
             };
         else
             return {
                 expireAt: daysLeft.days,
-                nextPayment: current.dateOfNextPayment
+                nextPayment: current.dateOfNextPayment,
             };
     }
     async buySubscription(payload, userId, quantity = 1) {
-        const subscription = await this.prisma.subscription.findUnique({ where: { userId } });
+        const subscription = await this.prisma.subscription.findUnique({
+            where: { userId },
+        });
         const newSubscription = subscription_entity_1.SubscriptionEntity.create(payload, userId);
         const productInfo = await this.prisma.stripe.findFirst({
-            where: { type: payload.subscriptionType }
+            where: { type: payload.subscriptionType },
         });
         await this.ProductRepository.makeAPurchase(productInfo.priceId, quantity);
         if (subscription) {
             const { dateOfNextPayment, expireAt, paymentType } = subscription_entity_1.SubscriptionEntity.renewSubscription(subscription, payload);
             await this.prisma.subscription.update({
                 where: { userId },
-                data: { dateOfNextPayment, expireAt, paymentType }
+                data: { dateOfNextPayment, expireAt, paymentType },
             });
         }
         if (!subscription) {
@@ -5642,7 +5647,7 @@ let SubscriptionRepository = exports.SubscriptionRepository = class Subscription
     async updateAutoRenewalStatus(autoRenewal, userId) {
         await this.prisma.subscription.update({
             where: { userId },
-            data: { autoRenewal }
+            data: { autoRenewal },
         });
     }
 };
@@ -5753,8 +5758,7 @@ class SubscriptionEntity {
     static renewSubscription(existingSubscription, data) {
         const { subscriptionType, paymentType } = data;
         const expireAt = (0, date_fns_1.addDays)(existingSubscription.dateOfNextPayment, Number(subscriptionType));
-        return { dateOfNextPayment: expireAt,
-            expireAt, paymentType };
+        return { dateOfNextPayment: expireAt, expireAt, paymentType };
     }
 }
 exports.SubscriptionEntity = SubscriptionEntity;
@@ -5820,7 +5824,7 @@ const Repos = [
     email_manager_1.EmailService,
     subscription_repository_1.SubscriptionRepository,
     users_repository_1.UsersRepository,
-    product_repository_1.ProductRepository
+    product_repository_1.ProductRepository,
 ];
 let SubscriptionsModule = exports.SubscriptionsModule = class SubscriptionsModule {
 };
@@ -5830,13 +5834,13 @@ exports.SubscriptionsModule = SubscriptionsModule = __decorate([
         controllers: [subscriptions_controller_1.SubscriptionsController],
         providers: [
             {
-                provide: 'FILES_SERVICE',
+                provide: 'PAYMENTS_SERVICE',
                 useFactory: (configService) => {
                     const options = {
-                        transport: microservices_1.Transport.TCP,
+                        transport: microservices_1.Transport.RMQ,
                         options: {
-                            host: configService.get('FILES_SERVICE_HOST'),
-                            port: configService.get('FILES_SERVICE_PORT'),
+                            urls: [configService.get('AMQP_RABBIT')],
+                            queue: configService.get('QUEUE_NAME'),
                         },
                     };
                     return microservices_1.ClientProxyFactory.create(options);

@@ -23,7 +23,10 @@
     "start:dev:inctagram": "nest start inctagram --watch",
     "build:files": "nest build files",
     "start:files": "node dist/apps/files/main.js",
-    "start:dev:files": "nest start files --watch"
+    "start:dev:files": "nest start files --watch",
+    "build:payments": "nest build payments",
+    "start:payments": "node dist/apps/payments/main.js",
+    "start:dev:payments": "nest start payments --watch"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.515.0",
