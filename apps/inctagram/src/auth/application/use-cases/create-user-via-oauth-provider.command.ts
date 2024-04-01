@@ -7,13 +7,17 @@ import {
   OauthProviderEntity,
   ProviderType,
 } from '../../domain/entities/oauth-provider.entity';
+import { LanguageEnums } from '../../../types';
+
+type SignInUserViaOauthProviderTypes = {
+  email: string | null;
+  providerId: string;
+  providerType: ProviderType;
+  language: LanguageEnums;
+};
 
 export class SignInUserViaOauthProviderCommand {
-  constructor(
-    public email: string | null,
-    public providerId: string,
-    public providerType: ProviderType,
-  ) {}
+  constructor(public data: SignInUserViaOauthProviderTypes) {}
 }
 
 @CommandHandler(SignInUserViaOauthProviderCommand)
@@ -25,8 +29,8 @@ export class SignInUserViaOauthProviderHandler
     private usersRepo: UsersRepository,
     private emailService: EmailService,
   ) {}
-  async execute(data: SignInUserViaOauthProviderCommand) {
-    const { providerId, providerType, email } = data;
+  async execute({ data }: SignInUserViaOauthProviderCommand) {
+    const { providerId, providerType, email, language } = data;
     let userId: number;
     const providerClient = await this.usersRepo.getUserProviderByIdAndType(
       providerId,
@@ -37,7 +41,7 @@ export class SignInUserViaOauthProviderHandler
     }
     const userByEmail = await this.usersRepo.getUserByEmail(email);
     if (!userByEmail) {
-      userId = await this.createUser(data);
+      userId = await this.createUser(email, providerId, language);
     } else {
       userId = userByEmail.id;
     }
@@ -50,10 +54,11 @@ export class SignInUserViaOauthProviderHandler
     await this.usersRepo.createOauthProvider(provider);
     return userId;
   }
-  private async createUser({
-    email,
-    providerId,
-  }: SignInUserViaOauthProviderCommand) {
+  private async createUser(
+    email: string,
+    providerId: string,
+    language: LanguageEnums,
+  ) {
     const newUser = UserEntity.create({
       email,
       username: 'client' + providerId,
@@ -63,7 +68,7 @@ export class SignInUserViaOauthProviderHandler
       async () => {
         const user = await this.usersRepo.createUser(newUser);
 
-        await this.emailService.sendNotificationEmail(email);
+        await this.emailService.sendNotificationEmail(email, language);
         return user.id;
       },
       {

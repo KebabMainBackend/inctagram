@@ -6,11 +6,13 @@ import { createErrorMessage } from '../../../utils/create-error-object';
 import { UsersRepository } from '../../db/users.repository';
 import { ConfigService } from '@nestjs/config';
 import { UserConfirmationEntity } from '../../domain/entities/user.entity';
+import { LanguageEnums } from '../../../types';
 
 export class PasswordRecoveryCommand {
   constructor(
     public email: string,
     public recaptcha: string,
+    public language: LanguageEnums,
   ) {}
 }
 
@@ -24,9 +26,7 @@ export class PasswordRecoveryHandler
     private usersRepo: UsersRepository,
     private configService: ConfigService,
   ) {}
-  async execute({ email, recaptcha }: PasswordRecoveryCommand) {
-    await this.recoverPassword(email);
-
+  async execute({ email, recaptcha, language }: PasswordRecoveryCommand) {
     const secretKey = this.configService.get('RECAPTCHA_SECRET');
     const verifyCaptchaBodyString = `secret=${secretKey}&response=${recaptcha}`;
     const res = await fetch('https://www.google.com/recaptcha/api/siteverify', {
@@ -38,15 +38,15 @@ export class PasswordRecoveryHandler
     });
     const requestStatus = await res.json();
     if (requestStatus.success) {
+      return this.recoverPassword(email, language);
     }
-
     const error = createErrorMessage(
       requestStatus['error-codes'][0],
       'recaptcha',
     );
     throw new HttpException(error, HttpStatus.BAD_REQUEST);
   }
-  private async recoverPassword(email: string) {
+  private async recoverPassword(email: string, language: LanguageEnums) {
     const user = await this.usersRepo.getUserByEmail(email);
     if (!user) {
       throw new HttpException(
@@ -62,6 +62,7 @@ export class PasswordRecoveryHandler
           await this.emailService.sendRecoveryCodeEmail(
             email,
             confirmationData.confirmationCode,
+            language,
           );
           return true;
         } catch (e) {

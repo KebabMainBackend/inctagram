@@ -3,6 +3,7 @@ import * as nodemailer from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { ConfigService } from '@nestjs/config';
+import { LanguageEnums } from '../../types';
 
 @Injectable()
 export class EmailService {
@@ -36,11 +37,16 @@ export class EmailService {
     userEmail: string,
     message: string,
     subject: string,
+    language: LanguageEnums,
   ) {
+    const text =
+      language === LanguageEnums.en
+        ? `https://inctagram.fun/auth/confirm-email?code=${message}&email=${userEmail}`
+        : `https://inctagram.fun/ru/auth/confirm-email?code=${message}&email=${userEmail}`;
     const messageTemplate = `
             <h1>Thanks for your registration</h1>
             <p>To finish registration please follow the link below:
-                <a href='https://inctagram.fun/auth/confirm-email?code=${message}&email=${userEmail}'>complete registration</a>
+                <a href=${text}>complete registration</a>
             </p>`;
     const options = {
       from: 'Johnny <johnny178917@gmail.com>',
@@ -58,11 +64,19 @@ export class EmailService {
     }
   }
 
-  async sendRecoveryCodeEmail(userEmail: string, message: string) {
+  async sendRecoveryCodeEmail(
+    userEmail: string,
+    message: string,
+    language: LanguageEnums,
+  ) {
+    const text =
+      language === LanguageEnums.en
+        ? `https://inctagram.fun/auth/create-new-password?code=${message}&email=${userEmail}`
+        : `https://inctagram.fun/ru/auth/create-new-password?code=${message}&email=${userEmail}`;
     const messageTemplate = `
             <h1>Password recovery</h1>
             <p>To finish password recovery please follow the link below:
-                <a href='https://inctagram.fun/auth/create-new-password?code=${message}&email=${userEmail}'>recovery password</a>
+                <a href=${text}>recovery password</a>
             </p>`;
     const options = {
       from: 'Johnny <johnny178917@gmail.com>',
@@ -80,11 +94,15 @@ export class EmailService {
     }
   }
 
-  async sendNotificationEmail(userEmail: string) {
+  async sendNotificationEmail(userEmail: string, language: LanguageEnums) {
+    const text =
+      language === LanguageEnums.en
+        ? `https://inctagram.fun`
+        : `https://inctagram.fun/ru`;
     const messageTemplate = `
             <h1>Congratulations!</h1>
             <p>You registered in our service
-                <a href='https://inctagram.fun'>Inctagram</a>
+                <a href=${text}>Inctagram</a>
             </p>`;
     const options = {
       from: 'Johnny <johnny178917@gmail.com>',

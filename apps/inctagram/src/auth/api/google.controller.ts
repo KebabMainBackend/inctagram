@@ -6,6 +6,7 @@ import {
   Get,
   Res,
   Req,
+  Headers,
 } from '@nestjs/common';
 import {
   ApiExcludeEndpoint,
@@ -23,6 +24,7 @@ import { SignInUserViaOauthProviderCommand } from '../application/use-cases/crea
 import { ProviderType } from '../domain/entities/oauth-provider.entity';
 import { CreateAccessTokenCommand } from '../application/use-cases/create-access-token.command';
 import { ConfigService } from '@nestjs/config';
+import { LanguageEnums } from '../../types';
 
 @Controller('auth/google')
 @ApiTags('Google-OAuth2')
@@ -52,10 +54,18 @@ export class GoogleController {
   async redirect(
     @Req() req: Request & { user: { id: string; email: string } },
     @Res({ passthrough: true }) res: Response,
+    v,
+    @Headers('X-Url-lang') headers: LanguageEnums,
   ) {
+    console.log(headers);
     const { email, id } = req.user;
     const userId = await this.commandBus.execute(
-      new SignInUserViaOauthProviderCommand(email, id, ProviderType.GOOGLE),
+      new SignInUserViaOauthProviderCommand({
+        email,
+        providerId: id,
+        providerType: ProviderType.GOOGLE,
+        language: headers,
+      }),
     );
     const title = req.get('User-Agent') || 'unknown user agent';
     const ip = req.socket.remoteAddress || '';
