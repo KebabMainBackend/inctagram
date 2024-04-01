@@ -1,27 +1,27 @@
 import { IsDate, IsInt, IsString } from 'class-validator';
-import { addNewProductDto } from '../api/dto';
 
 export class ProductEntity {
   @IsInt()
   price: number;
-  @IsString()
-  type: string;
-  @IsString()
-  category: string;
   @IsInt()
-  priceId: string;
+  period: number;
   @IsString()
-  productId: string;
+  subscriptionPriceId: string;
+  @IsString()
+  productPriceId: string;
+  @IsString()
+  interval: 'day' | 'week' | 'month' | 'year'
 
-  static create(data: addNewProductDto) {
-    const { productId, priceId, price, category, type } = data;
+  static create(productPriceId, subscriptionPriceId,
+                price, period, interval, ) {
+
     const product = new ProductEntity();
 
-    product.productId = productId;
-    product.priceId = priceId;
-    product.category = category;
+    product.productPriceId = productPriceId;
     product.price = price;
-    product.type = type;
+    product.period = period;
+    product.interval = interval
+    product.subscriptionPriceId = subscriptionPriceId
 
     return product;
   }

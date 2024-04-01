@@ -11,7 +11,6 @@ import { Transform } from 'class-transformer';
 import { trimTransformer } from '../../../../utils/custom-validators/trim-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsObjectId } from '../../../../utils/custom-validators/is-object-id.validator';
-
 export class CreatePostBodyDto {
   @Transform(({ value }) => trimTransformer(value, 'description'))
   @IsString()

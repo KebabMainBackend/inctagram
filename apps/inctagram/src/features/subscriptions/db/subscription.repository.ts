@@ -5,8 +5,8 @@ import { purchaseSubscriptionDto } from '../api/dto';
 import { SubscriptionEntity } from '../domain/subscription.entity';
 import { PaymentsEntity } from '../domain/payments.entity';
 import { intervalToDuration } from 'date-fns';
-import Stripe from 'stripe';
 import { ProductRepository } from '../../stripe/db/product.repository';
+import { login } from "../../../../test/managers/login";
 
 @Injectable()
 export class SubscriptionRepository {
@@ -17,7 +17,7 @@ export class SubscriptionRepository {
   ) {}
 
   async getCurrentSubscribeInfo(userId: number) {
-    const current = await this.prisma.subscription.findUnique({
+    const current = await this.prisma.currentSubscription.findUnique({
       where: { userId },
       include: {
         profile: {
@@ -47,67 +47,101 @@ export class SubscriptionRepository {
       );
     }
 
-    const daysLeft = intervalToDuration({
-      start: new Date(),
-      end: current.expireAt,
-    });
+    //@ts-ignore
+    const differenceMS = new Date(current.expireAt) - new Date()
 
-    if (current.autoRenewal)
+    const daysLeft = Math.floor(differenceMS / 86400000)
+
+    const subscriptions =
+      await this.prisma.subscription.findMany({
+        where: {userId},
+        orderBy: [{ dateOfNextPayment: 'asc'},
+          {autoRenewal: 'asc',}]
+      })
+
+    if(!current.hasAutoRenewal) {
       return {
-        expireAt: daysLeft.days,
+        subscriptions,
+        expireAt: daysLeft
       };
-    else
+    } else if(current.hasAutoRenewal) {
       return {
-        expireAt: daysLeft.days,
-        nextPayment: current.dateOfNextPayment,
+        subscriptions,
+        expireAt: daysLeft,
+        nextPayment: subscriptions[0].dateOfNextPayment,
       };
+    }
   }
 
-  async buySubscription(
-    payload: purchaseSubscriptionDto,
-    userId: number,
-    quantity = 1,
-  ) {
-    // is user already subscriber ?
+  async buySubscription(payload: purchaseSubscriptionDto,
+                        userId: number) {
 
-    const subscription = await this.prisma.subscription.findUnique({
-      where: { userId },
-    });
+    // get stripeProductId and stripePriceId
+    const productInfo =
+      await this.ProductRepository.getProductInfo(payload.productPriceId)
 
-    const newSubscription = SubscriptionEntity.create(payload, userId);
+    const checkout =
+      await this.ProductRepository.makeAPurchase(payload, productInfo, userId,)
 
-    const productInfo = await this.prisma.stripe.findFirst({
-      where: { type: payload.subscriptionType },
-    });
+    return checkout;
+  }
 
-    await this.ProductRepository.makeAPurchase(productInfo.priceId, quantity);
+  async addSubscriptionToDB(payload, productInfo, userId) {
+    const currentSubscription =
+      await this.prisma.currentSubscription.findUnique({ where: {userId} })
 
-    // is subscriber
-    if (subscription) {
-      const { dateOfNextPayment, expireAt, paymentType } =
-        SubscriptionEntity.renewSubscription(subscription, payload);
+    const newSubscription =
+      SubscriptionEntity.create(payload, productInfo, userId,);
 
-      await this.prisma.subscription.update({
+    const { dateOfNextPayment, expireAt } =
+      SubscriptionEntity.renewSubscription(
+        currentSubscription
+          ? currentSubscription.dateOfNextPayment
+          : newSubscription.dateOfNextPayment,
+        productInfo.period);
+
+    const changedDateOfNextPayment = dateOfNextPayment
+
+    if(currentSubscription) {
+      await this.prisma.currentSubscription.update({
         where: { userId },
-        data: { dateOfNextPayment, expireAt, paymentType },
+        data: { dateOfNextPayment, expireAt },
       });
-    }
-    // not subscriber
-    if (!subscription) {
-      await this.prisma.subscription.create({ data: newSubscription });
+    } else if(!currentSubscription) {
+      await this.prisma.currentSubscription.create({
+        data: {userId, expireAt, dateOfNextPayment: changedDateOfNextPayment}
+      })
     }
 
-    const payment = PaymentsEntity.create(payload, userId);
+    await this.prisma.subscription.create({ data: newSubscription });
+
+    const payment =
+      PaymentsEntity.create(payload, productInfo,
+        newSubscription.dateOfNextPayment, userId);
 
     await this.prisma.payments.create({ data: payment });
-
-    return newSubscription;
   }
 
-  async updateAutoRenewalStatus(autoRenewal: boolean, userId: number) {
-    await this.prisma.subscription.update({
-      where: { userId },
-      data: { autoRenewal },
-    });
+  async updateAutoRenewalStatus(autoRenewal: boolean, subscriptionId: number, userId: number) {
+    const subscription =
+      await this.prisma.subscription.findUnique({
+        where: {subscriptionId, userId},
+        include: {
+          profile: {
+            include: {
+              user: {
+                select: {
+                  email: true
+                }
+              }
+            }
+          }
+        }
+      })
+
+    if(!subscription) return
+
+    await this.ProductRepository
+      .updateAutoRenewalStatus(subscription, autoRenewal, userId);
   }
 }
