@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Post,
   Put,
   Req,
@@ -10,13 +11,26 @@ import {
 import { BearerAuthGuard } from '../../../auth/guards/bearer-auth.guard';
 import { purchaseSubscriptionDto, updateAutoRenewalStatusDto } from './dto';
 import { SubscriptionRepository } from '../db/subscription.repository';
+
+import { ClientProxy } from '@nestjs/microservices';
+import { MicroserviceMessagesEnum } from '../../../../../../types/messages';
+
 import { ProductRepository } from "../../stripe/db/product.repository";
+
 
 @Controller('subscription')
 @UseGuards(BearerAuthGuard)
 export class SubscriptionsController {
-  constructor(private SubscriptionRepo: SubscriptionRepository,
-              private ProductRepository: ProductRepository) {}
+
+  constructor(
+    private SubscriptionRepo: SubscriptionRepository,
+    @Inject('PAYMENTS_SERVICE') private clientProxy: ClientProxy,
+      private ProductRepository: ProductRepository
+  ) {}
+
+  @Get('')
+  get() {
+    return this.clientProxy.send({ cmd: 'hello-rmq' }, { lol: 123 });
 
   @Get('types')
   async get() {

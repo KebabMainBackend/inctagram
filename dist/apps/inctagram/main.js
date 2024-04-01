@@ -81,7 +81,7 @@ exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
             serve_static_1.ServeStaticModule.forRoot({
-                rootPath: (0, path_1.join)('C:\\Projects\\inctagram\\apps\\inctagram\\swagger-static'),
+                rootPath: (0, path_1.join)('D:\\job\\inctagram\\\\apps\\\\inctagram\\\\swagger-static'),
                 serveRoot: process.env.NODE_ENV === 'development' ? '/' : '/swagger',
             }),
             auth_module_1.AuthModule,
@@ -5527,6 +5527,14 @@ const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const bearer_auth_guard_1 = __webpack_require__(/*! ../../../auth/guards/bearer-auth.guard */ "./apps/inctagram/src/auth/guards/bearer-auth.guard.ts");
 const dto_1 = __webpack_require__(/*! ./dto */ "./apps/inctagram/src/features/subscriptions/api/dto.ts");
 const subscription_repository_1 = __webpack_require__(/*! ../db/subscription.repository */ "./apps/inctagram/src/features/subscriptions/db/subscription.repository.ts");
+const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
+let SubscriptionsController = exports.SubscriptionsController = class SubscriptionsController {
+    constructor(SubscriptionRepo, clientProxy) {
+        this.SubscriptionRepo = SubscriptionRepo;
+        this.clientProxy = clientProxy;
+    }
+    get() {
+        return this.clientProxy.send({ cmd: 'hello-rmq' }, { lol: 123 });
 const product_repository_1 = __webpack_require__(/*! ../../stripe/db/product.repository */ "./apps/inctagram/src/features/stripe/db/product.repository.ts");
 let SubscriptionsController = exports.SubscriptionsController = class SubscriptionsController {
     constructor(SubscriptionRepo, ProductRepository) {
@@ -5578,7 +5586,9 @@ __decorate([
 exports.SubscriptionsController = SubscriptionsController = __decorate([
     (0, common_1.Controller)('subscription'),
     (0, common_1.UseGuards)(bearer_auth_guard_1.BearerAuthGuard),
-    __metadata("design:paramtypes", [typeof (_a = typeof subscription_repository_1.SubscriptionRepository !== "undefined" && subscription_repository_1.SubscriptionRepository) === "function" ? _a : Object, typeof (_b = typeof product_repository_1.ProductRepository !== "undefined" && product_repository_1.ProductRepository) === "function" ? _b : Object])
+    __param(1, (0, common_1.Inject)('PAYMENTS_SERVICE')),
+    __metadata("design:paramtypes", [typeof (_a = typeof subscription_repository_1.SubscriptionRepository !== "undefined" && subscription_repository_1.SubscriptionRepository) === "function" ? _a : Object, typeof (_b = typeof microservices_1.ClientProxy !== "undefined" && microservices_1.ClientProxy) === "function" ? _b : Object])
+
 ], SubscriptionsController);
 
 
@@ -5912,13 +5922,13 @@ exports.SubscriptionsModule = SubscriptionsModule = __decorate([
         controllers: [subscriptions_controller_1.SubscriptionsController],
         providers: [
             {
-                provide: 'FILES_SERVICE',
+                provide: 'PAYMENTS_SERVICE',
                 useFactory: (configService) => {
                     const options = {
-                        transport: microservices_1.Transport.TCP,
+                        transport: microservices_1.Transport.RMQ,
                         options: {
-                            host: configService.get('FILES_SERVICE_HOST'),
-                            port: configService.get('FILES_SERVICE_PORT'),
+                            urls: [configService.get('AMQP_RABBIT')],
+                            queue: configService.get('QUEUE_NAME'),
                         },
                     };
                     return microservices_1.ClientProxyFactory.create(options);
