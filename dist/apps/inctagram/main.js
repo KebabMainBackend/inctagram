@@ -1162,9 +1162,7 @@ let CheckCredentialsHandler = exports.CheckCredentialsHandler = class CheckCrede
                 throw new common_1.HttpException('create new password or login via Google/Github', common_1.HttpStatus.NOT_ACCEPTABLE);
             }
             const passwordHash = await this.userHashingManager.generateHash(password, user.passwordSalt);
-            if (!user.isConfirmed) {
-                throw new common_1.HttpException('email is not confirmed', common_1.HttpStatus.UNAUTHORIZED);
-            }
+            console.log('file check-credentials-command проверка потверждён ли эмайл закомментирована');
             if (user.passwordHash === passwordHash) {
                 return user.id;
             }
@@ -5062,7 +5060,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.makeAPurchaseDto = exports.addNewProductDto = exports.addNewSubscriptionTypeDto = void 0;
+exports.makeAPurchaseDto = exports.addNewSubscriptionTypeDto = void 0;
 const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
 class addNewSubscriptionTypeDto {
 }
@@ -5070,7 +5068,7 @@ exports.addNewSubscriptionTypeDto = addNewSubscriptionTypeDto;
 __decorate([
     (0, class_validator_1.IsInt)(),
     __metadata("design:type", Number)
-], addNewSubscriptionTypeDto.prototype, "productPrice", void 0);
+], addNewSubscriptionTypeDto.prototype, "price", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
@@ -5088,36 +5086,9 @@ __decorate([
     __metadata("design:type", String)
 ], addNewSubscriptionTypeDto.prototype, "interval", void 0);
 __decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], addNewSubscriptionTypeDto.prototype, "type", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], addNewSubscriptionTypeDto.prototype, "category", void 0);
-class addNewProductDto {
-}
-exports.addNewProductDto = addNewProductDto;
-__decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], addNewProductDto.prototype, "productId", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], addNewProductDto.prototype, "priceId", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], addNewProductDto.prototype, "type", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], addNewProductDto.prototype, "category", void 0);
-__decorate([
     (0, class_validator_1.IsInt)(),
     __metadata("design:type", Number)
-], addNewProductDto.prototype, "price", void 0);
+], addNewSubscriptionTypeDto.prototype, "period", void 0);
 class makeAPurchaseDto {
 }
 exports.makeAPurchaseDto = makeAPurchaseDto;
@@ -5125,10 +5096,6 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], makeAPurchaseDto.prototype, "priceId", void 0);
-__decorate([
-    (0, class_validator_1.IsInt)(),
-    __metadata("design:type", Number)
-], makeAPurchaseDto.prototype, "quantity", void 0);
 
 
 /***/ }),
@@ -5156,57 +5123,101 @@ var _a, _b, _c;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ProductController = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
-const bearer_auth_guard_1 = __webpack_require__(/*! ../../../auth/guards/bearer-auth.guard */ "./apps/inctagram/src/auth/guards/bearer-auth.guard.ts");
 const product_repository_1 = __webpack_require__(/*! ../db/product.repository */ "./apps/inctagram/src/features/stripe/db/product.repository.ts");
 const dto_1 = __webpack_require__(/*! ./dto */ "./apps/inctagram/src/features/stripe/api/dto.ts");
+const swagger_1 = __webpack_require__(/*! @nestjs/swagger */ "@nestjs/swagger");
+const subscription_repository_1 = __webpack_require__(/*! ../../subscriptions/db/subscription.repository */ "./apps/inctagram/src/features/subscriptions/db/subscription.repository.ts");
 let ProductController = exports.ProductController = class ProductController {
-    constructor(ProductRepository) {
+    constructor(ProductRepository, SubscriptionRepository) {
         this.ProductRepository = ProductRepository;
+        this.SubscriptionRepository = SubscriptionRepository;
     }
     async addNewProductToStripe(payload) {
         return this.ProductRepository.addNewProductToStripe(payload);
     }
-    async makeAPurchase(payload) {
-        return this.ProductRepository.makeAPurchase(payload.priceId, payload.quantity);
+    paymentInfo(data) {
+        const dataParsed = JSON.parse(JSON.stringify(data));
+        if (dataParsed.type === 'checkout.session.completed') {
+            const payload = JSON.parse(data.data.object.metadata.payload);
+            const productInfo = JSON.parse(data.data.object.metadata.productInfo);
+            return this.SubscriptionRepository
+                .addSubscriptionToDB(payload, productInfo, Number(data.data.object.metadata.userId));
+        }
     }
-    paymentSuccessfully() {
-        return this.ProductRepository.stripeSuccess();
+    stripeSuccess() {
+        return 'Payment was successful!';
     }
-    paymentCanceled() {
-        return this.ProductRepository.stripeCanceled();
+    stripeCanceled() {
+        return 'Transaction failed, please try again';
     }
 };
 __decorate([
     (0, common_1.Post)('create-product'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_b = typeof dto_1.addNewSubscriptionTypeDto !== "undefined" && dto_1.addNewSubscriptionTypeDto) === "function" ? _b : Object]),
+    __metadata("design:paramtypes", [typeof (_c = typeof dto_1.addNewSubscriptionTypeDto !== "undefined" && dto_1.addNewSubscriptionTypeDto) === "function" ? _c : Object]),
     __metadata("design:returntype", Promise)
 ], ProductController.prototype, "addNewProductToStripe", null);
 __decorate([
-    (0, common_1.Post)('purchase'),
+    (0, common_1.Post)('webhook'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_c = typeof dto_1.makeAPurchaseDto !== "undefined" && dto_1.makeAPurchaseDto) === "function" ? _c : Object]),
-    __metadata("design:returntype", Promise)
-], ProductController.prototype, "makeAPurchase", null);
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ProductController.prototype, "paymentInfo", null);
 __decorate([
     (0, common_1.Get)('success'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
-], ProductController.prototype, "paymentSuccessfully", null);
+], ProductController.prototype, "stripeSuccess", null);
 __decorate([
     (0, common_1.Get)('canceled'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
-], ProductController.prototype, "paymentCanceled", null);
+], ProductController.prototype, "stripeCanceled", null);
 exports.ProductController = ProductController = __decorate([
     (0, common_1.Controller)('stripe'),
-    (0, common_1.UseGuards)(bearer_auth_guard_1.BearerAuthGuard),
-    __metadata("design:paramtypes", [typeof (_a = typeof product_repository_1.ProductRepository !== "undefined" && product_repository_1.ProductRepository) === "function" ? _a : Object])
+    (0, swagger_1.ApiExcludeController)(),
+    __metadata("design:paramtypes", [typeof (_a = typeof product_repository_1.ProductRepository !== "undefined" && product_repository_1.ProductRepository) === "function" ? _a : Object, typeof (_b = typeof subscription_repository_1.SubscriptionRepository !== "undefined" && subscription_repository_1.SubscriptionRepository) === "function" ? _b : Object])
 ], ProductController);
+
+
+/***/ }),
+
+/***/ "./apps/inctagram/src/features/stripe/app/customer-create.ts":
+/*!*******************************************************************!*\
+  !*** ./apps/inctagram/src/features/stripe/app/customer-create.ts ***!
+  \*******************************************************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.customerCreate = void 0;
+const customerCreate = async (userId, email, prisma, stripe) => {
+    let customer = await prisma.currentSubscription.findUnique({
+        where: { userId }
+    });
+    if (!customer) {
+        const newCustomer = await stripe.customers.create({
+            email,
+            metadata: {
+                userId,
+            }
+        });
+        await prisma.currentSubscription.update({
+            where: { userId },
+            data: { customerId: newCustomer.id }
+        });
+        customer =
+            await prisma.currentSubscription.findUnique({
+                where: { userId }
+            });
+    }
+    return customer;
+};
+exports.customerCreate = customerCreate;
 
 
 /***/ }),
@@ -5235,64 +5246,94 @@ const prisma_service_1 = __webpack_require__(/*! ../../../prisma.service */ "./a
 const stripe_1 = __webpack_require__(/*! stripe */ "stripe");
 const product_entity_1 = __webpack_require__(/*! ../domain/product.entity */ "./apps/inctagram/src/features/stripe/domain/product.entity.ts");
 const process = __webpack_require__(/*! process */ "process");
+const customer_create_1 = __webpack_require__(/*! ../app/customer-create */ "./apps/inctagram/src/features/stripe/app/customer-create.ts");
 let ProductRepository = exports.ProductRepository = class ProductRepository {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    stripeSuccess() {
-        return 'Payment was successful!';
+    getSubscriptionsTypes() {
+        return this.prisma.stripe.findMany({});
     }
-    stripeCanceled() {
-        return 'Transaction failed, please try again';
-    }
-    async makeAPurchase(priceId, quantity) {
+    async makeAPurchase(payload, productInfo, userId) {
         const stripe = new stripe_1.default(process.env.STRIPE_API_KEY);
         const session = await stripe.checkout.sessions.create({
-            success_url: 'https://localhost:3000/stripe/success',
-            cancel_url: 'https://localhost:3000/stripe/canceled',
+            success_url: 'http://localhost:3000/api/v1/stripe/success',
+            cancel_url: 'http://localhost:3000/api/v1/stripe/canceled',
             line_items: [
                 {
-                    price: priceId,
-                    quantity,
+                    price: productInfo.productPriceId,
+                    quantity: 1
                 },
             ],
             mode: 'payment',
+            metadata: {
+                userId: String(userId),
+                payload: JSON.stringify(payload),
+                productInfo: JSON.stringify(productInfo)
+            },
         });
-        return session.url;
+        return session;
     }
     async addNewProductToStripe(payload) {
-        const { productPrice, currency, productName, description, interval, type, category, } = payload;
         const stripe = new stripe_1.default(process.env.STRIPE_API_KEY);
-        stripe.products
-            .create({
-            name: productName,
-            description,
-        })
-            .then((product) => {
-            stripe.prices
-                .create({
-                unit_amount: productPrice * 100,
-                currency,
-                recurring: {
-                    interval,
-                },
-                product: product.id,
-            })
-                .then((price) => {
-                const dto = {
-                    priceId: price.id,
-                    productId: product.id,
-                    price: productPrice,
-                    type,
-                    category,
-                };
-                const newProduct = product_entity_1.ProductEntity.create(dto);
-                this.prisma.stripe.create({
-                    data: newProduct,
-                });
-                return newProduct;
-            });
+        const product = await stripe.products.create({
+            name: payload.productName, description: payload.description
         });
+        const subscriptionPrice = await stripe.prices.create({
+            unit_amount: payload.price * 100,
+            currency: payload.currency,
+            recurring: {
+                interval: payload.interval,
+            },
+            product: product.id,
+        });
+        const productPrice = await stripe.prices.create({
+            unit_amount: payload.price * 100,
+            currency: payload.currency,
+            product: product.id,
+        });
+        const newProduct = product_entity_1.ProductEntity.create(productPrice.id, subscriptionPrice.id, payload.price, payload.period, payload.interval);
+        await this.prisma.stripe.create({ data: newProduct });
+    }
+    async updateAutoRenewalStatus(product, autoRenewal, userId) {
+        const stripe = new stripe_1.default(process.env.STRIPE_API_KEY);
+        if (!product)
+            return;
+        let customer = await (0, customer_create_1.customerCreate)(userId, product.profile.user.email, this.prisma, stripe);
+        if (autoRenewal) {
+            const subscription = await stripe.subscriptions.create({
+                customer: customer.customerId,
+                cancel_at_period_end: !autoRenewal,
+                items: [{ price: product.subscriptionPriceId }],
+                trial_end: Math.floor(product.dateOfNextPayment.getTime() / 1000)
+            });
+            await this.prisma.subscription.update({
+                where: { userId, subscriptionId: product.subscriptionId },
+                data: { stripeSubscriptionId: subscription.id, autoRenewal }
+            });
+        }
+        else {
+            await stripe.subscriptions.update(product.stripeSubscriptionId, { cancel_at_period_end: !autoRenewal,
+                metadata: { key: process.env.STRIPE_API_KEY } });
+            await this.prisma.subscription.update({
+                where: { userId, subscriptionId: product.subscriptionId },
+                data: { stripeSubscriptionId: null, autoRenewal }
+            });
+        }
+        const autoRenewalOnSubscriptions = await this.prisma.subscription.findMany({
+            where: { userId, autoRenewal: true },
+            orderBy: [{ dateOfNextPayment: 'asc' }]
+        });
+        if (autoRenewalOnSubscriptions.length) {
+            await this.prisma.currentSubscription.update({
+                where: { userId },
+                data: { hasAutoRenewal: autoRenewal }
+            });
+        }
+    }
+    async getProductInfo(productPriceId) {
+        return await this.prisma.stripe
+            .findUnique({ where: { productPriceId }, });
     }
 };
 exports.ProductRepository = ProductRepository = __decorate([
@@ -5323,14 +5364,13 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ProductEntity = void 0;
 const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
 class ProductEntity {
-    static create(data) {
-        const { productId, priceId, price, category, type } = data;
+    static create(productPriceId, subscriptionPriceId, price, period, interval) {
         const product = new ProductEntity();
-        product.productId = productId;
-        product.priceId = priceId;
-        product.category = category;
+        product.productPriceId = productPriceId;
         product.price = price;
-        product.type = type;
+        product.period = period;
+        product.interval = interval;
+        product.subscriptionPriceId = subscriptionPriceId;
         return product;
     }
 }
@@ -5340,21 +5380,21 @@ __decorate([
     __metadata("design:type", Number)
 ], ProductEntity.prototype, "price", void 0);
 __decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], ProductEntity.prototype, "type", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], ProductEntity.prototype, "category", void 0);
-__decorate([
     (0, class_validator_1.IsInt)(),
-    __metadata("design:type", String)
-], ProductEntity.prototype, "priceId", void 0);
+    __metadata("design:type", Number)
+], ProductEntity.prototype, "period", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], ProductEntity.prototype, "productId", void 0);
+], ProductEntity.prototype, "subscriptionPriceId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], ProductEntity.prototype, "productPriceId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], ProductEntity.prototype, "interval", void 0);
 
 
 /***/ }),
@@ -5374,6 +5414,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ProductModule = void 0;
+const email_manager_1 = __webpack_require__(/*! ../../auth/managers/email.manager */ "./apps/inctagram/src/auth/managers/email.manager.ts");
+const subscription_repository_1 = __webpack_require__(/*! ../subscriptions/db/subscription.repository */ "./apps/inctagram/src/features/subscriptions/db/subscription.repository.ts");
 const users_repository_1 = __webpack_require__(/*! ../../auth/db/users.repository */ "./apps/inctagram/src/auth/db/users.repository.ts");
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const cqrs_1 = __webpack_require__(/*! @nestjs/cqrs */ "@nestjs/cqrs");
@@ -5383,7 +5425,7 @@ const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestj
 const prisma_service_1 = __webpack_require__(/*! ../../prisma.service */ "./apps/inctagram/src/prisma.service.ts");
 const product_repository_1 = __webpack_require__(/*! ./db/product.repository */ "./apps/inctagram/src/features/stripe/db/product.repository.ts");
 const product_controller_1 = __webpack_require__(/*! ./api/product.controller */ "./apps/inctagram/src/features/stripe/api/product.controller.ts");
-const Repos = [product_repository_1.ProductRepository, users_repository_1.UsersRepository];
+const Repos = [product_repository_1.ProductRepository, users_repository_1.UsersRepository, subscription_repository_1.SubscriptionRepository, email_manager_1.EmailService];
 let ProductModule = exports.ProductModule = class ProductModule {
 };
 exports.ProductModule = ProductModule = __decorate([
@@ -5430,7 +5472,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.updateAutoRenewalStatusDto = exports.purchaseSubscriptionDto = void 0;
 const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
@@ -5440,23 +5481,18 @@ exports.purchaseSubscriptionDto = purchaseSubscriptionDto;
 __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], purchaseSubscriptionDto.prototype, "subscriptionType", void 0);
+], purchaseSubscriptionDto.prototype, "productPriceId", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], purchaseSubscriptionDto.prototype, "paymentType", void 0);
-__decorate([
-    (0, class_validator_1.IsInt)(),
-    __metadata("design:type", Number)
-], purchaseSubscriptionDto.prototype, "price", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsDate)(),
-    __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
-], purchaseSubscriptionDto.prototype, "endDateOfSubscription", void 0);
+], purchaseSubscriptionDto.prototype, "paymentSystem", void 0);
 class updateAutoRenewalStatusDto {
 }
 exports.updateAutoRenewalStatusDto = updateAutoRenewalStatusDto;
+__decorate([
+    (0, class_validator_1.IsInt)(),
+    __metadata("design:type", Number)
+], updateAutoRenewalStatusDto.prototype, "subscriptionId", void 0);
 __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
@@ -5484,18 +5520,22 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b, _c;
+var _a, _b, _c, _d;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SubscriptionsController = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const bearer_auth_guard_1 = __webpack_require__(/*! ../../../auth/guards/bearer-auth.guard */ "./apps/inctagram/src/auth/guards/bearer-auth.guard.ts");
 const dto_1 = __webpack_require__(/*! ./dto */ "./apps/inctagram/src/features/subscriptions/api/dto.ts");
 const subscription_repository_1 = __webpack_require__(/*! ../db/subscription.repository */ "./apps/inctagram/src/features/subscriptions/db/subscription.repository.ts");
+const product_repository_1 = __webpack_require__(/*! ../../stripe/db/product.repository */ "./apps/inctagram/src/features/stripe/db/product.repository.ts");
 let SubscriptionsController = exports.SubscriptionsController = class SubscriptionsController {
-    constructor(SubscriptionRepo) {
+    constructor(SubscriptionRepo, ProductRepository) {
         this.SubscriptionRepo = SubscriptionRepo;
+        this.ProductRepository = ProductRepository;
     }
-    get() { }
+    async get() {
+        return await this.ProductRepository.getSubscriptionsTypes();
+    }
     async getCurrentSubscribeInfo(req) {
         return this.SubscriptionRepo.getCurrentSubscribeInfo(req.owner.id);
     }
@@ -5503,14 +5543,14 @@ let SubscriptionsController = exports.SubscriptionsController = class Subscripti
         return await this.SubscriptionRepo.buySubscription(payload, req.owner.id);
     }
     async updateAutoRenewalStatus(payload, req) {
-        return await this.SubscriptionRepo.updateAutoRenewalStatus(payload.autoRenewal, req.owner.id);
+        return await this.SubscriptionRepo.updateAutoRenewalStatus(payload.autoRenewal, payload.subscriptionId, req.owner.id);
     }
 };
 __decorate([
-    (0, common_1.Get)(''),
+    (0, common_1.Get)('types'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], SubscriptionsController.prototype, "get", null);
 __decorate([
     (0, common_1.Get)('current'),
@@ -5524,7 +5564,7 @@ __decorate([
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_b = typeof dto_1.purchaseSubscriptionDto !== "undefined" && dto_1.purchaseSubscriptionDto) === "function" ? _b : Object, Object]),
+    __metadata("design:paramtypes", [typeof (_c = typeof dto_1.purchaseSubscriptionDto !== "undefined" && dto_1.purchaseSubscriptionDto) === "function" ? _c : Object, Object]),
     __metadata("design:returntype", Promise)
 ], SubscriptionsController.prototype, "buySubscription", null);
 __decorate([
@@ -5532,13 +5572,13 @@ __decorate([
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_c = typeof dto_1.updateAutoRenewalStatusDto !== "undefined" && dto_1.updateAutoRenewalStatusDto) === "function" ? _c : Object, Object]),
+    __metadata("design:paramtypes", [typeof (_d = typeof dto_1.updateAutoRenewalStatusDto !== "undefined" && dto_1.updateAutoRenewalStatusDto) === "function" ? _d : Object, Object]),
     __metadata("design:returntype", Promise)
 ], SubscriptionsController.prototype, "updateAutoRenewalStatus", null);
 exports.SubscriptionsController = SubscriptionsController = __decorate([
     (0, common_1.Controller)('subscription'),
     (0, common_1.UseGuards)(bearer_auth_guard_1.BearerAuthGuard),
-    __metadata("design:paramtypes", [typeof (_a = typeof subscription_repository_1.SubscriptionRepository !== "undefined" && subscription_repository_1.SubscriptionRepository) === "function" ? _a : Object])
+    __metadata("design:paramtypes", [typeof (_a = typeof subscription_repository_1.SubscriptionRepository !== "undefined" && subscription_repository_1.SubscriptionRepository) === "function" ? _a : Object, typeof (_b = typeof product_repository_1.ProductRepository !== "undefined" && product_repository_1.ProductRepository) === "function" ? _b : Object])
 ], SubscriptionsController);
 
 
@@ -5568,7 +5608,6 @@ const prisma_service_1 = __webpack_require__(/*! ../../../prisma.service */ "./a
 const email_manager_1 = __webpack_require__(/*! ../../../auth/managers/email.manager */ "./apps/inctagram/src/auth/managers/email.manager.ts");
 const subscription_entity_1 = __webpack_require__(/*! ../domain/subscription.entity */ "./apps/inctagram/src/features/subscriptions/domain/subscription.entity.ts");
 const payments_entity_1 = __webpack_require__(/*! ../domain/payments.entity */ "./apps/inctagram/src/features/subscriptions/domain/payments.entity.ts");
-const date_fns_1 = __webpack_require__(/*! date-fns */ "date-fns");
 const product_repository_1 = __webpack_require__(/*! ../../stripe/db/product.repository */ "./apps/inctagram/src/features/stripe/db/product.repository.ts");
 let SubscriptionRepository = exports.SubscriptionRepository = class SubscriptionRepository {
     constructor(prisma, EmailService, ProductRepository) {
@@ -5577,7 +5616,7 @@ let SubscriptionRepository = exports.SubscriptionRepository = class Subscription
         this.ProductRepository = ProductRepository;
     }
     async getCurrentSubscribeInfo(userId) {
-        const current = await this.prisma.subscription.findUnique({
+        const current = await this.prisma.currentSubscription.findUnique({
             where: { userId },
             include: {
                 profile: {
@@ -5602,48 +5641,74 @@ let SubscriptionRepository = exports.SubscriptionRepository = class Subscription
             });
             return await this.EmailService.sendSubscriptionHasExpiredEmail(current.profile.user.email);
         }
-        const daysLeft = (0, date_fns_1.intervalToDuration)({
-            start: new Date(),
-            end: current.expireAt,
-        });
-        if (current.autoRenewal)
-            return {
-                expireAt: daysLeft.days,
-            };
-        else
-            return {
-                expireAt: daysLeft.days,
-                nextPayment: current.dateOfNextPayment,
-            };
-    }
-    async buySubscription(payload, userId, quantity = 1) {
-        const subscription = await this.prisma.subscription.findUnique({
+        const differenceMS = new Date(current.expireAt) - new Date();
+        const daysLeft = Math.floor(differenceMS / 86400000);
+        const subscriptions = await this.prisma.subscription.findMany({
             where: { userId },
+            orderBy: [{ dateOfNextPayment: 'asc' },
+                { autoRenewal: 'asc', }]
         });
-        const newSubscription = subscription_entity_1.SubscriptionEntity.create(payload, userId);
-        const productInfo = await this.prisma.stripe.findFirst({
-            where: { type: payload.subscriptionType },
-        });
-        await this.ProductRepository.makeAPurchase(productInfo.priceId, quantity);
-        if (subscription) {
-            const { dateOfNextPayment, expireAt, paymentType } = subscription_entity_1.SubscriptionEntity.renewSubscription(subscription, payload);
-            await this.prisma.subscription.update({
+        if (!current.hasAutoRenewal) {
+            return {
+                subscriptions,
+                expireAt: daysLeft
+            };
+        }
+        else if (current.hasAutoRenewal) {
+            return {
+                subscriptions,
+                expireAt: daysLeft,
+                nextPayment: subscriptions[0].dateOfNextPayment,
+            };
+        }
+    }
+    async buySubscription(payload, userId) {
+        const productInfo = await this.ProductRepository.getProductInfo(payload.productPriceId);
+        const checkout = await this.ProductRepository.makeAPurchase(payload, productInfo, userId);
+        return checkout;
+    }
+    async addSubscriptionToDB(payload, productInfo, userId) {
+        const currentSubscription = await this.prisma.currentSubscription.findUnique({ where: { userId } });
+        const newSubscription = subscription_entity_1.SubscriptionEntity.create(payload, productInfo, userId);
+        let changedDateOfNextPayment = newSubscription.dateOfNextPayment;
+        const { dateOfNextPayment, expireAt } = subscription_entity_1.SubscriptionEntity.renewSubscription(currentSubscription
+            ? currentSubscription.dateOfNextPayment
+            : newSubscription.dateOfNextPayment, productInfo.period);
+        changedDateOfNextPayment = dateOfNextPayment;
+        if (currentSubscription) {
+            await this.prisma.currentSubscription.update({
                 where: { userId },
-                data: { dateOfNextPayment, expireAt, paymentType },
+                data: { dateOfNextPayment, expireAt },
             });
         }
-        if (!subscription) {
-            await this.prisma.subscription.create({ data: newSubscription });
+        else if (!currentSubscription) {
+            await this.prisma.currentSubscription.create({
+                data: { userId, expireAt, dateOfNextPayment: changedDateOfNextPayment }
+            });
         }
-        const payment = payments_entity_1.PaymentsEntity.create(payload, userId);
+        await this.prisma.subscription.create({ data: newSubscription });
+        const payment = payments_entity_1.PaymentsEntity.create(payload, productInfo, newSubscription.dateOfNextPayment, userId);
         await this.prisma.payments.create({ data: payment });
-        return newSubscription;
     }
-    async updateAutoRenewalStatus(autoRenewal, userId) {
-        await this.prisma.subscription.update({
-            where: { userId },
-            data: { autoRenewal },
+    async updateAutoRenewalStatus(autoRenewal, subscriptionId, userId) {
+        const subscription = await this.prisma.subscription.findUnique({
+            where: { subscriptionId, userId },
+            include: {
+                profile: {
+                    include: {
+                        user: {
+                            select: {
+                                email: true
+                            }
+                        }
+                    }
+                }
+            }
         });
+        if (!subscription)
+            return;
+        await this.ProductRepository
+            .updateAutoRenewalStatus(subscription, autoRenewal, userId);
     }
 };
 exports.SubscriptionRepository = SubscriptionRepository = __decorate([
@@ -5675,14 +5740,16 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.PaymentsEntity = void 0;
 const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
 class PaymentsEntity {
-    static create(data, userId) {
-        const { price, paymentType, endDateOfSubscription } = data;
+    static create(data, productInfo, endDateOfSubscription, userId) {
+        const { paymentSystem } = data;
         const payment = new PaymentsEntity();
         payment.userId = userId;
-        payment.dateOfPayments = new Date();
+        payment.dateOfPayment = new Date();
         payment.endDateOfSubscription = endDateOfSubscription;
-        payment.price = price;
-        payment.paymentType = paymentType;
+        payment.price = productInfo.price;
+        payment.paymentSystem = paymentSystem;
+        payment.productPriceId = productInfo.productPriceId;
+        payment.subscriptionPriceId = productInfo.subscriptionPriceId;
         return payment;
     }
 }
@@ -5694,7 +5761,7 @@ __decorate([
 __decorate([
     (0, class_validator_1.IsDate)(),
     __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
-], PaymentsEntity.prototype, "dateOfPayments", void 0);
+], PaymentsEntity.prototype, "dateOfPayment", void 0);
 __decorate([
     (0, class_validator_1.IsDate)(),
     __metadata("design:type", typeof (_b = typeof Date !== "undefined" && Date) === "function" ? _b : Object)
@@ -5706,7 +5773,15 @@ __decorate([
 __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], PaymentsEntity.prototype, "paymentType", void 0);
+], PaymentsEntity.prototype, "paymentSystem", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], PaymentsEntity.prototype, "productPriceId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], PaymentsEntity.prototype, "subscriptionPriceId", void 0);
 
 
 /***/ }),
@@ -5733,27 +5808,23 @@ exports.SubscriptionEntity = void 0;
 const date_fns_1 = __webpack_require__(/*! date-fns */ "date-fns");
 const class_validator_1 = __webpack_require__(/*! class-validator */ "class-validator");
 class SubscriptionEntity {
-    static create(data, userId) {
-        const { subscriptionType, paymentType } = data;
+    static create(data, productInfo, userId) {
+        const { paymentSystem } = data;
         const subscription = new SubscriptionEntity();
         subscription.userId = userId;
-        subscription.subscriptionType = subscriptionType;
-        subscription.paymentType = paymentType;
+        subscription.paymentSystem = paymentSystem;
         subscription.autoRenewal = false;
         subscription.dateOfSubscribe = new Date();
-        if (subscription.subscriptionType === '1')
-            subscription.dateOfNextPayment = (0, date_fns_1.addDays)(new Date(), 1);
-        else if (subscription.subscriptionType === '7')
-            subscription.dateOfNextPayment = (0, date_fns_1.addDays)(new Date(), 7);
-        else if (subscription.subscriptionType === '31')
-            subscription.dateOfNextPayment = (0, date_fns_1.addMonths)(new Date(), 1);
-        subscription.expireAt = (0, date_fns_1.addDays)(new Date(), Number(subscriptionType));
+        subscription.dateOfNextPayment = (0, date_fns_1.addDays)(new Date(), productInfo.period);
+        subscription.productPriceId = productInfo.productPriceId;
+        subscription.subscriptionPriceId = productInfo.subscriptionPriceId;
+        subscription.period = productInfo.period;
+        subscription.interval = productInfo.interval;
         return subscription;
     }
-    static renewSubscription(existingSubscription, data) {
-        const { subscriptionType, paymentType } = data;
-        const expireAt = (0, date_fns_1.addDays)(existingSubscription.dateOfNextPayment, Number(subscriptionType));
-        return { dateOfNextPayment: expireAt, expireAt, paymentType };
+    static renewSubscription(dateOfNextPayment, period) {
+        const expireAt = (0, date_fns_1.addDays)(dateOfNextPayment, Number(period));
+        return { dateOfNextPayment: expireAt, expireAt };
     }
 }
 exports.SubscriptionEntity = SubscriptionEntity;
@@ -5762,9 +5833,9 @@ __decorate([
     __metadata("design:type", Number)
 ], SubscriptionEntity.prototype, "userId", void 0);
 __decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], SubscriptionEntity.prototype, "subscriptionType", void 0);
+    (0, class_validator_1.IsInt)(),
+    __metadata("design:type", Number)
+], SubscriptionEntity.prototype, "period", void 0);
 __decorate([
     (0, class_validator_1.IsDate)(),
     __metadata("design:type", typeof (_a = typeof Date !== "undefined" && Date) === "function" ? _a : Object)
@@ -5780,11 +5851,23 @@ __decorate([
 __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], SubscriptionEntity.prototype, "paymentType", void 0);
+], SubscriptionEntity.prototype, "paymentSystem", void 0);
 __decorate([
     (0, class_validator_1.IsDate)(),
     __metadata("design:type", typeof (_c = typeof Date !== "undefined" && Date) === "function" ? _c : Object)
 ], SubscriptionEntity.prototype, "expireAt", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SubscriptionEntity.prototype, "productPriceId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SubscriptionEntity.prototype, "subscriptionPriceId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SubscriptionEntity.prototype, "interval", void 0);
 
 
 /***/ }),

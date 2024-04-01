@@ -10,14 +10,18 @@ import {
 import { BearerAuthGuard } from '../../../auth/guards/bearer-auth.guard';
 import { purchaseSubscriptionDto, updateAutoRenewalStatusDto } from './dto';
 import { SubscriptionRepository } from '../db/subscription.repository';
+import { ProductRepository } from "../../stripe/db/product.repository";
 
 @Controller('subscription')
 @UseGuards(BearerAuthGuard)
 export class SubscriptionsController {
-  constructor(private SubscriptionRepo: SubscriptionRepository) {}
+  constructor(private SubscriptionRepo: SubscriptionRepository,
+              private ProductRepository: ProductRepository) {}
 
-  @Get('')
-  get() {}
+  @Get('types')
+  async get() {
+    return await this.ProductRepository.getSubscriptionsTypes()
+  }
 
   @Get('current')
   async getCurrentSubscribeInfo(@Req() req: any) {
@@ -40,6 +44,7 @@ export class SubscriptionsController {
   ) {
     return await this.SubscriptionRepo.updateAutoRenewalStatus(
       payload.autoRenewal,
+      payload.subscriptionId,
       req.owner.id,
     );
   }

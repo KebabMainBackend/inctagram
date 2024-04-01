@@ -1,26 +1,40 @@
 import { IsDate, IsInt, IsString } from 'class-validator';
 import { purchaseSubscriptionDto } from '../api/dto';
+import { ProductEntity } from "../../stripe/domain/product.entity";
+import { Optional } from "@nestjs/common";
 
 export class PaymentsEntity {
   @IsInt()
   userId: number;
   @IsDate()
-  dateOfPayments: Date;
+  dateOfPayment: Date;
   @IsDate()
   endDateOfSubscription: Date;
   @IsInt()
   price: number;
   @IsString()
-  paymentType: 'PayPall' | 'Stripe';
+  paymentSystem: 'PayPall' | 'Stripe';
+  @IsString()
+  productPriceId: string;
+  @IsString()
+  subscriptionPriceId: string
 
-  static create(data: purchaseSubscriptionDto, userId) {
-    const { price, paymentType, endDateOfSubscription } = data;
+
+  static create(data: purchaseSubscriptionDto,
+                productInfo: ProductEntity,
+                endDateOfSubscription, userId) {
+    const { paymentSystem } = data;
     const payment = new PaymentsEntity();
+
     payment.userId = userId;
-    payment.dateOfPayments = new Date();
+    payment.dateOfPayment = new Date();
     payment.endDateOfSubscription = endDateOfSubscription;
-    payment.price = price;
-    payment.paymentType = paymentType;
+    payment.price = productInfo.price;
+    payment.paymentSystem = paymentSystem;
+    
+    payment.productPriceId = productInfo.productPriceId
+    payment.subscriptionPriceId = productInfo.subscriptionPriceId
+
 
     return payment;
   }

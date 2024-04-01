@@ -12,7 +12,8 @@ import { PrismaService } from '../../prisma.service';
 import { ProductRepository } from './db/product.repository';
 import { ProductController } from './api/product.controller';
 
-const Repos = [ProductRepository, UsersRepository];
+const Repos =
+  [ProductRepository, UsersRepository, SubscriptionRepository, EmailService];
 @Module({
   imports: [CqrsModule, JwtModule, ConfigModule],
   controllers: [ProductController],

@@ -1,25 +1,15 @@
-import {
-  IsBoolean,
-  IsDate,
-  IsIn,
-  IsInt,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsBoolean, IsInt, IsString } from 'class-validator';
 
 export class purchaseSubscriptionDto {
   @IsString()
-  subscriptionType: '1' | '7' | '31';
+  productPriceId: string
   @IsString()
-  paymentType: 'PayPall' | 'Stripe';
-  @IsInt()
-  price: number;
-  @IsOptional()
-  @IsDate()
-  endDateOfSubscription: Date;
+  paymentSystem: 'PayPall' | 'Stripe';
 }
 
 export class updateAutoRenewalStatusDto {
+  @IsInt()
+  subscriptionId: number
   @IsBoolean()
   autoRenewal: boolean;
 }

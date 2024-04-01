@@ -38,20 +38,21 @@ model User {
 }
 
 model Profile {
-  userId      Int      @id @unique
-  firstname   String?
-  lastname    String?
-  birthDate   String?
-  aboutMe     String?
-  avatarId    String?
-  thumbnailId String?
-  city        String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  accountType String?
-  user        User     @relation(fields: [userId], references: [id])
-  subscription Subscription?
-  payments Payments[]
+  userId              Int                  @id @unique
+  firstname           String?
+  lastname            String?
+  birthDate           String?
+  aboutMe             String?
+  avatarId            String?
+  thumbnailId         String?
+  city                String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  accountType         String?
+  user                User                 @relation(fields: [userId], references: [id])
+  subscription        Subscription[]
+  payments            Payments[]
+  CurrentSubscription CurrentSubscription?
 }
 
 model UserConfirmation {
@@ -102,31 +103,47 @@ model Blacklist {
 }
 
 model Subscription {
-  userId            Int      @unique
-  profile           Profile  @relation(fields: [userId], references: [userId])
-  subscriptionType  String
-  dateOfSubscribe   DateTime @default(now())
-  dateOfNextPayment DateTime
-  autoRenewal       Boolean  @default(false)
-  paymentType       AllowedPaymentTypes @default(PayPall)
-  expireAt          DateTime
+  subscriptionId       Int                 @id @unique @default(autoincrement())
+  userId               Int
+  profile              Profile             @relation(fields: [userId], references: [userId])
+  period               Int
+  interval             PaymentInterval
+  dateOfSubscribe      DateTime            @default(now())
+  dateOfNextPayment    DateTime
+  autoRenewal          Boolean             @default(false)
+  paymentSystem        AllowedPaymentTypes @default(PayPall)
+  productPriceId       String
+  subscriptionPriceId  String
+  stripeSubscriptionId String?
 }
 
 model Payments {
-  userId                Int      @unique
-  profile               Profile  @relation(fields: [userId], references: [userId])
-  dateOfPayments        DateTime @default(now())
+  paymentId             Int                 @id @unique @default(autoincrement())
+  userId                Int
+  profile               Profile             @relation(fields: [userId], references: [userId])
+  dateOfPayment         DateTime            @default(now())
   endDateOfSubscription DateTime
   price                 Int
-  paymentType           AllowedPaymentTypes @default(PayPall)
+  paymentSystem         AllowedPaymentTypes @default(PayPall)
+  productPriceId        String?
+  subscriptionPriceId   String?
 }
 
 model Stripe {
-  productId       String @id @unique
-  type     String
-  priceId  String @unique
-  price    Int
-  category String
+  period              Int
+  productPriceId      String           @id @unique
+  price               Int
+  interval            PaymentInterval?
+  subscriptionPriceId String           @unique
+}
+
+model CurrentSubscription {
+  userId            Int      @id @unique
+  profile           Profile  @relation(fields: [userId], references: [userId])
+  expireAt          DateTime
+  dateOfNextPayment DateTime
+  hasAutoRenewal    Boolean  @default(false)
+  customerId        String?
 }
 
 enum PostStatus {
@@ -138,4 +155,11 @@ enum PostStatus {
 enum AllowedPaymentTypes {
   PayPall
   Stripe
+}
+
+enum PaymentInterval {
+  day
+  week
+  month
+  year
 }

@@ -12,7 +12,6 @@ import { ProfileRepository } from '../../../profile/db/profile.repository';
 export class CreatePostCommand {
   constructor(public data: CreatePostTypes) {}
 }
-
 @CommandHandler(CreatePostCommand)
 export class CreatePostHandler implements ICommandHandler<CreatePostCommand> {
   constructor(

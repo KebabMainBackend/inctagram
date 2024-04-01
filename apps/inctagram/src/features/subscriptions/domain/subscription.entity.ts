@@ -1,12 +1,14 @@
 import { purchaseSubscriptionDto } from '../api/dto';
 import { addDays, addMonths } from 'date-fns';
 import { IsBoolean, IsDate, IsInt, IsString } from 'class-validator';
+import { ProductEntity } from "../../stripe/domain/product.entity";
+import { Optional } from "@nestjs/common";
 
 export class SubscriptionEntity {
   @IsInt()
   userId: number;
-  @IsString()
-  subscriptionType: string;
+  @IsInt()
+  period: number;
   @IsDate()
   dateOfSubscribe: Date;
   @IsDate()
@@ -14,44 +16,46 @@ export class SubscriptionEntity {
   @IsBoolean()
   autoRenewal: boolean;
   @IsString()
-  paymentType: 'PayPall' | 'Stripe';
+  paymentSystem: 'PayPall' | 'Stripe';
   @IsDate()
   expireAt: Date;
-  static create(data: purchaseSubscriptionDto, userId: number) {
-    const { subscriptionType, paymentType } = data;
+  @IsString()
+  productPriceId: string;
+  @IsString()
+  subscriptionPriceId: string
+  @IsString()
+  interval: 'day' | 'week' | 'month' | 'year';
+  static create(data: purchaseSubscriptionDto, productInfo: ProductEntity, userId: number) {
+    const { paymentSystem } = data;
     const subscription = new SubscriptionEntity();
 
     subscription.userId = userId;
 
-    subscription.subscriptionType = subscriptionType;
-    subscription.paymentType = paymentType;
+    subscription.paymentSystem = paymentSystem;
     subscription.autoRenewal = false;
 
     subscription.dateOfSubscribe = new Date();
+    subscription.dateOfNextPayment = addDays(new Date(), productInfo.period);
 
-    if (subscription.subscriptionType === '1')
-      subscription.dateOfNextPayment = addDays(new Date(), 1);
-    else if (subscription.subscriptionType === '7')
-      subscription.dateOfNextPayment = addDays(new Date(), 7);
-    else if (subscription.subscriptionType === '31')
-      subscription.dateOfNextPayment = addMonths(new Date(), 1);
+    subscription.productPriceId = productInfo.productPriceId
+    subscription.subscriptionPriceId = productInfo.subscriptionPriceId
 
-    subscription.expireAt = addDays(new Date(), Number(subscriptionType));
+    subscription.period = productInfo.period;
+    subscription.interval = productInfo.interval
 
     return subscription;
   }
 
   static renewSubscription(
-    existingSubscription: SubscriptionEntity,
-    data: purchaseSubscriptionDto,
+    dateOfNextPayment: Date,
+    period: number,
   ) {
-    const { subscriptionType, paymentType } = data;
 
     const expireAt = addDays(
-      existingSubscription.dateOfNextPayment,
-      Number(subscriptionType),
+      dateOfNextPayment,
+      Number(period),
     );
 
-    return { dateOfNextPayment: expireAt, expireAt, paymentType };
+    return { dateOfNextPayment: expireAt, expireAt };
   }
 }

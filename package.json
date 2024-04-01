@@ -48,6 +48,7 @@
     "google-auth-library": "^9.6.3",
     "image-size": "^1.1.1",
     "mongoose": "^8.2.0",
+    "ngrok": "^5.0.0-beta.2",
     "nodemailer": "6.9.9",
     "passport": "0.7.0",
     "passport-github": "^1.1.0",
