@@ -1,12 +1,12 @@
 import {
   Controller,
-  HttpCode,
-  UseGuards,
-  HttpStatus,
   Get,
-  Res,
-  Req,
   Headers,
+  HttpCode,
+  HttpStatus,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiExcludeEndpoint,
@@ -54,7 +54,6 @@ export class GoogleController {
   async redirect(
     @Req() req: Request & { user: { id: string; email: string } },
     @Res({ passthrough: true }) res: Response,
-    v,
     @Headers('X-Url-lang') headers: LanguageEnums,
   ) {
     console.log(headers);
@@ -82,9 +81,13 @@ export class GoogleController {
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );
+    const fullLink =
+      headers === LanguageEnums.en
+        ? `${frontLink}/general/redirect/google?code=${accessToken}`
+        : `${frontLink}/ru/general/redirect/google?code=${accessToken}`;
     res
       .writeHead(301, {
-        Location: `${frontLink}/general/redirect/google?code=${accessToken}`,
+        Location: fullLink,
       })
 
       .end();

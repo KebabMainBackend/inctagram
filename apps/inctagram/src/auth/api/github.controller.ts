@@ -80,9 +80,13 @@ export class GithubController {
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );
+    const fullLink =
+      headers === LanguageEnums.en
+        ? `${frontLink}/general/redirect/github?code=${accessToken}`
+        : `${frontLink}/ru/general/redirect/github?code=${accessToken}`;
     res
       .writeHead(301, {
-        Location: `${frontLink}/general/redirect/github?code=${accessToken}`,
+        Location: fullLink,
       })
 
       .end();
