@@ -13,8 +13,8 @@ import { IsObjectId } from '../../../../utils/custom-validators/is-object-id.val
 
 export class CreatePostBodyDto {
   @Transform(({ value }) => trimTransformer(value, 'description'))
-  @IsString()
   @IsOptional()
+  @IsString()
   @ApiProperty({
     description: 'post description',
     example: 'cool post about my journey',
