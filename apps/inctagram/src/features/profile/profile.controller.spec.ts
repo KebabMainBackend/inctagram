@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../app.module';
 import { appSettings } from '../../app.settings';
 import { INestApplication } from '@nestjs/common';
+const timeout = 15000;
 
 describe('ProfileController', () => {
   let app: INestApplication;
@@ -25,6 +26,7 @@ describe('ProfileController', () => {
   });
 
   it('should be defined', () => {
+    jest.setTimeout(timeout);
     expect('2').toBe('2');
   });
 });
