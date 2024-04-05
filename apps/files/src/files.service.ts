@@ -43,7 +43,7 @@ export class FilesService {
           buffer,
           userId,
           imageType: FileImageTypeEnum.POST_IMAGE,
-          imageSize: FILE_IMAGE_SIZE.postImage,
+          imageSize: FILE_IMAGE_SIZE.postImage
         }),
       );
       postImages.push(postImage);

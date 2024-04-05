@@ -12,66 +12,8 @@ import { login } from "../../../../test/managers/login";
 export class SubscriptionRepository {
   constructor(
     private prisma: PrismaService,
-    private EmailService: EmailService,
     private ProductRepository: ProductRepository,
   ) {}
-
-  async getCurrentSubscribeInfo(userId: number) {
-    const current = await this.prisma.currentSubscription.findUnique({
-      where: { userId },
-      include: {
-        profile: {
-          include: {
-            user: {
-              select: {
-                email: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!current) throw new HttpException('Not Found', 404);
-
-    if (current.expireAt < new Date()) {
-      await this.prisma.profile.update({
-        where: { userId },
-        data: {
-          accountType: 'Personal',
-        },
-      });
-
-      return await this.EmailService.sendSubscriptionHasExpiredEmail(
-        current.profile.user.email,
-      );
-    }
-
-    //@ts-ignore
-    const differenceMS = new Date(current.expireAt) - new Date()
-
-    const daysLeft = Math.floor(differenceMS / 86400000)
-
-    const subscriptions =
-      await this.prisma.subscription.findMany({
-        where: {userId},
-        orderBy: [{ dateOfNextPayment: 'asc'},
-          {autoRenewal: 'asc',}]
-      })
-
-    if(!current.hasAutoRenewal) {
-      return {
-        subscriptions,
-        expireAt: daysLeft
-      };
-    } else if(current.hasAutoRenewal) {
-      return {
-        subscriptions,
-        expireAt: daysLeft,
-        nextPayment: subscriptions[0].dateOfNextPayment,
-      };
-    }
-  }
 
   async buySubscription(payload: purchaseSubscriptionDto,
                         userId: number) {
@@ -80,27 +22,31 @@ export class SubscriptionRepository {
     const productInfo =
       await this.ProductRepository.getProductInfo(payload.productPriceId)
 
-    const checkout =
-      await this.ProductRepository.makeAPurchase(payload, productInfo, userId,)
-
-    return checkout;
-  }
-
-  async addSubscriptionToDB(payload, productInfo, userId) {
     const currentSubscription =
       await this.prisma.currentSubscription.findUnique({ where: {userId} })
 
     const newSubscription =
       SubscriptionEntity.create(payload, productInfo, userId,);
 
-    const { dateOfNextPayment, expireAt } =
+    const renewSubscriptionData =
       SubscriptionEntity.renewSubscription(
         currentSubscription
           ? currentSubscription.dateOfNextPayment
           : newSubscription.dateOfNextPayment,
         productInfo.period);
 
-    const changedDateOfNextPayment = dateOfNextPayment
+    const checkout =
+      await this.ProductRepository
+        .makeAPurchase(productInfo.productPriceId,
+          userId, currentSubscription,
+          renewSubscriptionData, newSubscription)
+
+    return checkout;
+  }
+
+  async addSubscriptionToDB(userId,
+                            currentSubscription, dateOfNextPayment,
+                            expireAt, newSubscription) {
 
     if(currentSubscription) {
       await this.prisma.currentSubscription.update({
@@ -109,17 +55,11 @@ export class SubscriptionRepository {
       });
     } else if(!currentSubscription) {
       await this.prisma.currentSubscription.create({
-        data: {userId, expireAt, dateOfNextPayment: changedDateOfNextPayment}
+        data: {userId, expireAt, dateOfNextPayment}
       })
     }
 
     await this.prisma.subscription.create({ data: newSubscription });
-
-    const payment =
-      PaymentsEntity.create(payload, productInfo,
-        newSubscription.dateOfNextPayment, userId);
-
-    await this.prisma.payments.create({ data: payment });
   }
 
   async updateAutoRenewalStatus(autoRenewal: boolean, subscriptionId: number, userId: number) {

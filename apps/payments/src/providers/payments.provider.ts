@@ -1,5 +1,5 @@
 import { Connection } from 'mongoose';
-import { FileImageSchema } from '../db/schemas/payments.schema';
+import { FileImageSchema } from '../db/schemas/products.schema';
 
 export const paymentProviders = [
   {

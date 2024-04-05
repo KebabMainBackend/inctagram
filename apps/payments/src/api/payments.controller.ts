@@ -1,14 +1,20 @@
-import { Controller, Get } from '@nestjs/common';
-import { PaymentsService } from '../payments.service';
-import { MessagePattern } from '@nestjs/microservices';
-import { MicroserviceMessagesEnum } from '../../../../types/messages';
+import { Body, Controller, Get, Post } from "@nestjs/common";
+import { CommandBus } from "@nestjs/cqrs";
+import { stripeCheckoutCommand } from "./use-cases/stripe-checkout-command";
+import { stripeCreateProductCommand } from "./use-cases/stripe-create-product-command";
 
-@Controller()
+@Controller('payments')
 export class PaymentsController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
-  @MessagePattern({ cmd: 'hello-rmq' })
-  async get(data: { lol: number }) {
-    return data.lol + 456;
+  @Post('stripe/checkout')
+  async stripeCheckout(@Body() command: stripeCheckoutCommand) {
+    return this.commandBus.execute(command)
   }
+
+  @Post('stripe/add-new')
+  async stripeAddNewProduct(@Body() command: stripeCreateProductCommand) {
+    return this.commandBus.execute(command)
+  }
+
 }

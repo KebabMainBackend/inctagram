@@ -16,7 +16,8 @@ export class ProductRepository {
     return this.prisma.stripe.findMany({})
   }
 
-  async makeAPurchase(payload, productInfo, userId) {
+  async makeAPurchase(productPriceId, userId, currentSubscription, renewSubscriptionData,
+                      newSubscription) {
     const stripe = new Stripe(process.env.STRIPE_API_KEY);
 
     const session =
@@ -25,15 +26,16 @@ export class ProductRepository {
         cancel_url: 'http://localhost:3000/api/v1/stripe/canceled',
         line_items: [
           {
-            price: productInfo.productPriceId,
+            price: productPriceId,
             quantity: 1
           },
         ],
         mode: 'payment',
         metadata: {
           userId: String(userId),
-          payload: JSON.stringify(payload),
-          productInfo: JSON.stringify(productInfo)
+          newSubscription: JSON.stringify(newSubscription),
+          currentSubscription: JSON.stringify(currentSubscription),
+          renewSubscriptionData: JSON.stringify(renewSubscriptionData),
         },
       });
     
