@@ -5,9 +5,13 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { createErrorMessage } from '../../../utils/create-error-object';
 import { UserConfirmationEntity } from '../../domain/entities/user.entity';
 import { UsersRepository } from '../../db/users.repository';
+import { LanguageEnums } from '../../../types';
 
 export class ResendConfirmationCodeCommand {
-  constructor(public email: string) {}
+  constructor(
+    public email: string,
+    public language: LanguageEnums,
+  ) {}
 }
 
 @CommandHandler(ResendConfirmationCodeCommand)
@@ -19,7 +23,7 @@ export class ResendConfirmationCodeHandler
     private emailService: EmailService,
     private usersRepo: UsersRepository,
   ) {}
-  async execute({ email }: ResendConfirmationCodeCommand) {
+  async execute({ email, language }: ResendConfirmationCodeCommand) {
     const user = await this.usersRepo.getUserByEmail(email);
 
     if (!user) {
@@ -41,6 +45,7 @@ export class ResendConfirmationCodeHandler
           email,
           userConfirmation.confirmationCode,
           'New confirmation code',
+          language,
         );
 
         return true;

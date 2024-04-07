@@ -9,13 +9,17 @@ import {
 import { UsersRepository } from '../../db/users.repository';
 import { createErrorMessage } from '../../../utils/create-error-object';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { LanguageEnums } from '../../../types';
+
+type RegisterUserTypes = {
+  username: string;
+  password: string;
+  email: string;
+  language: LanguageEnums;
+};
 
 export class RegisterUserCommand {
-  constructor(
-    public username: string,
-    public password: string,
-    public email: string,
-  ) {}
+  constructor(public data: RegisterUserTypes) {}
 }
 
 @CommandHandler(RegisterUserCommand)
@@ -28,7 +32,7 @@ export class RegisterUserHandler
     private emailService: EmailService,
     private userRepo: UsersRepository,
   ) {}
-  async execute(data: RegisterUserCommand) {
+  async execute({ data }: RegisterUserCommand) {
     const userByEmail = await this.userRepo.getUserByEmail(data.email);
     const userByUsername = await this.userRepo.getUserByUsername(data.username);
     if (userByEmail) {
@@ -41,7 +45,7 @@ export class RegisterUserHandler
     }
     return this.createUser(data);
   }
-  async createUser({ username, password, email }: RegisterUserCommand) {
+  async createUser({ username, password, email, language }: RegisterUserTypes) {
     const { passwordHash, passwordSalt } =
       await this.userHashingManager.getHashAndSalt(password);
     const newUser = UserEntity.create({
@@ -60,6 +64,7 @@ export class RegisterUserHandler
           email,
           userConfirmation.confirmationCode,
           'Confirmation code',
+          language,
         );
       },
       { timeout: 7000 },

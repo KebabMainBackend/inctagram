@@ -41,13 +41,11 @@ export class CheckCredentialsHandler
       if (user.passwordHash === passwordHash) {
         return user.id;
       }
-      const error = createErrorMessage('incorrect password', 'email/password');
-      throw new HttpException(error, HttpStatus.UNAUTHORIZED);
     }
     const error = createErrorMessage(
       'incorrect email or password',
       'email/password',
     );
-    throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    throw new HttpException(error, HttpStatus.UNAUTHORIZED);
   }
 }

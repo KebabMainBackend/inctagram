@@ -4,9 +4,13 @@ import { EmailService } from '../../managers/email.manager';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { createErrorMessage } from '../../../utils/create-error-object';
 import { UsersRepository } from '../../db/users.repository';
+import { LanguageEnums } from '../../../types';
 
 export class ResendRecoveryCodeCommand {
-  constructor(public email: string) {}
+  constructor(
+    public email: string,
+    public language: LanguageEnums,
+  ) {}
 }
 
 @CommandHandler(ResendRecoveryCodeCommand)
@@ -18,10 +22,10 @@ export class ResendRecoveryCodeHandler
     private emailService: EmailService,
     private usersRepo: UsersRepository,
   ) {}
-  async execute({ email }: ResendRecoveryCodeCommand) {
-    return this.recoverPassword(email);
+  async execute({ email, language }: ResendRecoveryCodeCommand) {
+    return this.recoverPassword(email, language);
   }
-  private async recoverPassword(email: string) {
+  private async recoverPassword(email: string, language: LanguageEnums) {
     const user = await this.usersRepo.getUserByEmail(email);
     if (!user) {
       const error = createErrorMessage(
@@ -41,6 +45,7 @@ export class ResendRecoveryCodeHandler
           await this.emailService.sendRecoveryCodeEmail(
             email,
             confirmationData.confirmationCode,
+            language,
           );
         } catch (e) {
           console.log(e);
