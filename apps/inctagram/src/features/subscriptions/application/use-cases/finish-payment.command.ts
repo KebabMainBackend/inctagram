@@ -4,11 +4,14 @@ import { PrismaService } from '../../../../prisma.service';
 import { EmailService } from '../../../../auth/managers/email.manager';
 
 export class ChangeAccountTypeAndSendMessageCommand {
-  constructor(public userId: number) {}
+  constructor(
+    public userId: number,
+    public email: string,
+  ) {}
 }
 
 @CommandHandler(ChangeAccountTypeAndSendMessageCommand)
-export class ChangeAccountTypeAndSendMessageUseCase
+export class ChangeAccountTypeAndSendMessageHandler
   implements ICommandHandler<ChangeAccountTypeAndSendMessageCommand>
 {
   constructor(
@@ -18,16 +21,21 @@ export class ChangeAccountTypeAndSendMessageUseCase
 
   async execute({
     userId,
+    email,
   }: ChangeAccountTypeAndSendMessageCommand): Promise<boolean | void> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
+    const profile = await this.prisma.profile.findUnique({
+      where: { userId },
     });
-    console.log(user);
-    //обновить статус профиля
-    if (user) {
-      await this.emailAdapter.sendSubscriptionHasExpiredEmail(user.email);
+    if (profile) {
+      await this.prisma.profile.update({
+        where: {
+          userId,
+        },
+        data: {
+          accountType: 'BUSINESS',
+        },
+      });
+      await this.emailAdapter.sendSubscriptionHasExpiredEmail(email);
     } else {
       throw new BadRequestException({
         field: 'userId',

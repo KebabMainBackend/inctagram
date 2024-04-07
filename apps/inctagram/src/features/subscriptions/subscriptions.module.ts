@@ -13,6 +13,7 @@ import { SubscriptionsController } from './api/subscriptions.controller';
 import { UsersRepository } from '../../auth/db/users.repository';
 import { RmqUrl } from '@nestjs/microservices/external/rmq-url.interface';
 import { PaymentsController } from './api/payments.controller';
+import { ChangeAccountTypeAndSendMessageHandler } from './application/use-cases/finish-payment.command';
 
 const Repos = [EmailService, UsersRepository];
 @Module({
@@ -33,6 +34,8 @@ const Repos = [EmailService, UsersRepository];
       },
       inject: [ConfigService],
     },
+    ChangeAccountTypeAndSendMessageHandler,
+
     PrismaService,
     ...Repos,
   ],

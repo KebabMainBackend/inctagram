@@ -14,7 +14,7 @@ export class StripeController {
     cmd: PaymentsMicroserviceMessagesEnum.STRIPE_CREATE_PRODUCT,
   })
   async createProduct(data: { payload: AddNewSubscriptionTypeDto }) {
-    return this.commandBus.execute(
+    return await this.commandBus.execute(
       new CreateStripeProductCommand(data.payload),
     );
   }
@@ -22,9 +22,9 @@ export class StripeController {
   @MessagePattern({
     cmd: PaymentsMicroserviceMessagesEnum.STRIPE_FINISH_PAYMENT,
   })
-  async finishPayment(data: { payload: any }) {
-    return this.commandBus.execute(
-      new FinishStripePaymentCommand(data.payload),
+  async finishPayment(data: { signature: string; rawBody: Buffer }) {
+    return await this.commandBus.execute(
+      new FinishStripePaymentCommand(data.signature, data.rawBody),
     );
   }
 }

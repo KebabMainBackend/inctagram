@@ -53,7 +53,6 @@ export class PurchaseSubscriptionHandler
         renewSubscriptionData,
         newSubscription,
       });
-    console.log(session);
     return { url: session.url };
   }
 }

@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 import { EmailService } from '../../../../inctagram/src/auth/managers/email.manager';
 import { differenceInDays } from 'date-fns';
 import { SubscriptionRepository } from '../../db/subscription.repository';
@@ -37,7 +37,6 @@ export class GetCurrentSubscriptionInfoHandler
     const daysLeft = differenceInDays(new Date(current.expireAt), new Date());
 
     const subscriptions = await this.subscriptionRepo.getSubscriptions(userId);
-    console.log(daysLeft, 'dede');
     if (!current.hasAutoRenewal) {
       return {
         subscriptions,

@@ -32,6 +32,16 @@ spec:
                  secretKeyRef:
                    name: payments-service-production-config-secret
                    key: MONGO_URL
+             - name: PAYMENT_SUCCESS_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: payments-service-production-config-secret
+                   key: PAYMENT_SUCCESS_URL
+             - name: PAYMENT_ERROR_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: payments-service-production-config-secret
+                   key: PAYMENT_ERROR_URL
              - name: AMQP_RABBIT
                valueFrom:
                  secretKeyRef:

@@ -75,7 +75,6 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
     //   ownerId,
     //   type: type,
     // });
-    // console.log(currentImage, 'ccce');
     await this.s3Manager.saveImage(buffer, url);
     // if (currentImage && currentImage.type !== FileImageTypeEnum.POST_IMAGE) {
     //   await this.fileImageModel.updateOne(

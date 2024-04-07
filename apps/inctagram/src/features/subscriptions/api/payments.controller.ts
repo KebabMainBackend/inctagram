@@ -13,6 +13,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { PaymentsMicroserviceMessagesEnum } from '../../../../../../types/messages';
 import { ChangeAccountTypeAndSendMessageCommand } from '../application/use-cases/finish-payment.command';
 import { CommandBus } from '@nestjs/cqrs';
+import { firstValueFrom } from 'rxjs';
 
 @Controller('payments')
 @ApiExcludeController()
@@ -24,25 +25,27 @@ export class PaymentsController {
   ) {}
   @Post('stripe/create-product')
   async addNewProductToStripe(@Body() payload: AddNewSubscriptionTypeDto) {
-    return this.clientProxy.send(
+    const data = this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.STRIPE_CREATE_PRODUCT },
       { payload },
     );
+    console.log(data);
+    return data;
   }
 
   @Post('stripe/webhook')
-  paymentInfo(@Req() req: RawBodyRequest<Request>) {
-    console.log(req, 'req');
+  async paymentInfo(@Req() req: RawBodyRequest<Request>) {
     const signature = req.headers['stripe-signature'];
     const rawBody = req.rawBody;
-    const data = this.clientProxy.send(
-      { cmd: PaymentsMicroserviceMessagesEnum.STRIPE_FINISH_PAYMENT },
-      { payload: { signature, rawBody } },
+    const data = await firstValueFrom(
+      this.clientProxy.send(
+        { cmd: PaymentsMicroserviceMessagesEnum.STRIPE_FINISH_PAYMENT },
+        { signature, rawBody },
+      ),
     );
     return this.commandBus.execute(
-      new ChangeAccountTypeAndSendMessageCommand(4),
+      new ChangeAccountTypeAndSendMessageCommand(data.userId, data.email),
     );
-    return data;
   }
 
   @Get('success')

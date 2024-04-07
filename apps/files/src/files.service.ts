@@ -62,7 +62,6 @@ export class FilesService {
   async deletePostImage(imageId: string, userId: number) {
     const image = await this.getImageById(imageId);
     if (image) {
-      console.log(image.ownerId, userId);
       if (image.ownerId !== userId) {
         return HttpStatus.FORBIDDEN;
       }

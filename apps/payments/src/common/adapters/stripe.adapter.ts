@@ -81,7 +81,7 @@ export class StripeAdapter {
   async checkPayment(payload: { rawBody: any; signature: string }) {
     const stripe = new Stripe(this.configService.get('STRIPE_API_KEY'));
     const event = stripe.webhooks.constructEvent(
-      payload.rawBody,
+      Buffer.from(payload.rawBody),
       payload.signature,
       this.configService.get('STRIPE_WEBHOOK_SECRET'),
     );
@@ -93,5 +93,6 @@ export class StripeAdapter {
       };
       return { data, dataPayment };
     }
+    return null;
   }
 }
