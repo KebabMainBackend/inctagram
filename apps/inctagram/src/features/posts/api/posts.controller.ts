@@ -244,10 +244,9 @@ export class PostsController {
     @User() user: UserTypes,
     @Param('imageId', ObjectIdValidationPipe) imageId: string,
   ) {
-
     const resp = await firstValueFrom(
       this.clientProxy.send(
-        { cmd: MicroserviceMessagesEnum.DELETE_POST_IMAGE },
+        { cmd: FilesMicroserviceMessagesEnum.DELETE_POST_IMAGE },
         { userId: user.id, imageId },
       ),
     );
