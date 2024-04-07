@@ -26,7 +26,8 @@
     "start:dev:files": "nest start files --watch",
     "build:payments": "nest build payments",
     "start:payments": "node dist/apps/payments/main.js",
-    "start:dev:payments": "nest start payments --watch"
+    "start:dev:payments": "nest start payments --watch",
+    "ngrok:connect": "ngrok http 3000"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.515.0",
@@ -51,7 +52,7 @@
     "google-auth-library": "^9.6.3",
     "image-size": "^1.1.1",
     "mongoose": "^8.2.0",
-    "ngrok": "^5.0.0-beta.2",
+    "ngrok": "5.0.0-beta.2",
     "nodemailer": "6.9.9",
     "passport": "0.7.0",
     "passport-github": "^1.1.0",

@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ProfileRepository } from '../../db/profile.repository';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { MicroserviceMessagesEnum } from '../../../../../../../types/messages';
+import { FilesMicroserviceMessagesEnum } from '../../../../../../../types/messages';
 
 export class DeleteAvatarCommand {
   constructor(public userId: number) {}
@@ -26,7 +26,7 @@ export class DeleteAvatarHandler
     }
   }
   deleteFromMS(userId: number) {
-    const pattern = { cmd: MicroserviceMessagesEnum.DELETE_AVATAR };
+    const pattern = { cmd: FilesMicroserviceMessagesEnum.DELETE_AVATAR };
     const payload = {
       ownerId: userId,
     };

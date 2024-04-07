@@ -2,70 +2,89 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Inject,
+  NotFoundException,
   Post,
   Put,
-  Req,
-  UseGuards
-} from "@nestjs/common";
-import { BearerAuthGuard } from "../../../auth/guards/bearer-auth.guard";
-import { purchaseSubscriptionDto, updateAutoRenewalStatusDto } from "./dto";
-import { SubscriptionRepository } from "../db/subscription.repository";
+  UseGuards,
+} from '@nestjs/common';
+import { BearerAuthGuard } from '../../../auth/guards/bearer-auth.guard';
+import { PurchaseSubscriptionDto, UpdateAutoRenewalStatusDto } from './dto/dto';
 
-import { ClientProxy } from "@nestjs/microservices";
-import { MicroserviceMessagesEnum } from "../../../../../../types/messages";
+import { ClientProxy } from '@nestjs/microservices';
 
-import { ProductRepository } from "../../stripe/db/product.repository";
-import { getCurrentSubscriptionInfoCommand } from "./use-cases/get-current-subscription-info-command";
-import { CommandBus } from "@nestjs/cqrs";
+import { PaymentsMicroserviceMessagesEnum } from '../../../../../../types/messages';
+import { User } from '../../../utils/decorators/user.decorator';
+import { UserTypes } from '../../../types';
+import {
+  ApiBearerAuth,
+  ApiNotFoundResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { SwaggerDecoratorForGetProducts } from '../swagger/swagger.decorators';
+import {
+  NotFoundResponseOptions,
+  UnauthorizedRequestResponseOptions,
+} from '../../../utils/constants/swagger-constants';
+import { firstValueFrom } from 'rxjs';
 
-
-@Controller("subscription")
+@Controller('subscription')
+@ApiTags('Subscription')
 @UseGuards(BearerAuthGuard)
+@ApiBearerAuth()
+@ApiUnauthorizedResponse(UnauthorizedRequestResponseOptions)
 export class SubscriptionsController {
+  constructor(@Inject('PAYMENTS_SERVICE') private clientProxy: ClientProxy) {}
 
-  constructor(
-    private SubscriptionRepo: SubscriptionRepository,
-    @Inject("PAYMENTS_SERVICE") private clientProxy: ClientProxy,
-    private ProductRepository: ProductRepository,
-    private commandBus: CommandBus
+  @Get('products')
+  @SwaggerDecoratorForGetProducts()
+  async get() {
+    return this.clientProxy.send(
+      { cmd: PaymentsMicroserviceMessagesEnum.GET_ALL_SUBSCRIPTIONS },
+      { data: 124 },
+    );
+  }
+
+  @Get('current')
+  @ApiNotFoundResponse(NotFoundResponseOptions)
+  async getCurrentSubscribeInfo(@User() user: UserTypes) {
+    const userId = user.id;
+
+    const data = await firstValueFrom(
+      this.clientProxy.send(
+        { cmd: PaymentsMicroserviceMessagesEnum.GET_CURRENT_SUBSCRIPTION },
+        { userId },
+      ),
+    );
+    if (data.errorCode === HttpStatus.NOT_FOUND) {
+      throw new NotFoundException('Not found');
+    }
+    return data;
+  }
+
+  @Post('purchase')
+  async buySubscription(
+    @Body() payload: PurchaseSubscriptionDto,
+    @User() user: UserTypes,
   ) {
+    const userId = user.id;
+    return this.clientProxy.send(
+      { cmd: PaymentsMicroserviceMessagesEnum.PURCHASE_SUBSCRIPTION },
+      { userId, payload },
+    );
   }
 
-  @Get("")
-  get() {
-    return this.clientProxy.send({ cmd: "hello-rmq" }, { lol: 123 });
-
-  }
-
-  @Get("types")
-  async get1() {
-    return await this.ProductRepository.getSubscriptionsTypes();
-  }
-
-  @Get("current")
-  async getCurrentSubscribeInfo(@Req() req: any,
-                                @Body() command: getCurrentSubscriptionInfoCommand) {
-    command.userId = req.owner.id
-
-    return this.commandBus.execute(command)
-  }
-
-  @Post("purchase")
-  async buySubscription(@Body() payload: purchaseSubscriptionDto,
-                        @Req() req: any) {
-    return await this.SubscriptionRepo.buySubscription(payload, req.owner.id);
-    // req = { owner: { id: ..., email: ... }  }
-  }
-
-  @Put("auto-renewal")
+  @Put('auto-renewal')
   async updateAutoRenewalStatus(
-    @Body() payload: updateAutoRenewalStatusDto,
-    @Req() req: any) {
-    return await this.SubscriptionRepo.updateAutoRenewalStatus(
-      payload.autoRenewal,
-      payload.subscriptionId,
-      req.owner.id
-    )
+    @Body() payload: UpdateAutoRenewalStatusDto,
+    @User() user: UserTypes,
+  ) {
+    const userId = user.id;
+    return this.clientProxy.send(
+      { cmd: PaymentsMicroserviceMessagesEnum.UPDATE_AUTO_RENEWAL },
+      { userId, payload },
+    );
   }
 }

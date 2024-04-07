@@ -8,7 +8,7 @@ import {
 } from '../../../utils/helpers/get-request-mapper.helper';
 import { PostStatusEnum } from '../domain/types/post.enum';
 import { PostView } from './view/post.view';
-import { MicroserviceMessagesEnum } from '../../../../../../types/messages';
+import { FilesMicroserviceMessagesEnum } from '../../../../../../types/messages';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
@@ -90,14 +90,16 @@ export class PostsQueryRepository {
     });
   }
   private getUserThumbnailAvatar(imageId: string) {
-    const pattern = { cmd: MicroserviceMessagesEnum.GET_USER_THUMBNAIL_AVATAR };
+    const pattern = {
+      cmd: FilesMicroserviceMessagesEnum.GET_USER_THUMBNAIL_AVATAR,
+    };
     const payload = {
       imageId,
     };
     return this.client.send(pattern, payload);
   }
   private getPostImages(imagesIds: string[]) {
-    const pattern = { cmd: MicroserviceMessagesEnum.GET_POST_IMAGES };
+    const pattern = { cmd: FilesMicroserviceMessagesEnum.GET_POST_IMAGES };
     const payload = {
       imagesIds,
     };

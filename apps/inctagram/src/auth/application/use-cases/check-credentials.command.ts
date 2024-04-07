@@ -31,15 +31,12 @@ export class CheckCredentialsHandler
         password,
         user.passwordSalt,
       );
-      // if (!user.isConfirmed) {
-      //   throw new HttpException(
-      //     'email is not confirmed',
-      //     HttpStatus.UNAUTHORIZED,
-      //   );
-      // }
-      console.log(
-        'file check-credentials-command проверка потверждён ли эмайл закомментирована',
-      );
+      if (!user.isConfirmed) {
+        throw new HttpException(
+          'email is not confirmed',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
       if (user.passwordHash === passwordHash) {
         return user.id;
       }

@@ -4,7 +4,7 @@ import { HttpStatus, Inject } from '@nestjs/common';
 import { PostsRepository } from '../../db/posts.repository';
 import { PostEntity } from '../../domain/entities/post.entity';
 import { CreatePostTypes } from '../../domain/types/create-post.types';
-import { MicroserviceMessagesEnum } from '../../../../../../../types/messages';
+import { FilesMicroserviceMessagesEnum } from '../../../../../../../types/messages';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { ProfileRepository } from '../../../profile/db/profile.repository';
@@ -38,14 +38,16 @@ export class CreatePostHandler implements ICommandHandler<CreatePostCommand> {
     });
   }
   private getImages(imagesIds: string[]) {
-    const pattern = { cmd: MicroserviceMessagesEnum.GET_POST_IMAGES };
+    const pattern = { cmd: FilesMicroserviceMessagesEnum.GET_POST_IMAGES };
     const payload = {
       imagesIds,
     };
     return this.client.send(pattern, payload);
   }
   private getUserAvatar(imageId: string) {
-    const pattern = { cmd: MicroserviceMessagesEnum.GET_USER_THUMBNAIL_AVATAR };
+    const pattern = {
+      cmd: FilesMicroserviceMessagesEnum.GET_USER_THUMBNAIL_AVATAR,
+    };
     const payload = {
       imageId,
     };

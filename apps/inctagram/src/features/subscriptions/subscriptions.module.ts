@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TcpClientOptions } from '@nestjs/microservices/interfaces/client-metadata.interface';
 import {
   ClientProxyFactory,
   RmqOptions,
@@ -10,21 +9,15 @@ import {
 } from '@nestjs/microservices';
 import { PrismaService } from '../../prisma.service';
 import { EmailService } from '../../auth/managers/email.manager';
-import { SubscriptionRepository } from './db/subscription.repository';
 import { SubscriptionsController } from './api/subscriptions.controller';
 import { UsersRepository } from '../../auth/db/users.repository';
-import { ProductRepository } from '../stripe/db/product.repository';
 import { RmqUrl } from '@nestjs/microservices/external/rmq-url.interface';
+import { PaymentsController } from './api/payments.controller';
 
-const Repos = [
-  EmailService,
-  SubscriptionRepository,
-  UsersRepository,
-  ProductRepository,
-];
+const Repos = [EmailService, UsersRepository];
 @Module({
   imports: [CqrsModule, JwtModule, ConfigModule],
-  controllers: [SubscriptionsController],
+  controllers: [SubscriptionsController, PaymentsController],
   providers: [
     {
       provide: 'PAYMENTS_SERVICE',

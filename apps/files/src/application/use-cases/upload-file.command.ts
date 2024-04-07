@@ -42,7 +42,7 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
     const fileBuffer = Buffer.from(buffer);
     const compressedBuffer = await this.compressImage(fileBuffer);
 
-    const imageInfo = sizeOf(compressedBuffer)
+    const imageInfo = sizeOf(compressedBuffer);
 
     const fileId = await this.uploadImageToCloud({
       buffer: compressedBuffer,
@@ -60,7 +60,8 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
     };
   }
   private async compressImage(imageBuffer: Buffer, size?: number | undefined) {
-    if(size) return await sharp(imageBuffer).resize(size, size).webp().toBuffer();
+    if (size)
+      return await sharp(imageBuffer).resize(size, size).webp().toBuffer();
     else return await sharp(imageBuffer).webp().toBuffer();
   }
   private async uploadImageToCloud({
