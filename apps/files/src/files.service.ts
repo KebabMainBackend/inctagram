@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { UploadAvatarDto } from './api/dto/upload-avatar.dto';
 import { Model, Types } from 'mongoose';
 import { FileImageInterface } from './db/interfaces/file-image.interface';
@@ -61,11 +61,15 @@ export class FilesService {
   }
   async deletePostImage(imageId: string, userId: number) {
     const image = await this.getImageById(imageId);
-    if (image && image.ownerId === userId) {
+    if (image) {
+      console.log(image.ownerId, userId);
+      if (image.ownerId !== userId) {
+        return HttpStatus.FORBIDDEN;
+      }
       await this.commandBus.execute(new DeleteFileCommand(image.url));
-      return true;
+      return HttpStatus.NO_CONTENT;
     }
-    return false;
+    return HttpStatus.NOT_FOUND;
   }
   async getAvatarImagesByOwnerId(ownerId: number) {
     return this.fileImageModel.find({

@@ -10,6 +10,7 @@ import {
   Delete,
   Res,
   Get,
+  Headers,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthRegisterDto } from './dto/auth-register.dto';
@@ -51,7 +52,7 @@ import { TestDeleteUserCommand } from '../test/delete-user.command';
 import { AddRefreshToBlacklistCommand } from '../application/use-cases/add-refresh-to-blacklist';
 import { UpdateRefreshTokenCommand } from '../application/use-cases/update-refresh-token.command';
 import { User } from '../../utils/decorators/user.decorator';
-import { UserTypes } from '../../types';
+import { LanguageEnums, UserTypes } from '../../types';
 import { CheckVerifyCodeDto } from './dto/check-verify-code.dto';
 import { CheckRecoveryCodeCommand } from '../application/use-cases/check-recovery-code.command';
 import { AuthResendRecoveryCodeDto } from './dto/auth-resend-recovery-code.dto';
@@ -75,13 +76,17 @@ export class AuthController {
   @Post('registration')
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)
-  async register(@Body() registerDTO: AuthRegisterDto) {
+  async register(
+    @Body() registerDTO: AuthRegisterDto,
+    @Headers('X-Url-lang') headers: LanguageEnums,
+  ) {
     return await this.commandBus.execute(
-      new RegisterUserCommand(
-        registerDTO.username,
-        registerDTO.password,
-        registerDTO.email,
-      ),
+      new RegisterUserCommand({
+        username: registerDTO.username,
+        password: registerDTO.password,
+        email: registerDTO.email,
+        language: headers,
+      }),
     );
   }
 
@@ -126,11 +131,15 @@ export class AuthController {
   @ApiBadRequestResponse(BadRequestResponseOptions)
   @Post('password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async passwordRecovery(@Body() passwordRecoveryDto: AuthPasswordRecoveryDto) {
+  async passwordRecovery(
+    @Body() passwordRecoveryDto: AuthPasswordRecoveryDto,
+    @Headers('X-Url-lang') headers: LanguageEnums,
+  ) {
     await this.commandBus.execute(
       new PasswordRecoveryCommand(
         passwordRecoveryDto.email,
         passwordRecoveryDto.recaptcha,
+        headers,
       ),
     );
     return;
@@ -177,9 +186,14 @@ export class AuthController {
   @Post('registration-email-resending')
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async registrationEmailResend(@Body() body: AuthResendCodeDto) {
+  async registrationEmailResend(
+    @Body() body: AuthResendCodeDto,
+    @Headers('X-Url-lang') headers: LanguageEnums,
+  ) {
     const email = body.email;
-    await this.commandBus.execute(new ResendConfirmationCodeCommand(email));
+    await this.commandBus.execute(
+      new ResendConfirmationCodeCommand(email, headers),
+    );
     return;
   }
 
@@ -256,9 +270,12 @@ export class AuthController {
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)
   @ApiBadRequestResponse(BadRequestResponseOptions)
-  async resendRecoveryCode(@Body() body: AuthResendRecoveryCodeDto) {
+  async resendRecoveryCode(
+    @Body() body: AuthResendRecoveryCodeDto,
+    @Headers('X-Url-lang') headers: LanguageEnums,
+  ) {
     return await this.commandBus.execute(
-      new ResendRecoveryCodeCommand(body.email),
+      new ResendRecoveryCodeCommand(body.email, headers),
     );
   }
   @Get('me')
