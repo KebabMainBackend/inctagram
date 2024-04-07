@@ -11,7 +11,7 @@ import { PostView } from './view/post.view';
 import { FilesMicroserviceMessagesEnum } from '../../../../../../types/messages';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-
+const availableQueryParams = ['createdAt', 'description', 'userId', 'id'];
 @Injectable()
 export class PostsQueryRepository {
   constructor(
@@ -20,17 +20,22 @@ export class PostsQueryRepository {
   ) {}
 
   async findPosts(queryPost: GetDefaultUriDto, userId?: number) {
-    const { pageSize, cursor, sortBy, sortDirection } =
+    const { pageSize, cursor, sortDirection } =
       getRequestQueryMapper(queryPost);
+    let { sortBy } = getRequestQueryMapper(queryPost);
+    let hasMore = false;
     const filterByStatusAndOptionalUserId: any = {
       status: PostStatusEnum.ACTIVE,
     };
+    if (!availableQueryParams.includes(sortBy)) {
+      sortBy = 'createdAt';
+    }
     if (userId) {
       filterByStatusAndOptionalUserId.userId = userId;
     }
     const filter: any = {
       where: filterByStatusAndOptionalUserId,
-      take: pageSize,
+      take: pageSize + 1,
       orderBy: { [sortBy]: sortDirection },
     };
     if (cursor) {
@@ -42,7 +47,7 @@ export class PostsQueryRepository {
     });
 
     const postsNPostImages = await this.prismaClient.post.findMany(filter);
-    const lastPostId = postsNPostImages.length ? postsNPostImages.at(-1).id : 0;
+    const lastPostId = postsNPostImages.length ? postsNPostImages.at(-2).id : 0;
     let userProfile;
     let userAvatar;
     if (userId) {
@@ -50,6 +55,10 @@ export class PostsQueryRepository {
       userAvatar = await firstValueFrom(
         this.getUserThumbnailAvatar(userProfile?.thumbnailId),
       );
+    }
+    if (postsNPostImages.length > pageSize) {
+      hasMore = true;
+      postsNPostImages.pop(); // Remove the extra post used to check for more
     }
     const items: PostView[] = [];
     for (const post of postsNPostImages) {
@@ -73,6 +82,7 @@ export class PostsQueryRepository {
       items,
       cursor: lastPostId,
       pageSize,
+      hasMore,
     });
   }
   private getUserProfile(userId: number) {
