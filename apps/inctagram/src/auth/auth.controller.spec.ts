@@ -111,7 +111,7 @@ describe('AuthController', () => {
       await request(httpServer)
         .post(URL + '/login')
         .send(data)
-        .expect(HttpStatus.BAD_REQUEST);
+        .expect(HttpStatus.UNAUTHORIZED);
     });
     it('should return token when login with default acc', async () => {
       const token = await request(httpServer)
