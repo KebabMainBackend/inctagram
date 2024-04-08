@@ -40,7 +40,10 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
     const { buffer, userId: ownerId, imageSize, imageType } = data;
     const url = this.createUrlForFileImage(ownerId, imageType);
     const fileBuffer = Buffer.from(buffer);
-    const compressedBuffer = await this.compressImage(fileBuffer, imageSize);
+    const compressedBuffer = await this.compressImage(fileBuffer);
+
+    const imageInfo = sizeOf(compressedBuffer);
+
     const fileId = await this.uploadImageToCloud({
       buffer: compressedBuffer,
       url,
@@ -50,14 +53,16 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
     return {
       fileId: fileId,
       url,
-      width: imageSize,
-      height: imageSize,
+      width: imageInfo.width,
+      height: imageInfo.height,
       fileSize: compressedBuffer.length,
       type: imageType,
     };
   }
-  private async compressImage(imageBuffer: Buffer, size: number) {
-    return await sharp(imageBuffer).resize(size, size).webp().toBuffer();
+  private async compressImage(imageBuffer: Buffer, size?: number | undefined) {
+    if (size)
+      return await sharp(imageBuffer).resize(size, size).webp().toBuffer();
+    else return await sharp(imageBuffer).webp().toBuffer();
   }
   private async uploadImageToCloud({
     buffer,
@@ -70,7 +75,6 @@ export class UploadFileHandler implements ICommandHandler<UploadFileCommand> {
     //   ownerId,
     //   type: type,
     // });
-    // console.log(currentImage, 'ccce');
     await this.s3Manager.saveImage(buffer, url);
     // if (currentImage && currentImage.type !== FileImageTypeEnum.POST_IMAGE) {
     //   await this.fileImageModel.updateOne(

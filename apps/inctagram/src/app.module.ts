@@ -10,12 +10,12 @@ import { SecurityDevicesModule } from './features/security-devices/security-devi
 import { ProfileModule } from './features/profile/profile.module';
 import { PostsModule } from './features/posts/posts.module';
 import { SubscriptionsModule } from './features/subscriptions/subscriptions.module';
-import { ProductModule } from './features/stripe/stripe.module';
 
 @Module({
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(
+        
         // 'C:\\Projects\\inctagram\\apps\\inctagram\\swagger-static',
         'D:\\job\\inctagram\\apps\\inctagram\\swagger-static',
       ),
@@ -36,7 +36,6 @@ import { ProductModule } from './features/stripe/stripe.module';
     PostsModule,
     ProfileModule,
     SubscriptionsModule,
-    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,4 +1,5 @@
 import { FileImageTypeEnum } from '../../../../../../../types/file-image-enum.types';
+import { AccountType } from '@prisma/client';
 
 export type DBProfileView = {
   userId: number;
@@ -12,6 +13,7 @@ export type DBProfileView = {
   user: {
     username: string;
   };
+  accountType: AccountType;
 };
 
 export type DBProfileUserImages = DBProfileImageView[];
