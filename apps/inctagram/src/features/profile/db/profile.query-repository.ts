@@ -14,7 +14,10 @@ export class ProfileQueryRepository {
   ) {}
   async getAllUsersCount() {
     const total = await this.prisma.profile.count({});
-    return { totalUsersCount: total };
+    const lastUser = await this.prisma.profile.findFirst({
+      orderBy: { createdAt: 'desc' },
+    });
+    return { totalUsersCount: total, lastUserId: lastUser.userId };
   }
 
   async getUserProfile(userId: number) {

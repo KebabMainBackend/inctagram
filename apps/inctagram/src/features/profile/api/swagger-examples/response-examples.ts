@@ -27,4 +27,5 @@ export const ProfileViewExample = {
 
 export const PublicProfilesTotalCountViewExample = {
   totalUsersCount: 50,
+  lastUserId: 50,
 };
