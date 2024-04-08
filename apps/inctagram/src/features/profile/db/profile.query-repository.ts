@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma.service';
 import { mapUserProfile } from './view/mapUserProfile';
 import { ClientProxy } from '@nestjs/microservices';
-import { MicroserviceMessagesEnum } from '../../../../../../types/messages';
+import { FilesMicroserviceMessagesEnum } from '../../../../../../types/messages';
 import { firstValueFrom } from 'rxjs';
 import { PostStatusEnum } from '../../posts/domain/types/post.enum';
 
@@ -53,7 +53,7 @@ export class ProfileQueryRepository {
     };
   }
   private getUserProfileImages(userId: number) {
-    const pattern = { cmd: MicroserviceMessagesEnum.GET_AVATAR };
+    const pattern = { cmd: FilesMicroserviceMessagesEnum.GET_AVATAR };
     const payload = {
       ownerId: userId,
     };

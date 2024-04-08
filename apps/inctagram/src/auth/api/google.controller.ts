@@ -43,6 +43,7 @@ export class GoogleController {
   })
   @ApiTooManyRequestsResponse(TooManyRequestsResponseOptions)
   @Get('login')
+  // en + ru lang
   @UseGuards(ThrottlerGuard)
   @UseGuards(AuthGuard('google'))
   @HttpCode(HttpStatus.OK)
@@ -56,7 +57,6 @@ export class GoogleController {
     @Res({ passthrough: true }) res: Response,
     @Headers('X-Url-lang') headers: LanguageEnums,
   ) {
-    console.log(headers);
     const { email, id } = req.user;
     const userId = await this.commandBus.execute(
       new SignInUserViaOauthProviderCommand({

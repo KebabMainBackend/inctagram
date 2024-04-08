@@ -58,7 +58,7 @@ import {
 import { CheckMimetype } from '../../../utils/custom-validators/file.validator';
 import { POST_IMAGE_NORMAL_SIZE } from '../../../utils/constants/default-query-params';
 import { UploadPostImagesCommand } from '../application/use-cases/upload-post-images.command';
-import { MicroserviceMessagesEnum } from '../../../../../../types/messages';
+import { FilesMicroserviceMessagesEnum } from '../../../../../../types/messages';
 import { GetDefaultUriDto } from '../../../utils/default-get-query.uri.dto';
 import { createErrorMessage } from '../../../utils/create-error-object';
 import { DeletePostCommand } from '../application/use-cases/delete-post.command';
@@ -246,7 +246,7 @@ export class PostsController {
   ) {
     const resp = await firstValueFrom(
       this.clientProxy.send(
-        { cmd: MicroserviceMessagesEnum.DELETE_POST_IMAGE },
+        { cmd: FilesMicroserviceMessagesEnum.DELETE_POST_IMAGE },
         { userId: user.id, imageId },
       ),
     );

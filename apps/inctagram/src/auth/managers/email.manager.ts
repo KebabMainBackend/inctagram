@@ -120,7 +120,7 @@ export class EmailService {
     }
   }
 
-  async sendSubscriptionHasExpiredEmail(userEmail) {
+  async sendSubscriptionHasExpiredEmail(userEmail: string) {
     const messageTemplate = `
             <h1>Your subscription has expired!</h1>
             <p>The subscription has expired. To
