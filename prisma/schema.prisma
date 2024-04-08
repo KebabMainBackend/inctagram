@@ -48,7 +48,7 @@ model Profile {
   city                String?
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
-  accountType         AccountType?         @default(PERSONAL)
+  accountType         AccountType          @default(PERSONAL)
   user                User                 @relation(fields: [userId], references: [id])
   subscription        Subscription[]
   payments            Payments[]
