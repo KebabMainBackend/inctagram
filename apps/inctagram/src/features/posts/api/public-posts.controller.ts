@@ -35,7 +35,8 @@ export class PublicPostsController {
     @Query() queryPost: GetDefaultUriDto,
     @Param('userId', ParseIntPipe) userId: number,
   ) {
-    return await this.postsQueryRepository.findPosts(queryPost, userId);
+    const data = await this.postsQueryRepository.findPosts(queryPost, userId);
+    return { userId, ...data };
   }
 
   @ApiOperation({ summary: 'Get all public posts' })
