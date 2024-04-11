@@ -83,8 +83,8 @@ export class GoogleController {
     );
     const fullLink =
       headers === LanguageEnums.en
-        ? `${frontLink}/general/redirect/google?code=${accessToken}`
-        : `${frontLink}/ru/general/redirect/google?code=${accessToken}`;
+        ? `${frontLink}/general/redirect/google?code=${accessToken}&userId=${userId}`
+        : `${frontLink}/ru/general/redirect/google?code=${accessToken}&userId=${userId}`;
     res
       .writeHead(301, {
         Location: fullLink,

@@ -124,7 +124,7 @@ export class AuthController {
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );
-    return { accessToken };
+    return { accessToken, userId };
   }
 
   @ApiNoContentResponse(NoContentResponseOptions)
