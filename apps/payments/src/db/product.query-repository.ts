@@ -6,6 +6,6 @@ export class ProductQueryRepository {
   constructor(private prisma: PrismaService) {}
 
   async getSubscriptionsTypes() {
-    return this.prisma.stripe.findMany();
+    return this.prisma.product.findMany();
   }
 }

@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { StripeAdapter } from '../../common/adapters/stripe.adapter';
-import { SubscriptionRepository } from '../../db/subscription.repository';
-import { PrismaService } from '../../prisma.service';
+import { StripeAdapter } from '../../../common/adapters/stripe.adapter';
+import { SubscriptionRepository } from '../../../db/subscription.repository';
+import { PrismaService } from '../../../prisma.service';
 
 export class FinishStripePaymentCommand {
   constructor(
@@ -17,7 +17,6 @@ export class FinishStripePaymentHandler
   constructor(
     private subscriptionRepo: SubscriptionRepository,
     private stripeAdapter: StripeAdapter,
-    private prisma: PrismaService,
   ) {}
 
   async execute(payload: FinishStripePaymentCommand) {
@@ -29,34 +28,16 @@ export class FinishStripePaymentHandler
         JSON.parse(metadata.currentSubscription) || null;
       const renewSubscription = JSON.parse(metadata.renewSubscriptionData);
       const newSubscription = JSON.parse(metadata.newSubscription);
-      await this.addSubscriptionToDB({
+
+      await this.subscriptionRepo.addSubscriptionToDB(newSubscription)
+
+      await this.subscriptionRepo.updateCurrentSubscription({
         userId: +metadata.userId,
         currentSubscription,
         dateOfNextPayment: renewSubscription.dateOfNextPayment,
         expireAt: renewSubscription.expireAt,
-        newSubscription,
       });
       return { userId: +metadata.userId, email };
     }
-  }
-  private async addSubscriptionToDB({
-    userId,
-    currentSubscription,
-    dateOfNextPayment,
-    expireAt,
-    newSubscription,
-  }) {
-    if (currentSubscription) {
-      await this.prisma.currentSubscription.update({
-        where: { userId },
-        data: { dateOfNextPayment, expireAt },
-      });
-    } else {
-      await this.prisma.currentSubscription.create({
-        data: { userId, expireAt, dateOfNextPayment },
-      });
-    }
-
-    await this.prisma.subscription.create({ data: newSubscription });
   }
 }

@@ -12,7 +12,7 @@ export class PurchaseSubscriptionDto {
     name: 'payment type',
     example: 'Paypal',
   })
-  paymentSystem: 'PayPal' | 'Stripe';
+  paymentSystem: 'Paypal' | 'Stripe';
 }
 
 export class UpdateAutoRenewalStatusDto {

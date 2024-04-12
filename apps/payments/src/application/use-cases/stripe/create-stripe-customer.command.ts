@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { StripeAdapter } from '../../common/adapters/stripe.adapter';
-import { SubscriptionRepository } from '../../db/subscription.repository';
+import { StripeAdapter } from '../../../common/adapters/stripe.adapter';
+import { SubscriptionRepository } from '../../../db/subscription.repository';
 
 export class CreateStripeCustomerCommand {
   constructor(
@@ -26,7 +26,7 @@ export class CreateStripeCustomerHandler
         email,
         userId,
       );
-      await this.subscriptionRepo.updateCustomerId(userId, newCustomer.id);
+      await this.subscriptionRepo.updateStripeCustomerId(userId, newCustomer.id);
       customer = await this.subscriptionRepo.getCurrentSubscription(userId);
     }
 

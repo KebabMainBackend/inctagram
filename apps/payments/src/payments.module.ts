@@ -8,15 +8,20 @@ import { ProductRepository } from './db/product.repository';
 import { ProductQueryRepository } from './db/product.query-repository';
 import { PaymentsRepository } from './db/payments.repository';
 import { SubscriptionRepository } from './db/subscription.repository';
-import { CreateStripeCustomerHandler } from './application/use-cases/create-stripe-customer.command';
-import { CreateStripeProductHandler } from './application/use-cases/create-stripe-product.command';
-import { FinishStripePaymentHandler } from './application/use-cases/finish-stripe-payment.command';
+import { CreateStripeCustomerHandler } from './application/use-cases/stripe/create-stripe-customer.command';
+import { CreateStripeProductHandler } from './application/use-cases/stripe/create-stripe-product.command';
+import { FinishStripePaymentHandler } from './application/use-cases/stripe/finish-stripe-payment.command';
 import { GetCurrentSubscriptionInfoHandler } from './application/use-cases/get-current-subscription-info.command';
 import { PurchaseSubscriptionHandler } from './application/use-cases/purchase-subscription.command';
 import { UpdateAutoRenewalStatusHandler } from './application/use-cases/update-auto-renewal-status.command';
 import { StripeAdapter } from './common/adapters/stripe.adapter';
 import { PrismaService } from './prisma.service';
 import { EmailService } from '../../inctagram/src/auth/managers/email.manager';
+import { CreatePaypalProductHandler } from "./application/use-cases/paypal/create-paypal-product.command";
+import { PaypalAdapter } from "./common/adapters/paypal.adapter";
+import { PaypalController } from "./api/paypal.controller";
+import { FinishPaypalPaymentHandler } from "./application/use-cases/paypal/finish-paypal-payment.command";
+import { CreatePaypalCustomerHandler } from "./application/use-cases/paypal/create-paypal-customer.command";
 
 const commandHandlers = [
   CreateStripeCustomerHandler,
@@ -25,6 +30,9 @@ const commandHandlers = [
   GetCurrentSubscriptionInfoHandler,
   PurchaseSubscriptionHandler,
   UpdateAutoRenewalStatusHandler,
+  CreatePaypalProductHandler,
+  FinishPaypalPaymentHandler,
+  CreatePaypalCustomerHandler
 ];
 
 const repos = [
@@ -42,12 +50,13 @@ const repos = [
       envFilePath: ['.env', '.env.dev'],
     }),
   ],
-  controllers: [PaymentsController, StripeController],
+  controllers: [PaymentsController, StripeController, PaypalController],
   providers: [
     StripeAdapter,
     PrismaService,
     PaymentsService,
     EmailService,
+    PaypalAdapter,
     ...commandHandlers,
     ...repos,
   ],

@@ -19,11 +19,13 @@ export class PaymentsEntity {
   @IsInt()
   price: number;
   @IsString()
-  paymentSystem: 'PayPal' | 'Stripe';
+  paymentSystem: 'Paypal' | 'Stripe';
   @IsString()
-  productPriceId: string;
+  productPriceId: string | null;
   @IsString()
-  subscriptionPriceId: string;
+  subscriptionPriceId: string | null;
+  @IsString()
+  paypalSubscriptionId: string | null
 
   static create({
     data,

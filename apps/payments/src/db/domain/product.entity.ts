@@ -2,8 +2,9 @@ import { IsInt, IsString } from 'class-validator';
 type ProductType = {
   price: number;
   period: number;
-  subscriptionPriceId: string;
-  productPriceId: string;
+  subscriptionPriceId: string | null;
+  productPriceId: string | null;
+  paypalPlanId: string | null
   interval: 'day' | 'week' | 'month' | 'year';
 };
 export class ProductEntity {
@@ -12,11 +13,14 @@ export class ProductEntity {
   @IsInt()
   period: number;
   @IsString()
-  subscriptionPriceId: string;
+  subscriptionPriceId: string | null
   @IsString()
-  productPriceId: string;
+  productPriceId: string | null
+  @IsString()
+  paypalPlanId: string | null
   @IsString()
   interval: 'day' | 'week' | 'month' | 'year';
+
 
   static create({
     productPriceId,
@@ -24,6 +28,7 @@ export class ProductEntity {
     price,
     period,
     interval,
+    paypalPlanId
   }: ProductType) {
     const product = new ProductEntity();
 
@@ -32,6 +37,7 @@ export class ProductEntity {
     product.period = period;
     product.interval = interval;
     product.subscriptionPriceId = subscriptionPriceId;
+    product.paypalPlanId = paypalPlanId;
 
     return product;
   }

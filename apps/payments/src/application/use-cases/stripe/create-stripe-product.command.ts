@@ -1,8 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { StripeAdapter } from '../../common/adapters/stripe.adapter';
-import { AddNewSubscriptionTypeDto } from '../../api/dto/product.dto';
-import { ProductEntity } from '../../db/domain/product.entity';
-import { ProductRepository } from '../../db/product.repository';
+import { StripeAdapter } from '../../../common/adapters/stripe.adapter';
+import { AddNewSubscriptionTypeDto } from '../../../api/dto/product.dto';
+import { ProductEntity } from '../../../db/domain/product.entity';
+import { ProductRepository } from '../../../db/product.repository';
 
 export class CreateStripeProductCommand {
   constructor(public payload: AddNewSubscriptionTypeDto) {}
@@ -25,6 +25,7 @@ export class CreateStripeProductHandler
       const newProduct = ProductEntity.create({
         productPriceId: productPrice.id,
         subscriptionPriceId: subscriptionPrice.id,
+        paypalPlanId: null,
         price: payload.price,
         period: payload.period,
         interval: payload.interval,
