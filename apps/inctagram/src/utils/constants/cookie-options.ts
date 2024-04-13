@@ -1,7 +1,7 @@
 import { CookieOptions } from 'express';
 
 export const cookieOptions: CookieOptions = {
-  httpOnly: true,
+  httpOnly: false,
   secure: true,
   sameSite: 'none',
   maxAge: 60 * 60 * 1000,
