@@ -122,6 +122,11 @@ spec:
                  secretKeyRef:
                    name: main-service-production-config-secret
                    key: FILES_STORAGE_URL
+             - name: FRONT_VALIDATE_SECRET
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: FRONT_VALIDATE_SECRET
              - name: DATABASE_URL
                valueFrom:
                  secretKeyRef:

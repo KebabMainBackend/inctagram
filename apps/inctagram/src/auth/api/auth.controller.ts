@@ -93,7 +93,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'success',
     content: {
-      'application/json': { example: { accessToken: 'string' } },
+      'application/json': { example: { accessToken: 'string', userId: 1 } },
     },
   })
   @ApiBadRequestResponse(BadRequestResponseOptions)
