@@ -25,6 +25,7 @@ import { ProviderType } from '../domain/entities/oauth-provider.entity';
 import { CreateAccessTokenCommand } from '../application/use-cases/create-access-token.command';
 import { ConfigService } from '@nestjs/config';
 import { LanguageEnums } from '../../types';
+import { cookieOptions } from '../../utils/constants/cookie-options';
 
 @Controller('auth/google')
 @ApiTags('Google-OAuth2')
@@ -71,11 +72,11 @@ export class GoogleController {
     const refreshToken = await this.commandBus.execute(
       new CreateRefreshTokenCommand(userId, title, ip),
     );
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-    });
+    res.cookie(
+      'refreshToken',
+      refreshToken,
+      cookieOptions(this.configService.get('DOMAIN')),
+    );
 
     const frontLink = this.configService.get('FRONT_PROD');
     const accessToken = await this.commandBus.execute(

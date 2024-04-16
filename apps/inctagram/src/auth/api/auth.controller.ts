@@ -58,11 +58,15 @@ import { CheckRecoveryCodeCommand } from '../application/use-cases/check-recover
 import { AuthResendRecoveryCodeDto } from './dto/auth-resend-recovery-code.dto';
 import { ResendRecoveryCodeCommand } from '../application/use-cases/resend-recovery-code.command';
 import { cookieOptions } from '../../utils/constants/cookie-options';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
-  constructor(private commandBus: CommandBus) {}
+  constructor(
+    private commandBus: CommandBus,
+    private configService: ConfigService,
+  ) {}
 
   @ApiOkResponse({
     description:
@@ -120,7 +124,11 @@ export class AuthController {
       new CreateRefreshTokenCommand(userId, title, ip),
     );
 
-    res.cookie('refreshToken', refreshToken, cookieOptions);
+    res.cookie(
+      'refreshToken',
+      refreshToken,
+      cookieOptions(this.configService.get('DOMAIN')),
+    );
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );
@@ -162,7 +170,10 @@ export class AuthController {
         await this.commandBus.execute(
           new DeleteDeviceCommand(result.sessionId),
         );
-        res.clearCookie('refreshToken', cookieOptions);
+        res.clearCookie(
+          'refreshToken',
+          cookieOptions(this.configService.get('DOMAIN')),
+        );
         return;
       }
     }
@@ -241,7 +252,11 @@ export class AuthController {
       await this.commandBus.execute(
         new AddRefreshToBlacklistCommand(refreshToken),
       );
-      res.cookie('refreshToken', newRefreshToken, cookieOptions);
+      res.cookie(
+        'refreshToken',
+        newRefreshToken,
+        cookieOptions(this.configService.get('DOMAIN')),
+      );
       return { accessToken };
     }
     throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
