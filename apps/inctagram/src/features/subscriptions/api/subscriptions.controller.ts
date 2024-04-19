@@ -6,9 +6,9 @@ import {
   Inject,
   NotFoundException,
   Post,
-  Put,
-  UseGuards,
-} from '@nestjs/common';
+  Put, Req,
+  UseGuards
+} from "@nestjs/common";
 import { BearerAuthGuard } from '../../../auth/guards/bearer-auth.guard';
 import { PurchaseSubscriptionDto, UpdateAutoRenewalStatusDto } from './dto/dto';
 
@@ -44,6 +44,15 @@ export class SubscriptionsController {
     return this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.GET_ALL_SUBSCRIPTIONS },
       { data: 124 },
+    );
+  }
+
+  @Get('my-payments')
+  async getUserPayments(@User() user: UserTypes) {
+    console.log(user);
+    return this.clientProxy.send(
+      { cmd: PaymentsMicroserviceMessagesEnum.GET_USER_PAYMENTS },
+       { userId: user.id } ,
     );
   }
 
