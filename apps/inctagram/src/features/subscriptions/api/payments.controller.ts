@@ -25,12 +25,18 @@ export class PaymentsController {
   ) {}
   @Post('stripe/create-product')
   async addNewProductToStripe(@Body() payload: AddNewSubscriptionTypeDto) {
-    const data = this.clientProxy.send(
+    return this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.STRIPE_CREATE_PRODUCT },
       { payload },
     );
-    console.log(data);
-    return data;
+  }
+
+  @Post('paypal/create-product')
+  async addNewProductToPaypal(@Body() payload: AddNewSubscriptionTypeDto) {
+    return this.clientProxy.send(
+      { cmd: PaymentsMicroserviceMessagesEnum.PAYPAL_CREATE_PRODUCT },
+      { payload },
+    );
   }
 
   @Post('stripe/webhook')
@@ -41,6 +47,19 @@ export class PaymentsController {
       this.clientProxy.send(
         { cmd: PaymentsMicroserviceMessagesEnum.STRIPE_FINISH_PAYMENT },
         { signature, rawBody },
+      ),
+    );
+    return this.commandBus.execute(
+      new ChangeAccountTypeAndSendMessageCommand(data.userId, data.email),
+    );
+  }
+
+  @Post('paypal/webhook')
+  async paypalPaymentInfo(@Body() payload: any) {
+    const data = await firstValueFrom(
+      this.clientProxy.send(
+        { cmd: PaymentsMicroserviceMessagesEnum.PAYPAL_FINISH_PAYMENT },
+        { payload },
       ),
     );
     return this.commandBus.execute(

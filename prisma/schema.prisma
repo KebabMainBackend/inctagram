@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -48,7 +49,7 @@ model Profile {
   city                String?
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
-  accountType         AccountType?         @default(PERSONAL)
+  accountType         AccountType          @default(PERSONAL)
   user                User                 @relation(fields: [userId], references: [id])
   subscription        Subscription[]
   payments            Payments[]
@@ -111,10 +112,12 @@ model Subscription {
   dateOfSubscribe      DateTime            @default(now())
   dateOfNextPayment    DateTime
   autoRenewal          Boolean             @default(false)
-  paymentSystem        AllowedPaymentTypes @default(PayPall)
-  productPriceId       String
-  subscriptionPriceId  String
+  paymentSystem        AllowedPaymentTypes @default(Paypal)
+  productPriceId       String?
+  subscriptionPriceId  String?
   stripeSubscriptionId String?
+  paypalSubscriptionId String?
+  subscriptionStatus   SubscriptionStatus  @default(Confirmed)
 }
 
 model Payments {
@@ -124,17 +127,21 @@ model Payments {
   dateOfPayment         DateTime            @default(now())
   endDateOfSubscription DateTime
   price                 Int
-  paymentSystem         AllowedPaymentTypes @default(PayPall)
+  interval              PaymentInterval?
+  paymentSystem         AllowedPaymentTypes @default(Paypal)
   productPriceId        String?
   subscriptionPriceId   String?
+  paypalSubscriptionId  String?
 }
 
-model Stripe {
+model Product {
+  id                  Int              @id @unique @default(autoincrement())
   period              Int
-  productPriceId      String           @id @unique
   price               Int
   interval            PaymentInterval?
-  subscriptionPriceId String           @unique
+  productPriceId      String?
+  subscriptionPriceId String?
+  paypalPlanId        String?
 }
 
 model CurrentSubscription {
@@ -143,7 +150,8 @@ model CurrentSubscription {
   expireAt          DateTime
   dateOfNextPayment DateTime
   hasAutoRenewal    Boolean  @default(false)
-  customerId        String?
+  stripeCustomerId  String?
+  paypalCustomerId  String?
 }
 
 enum PostStatus {
@@ -158,7 +166,7 @@ enum AccountType {
 }
 
 enum AllowedPaymentTypes {
-  PayPall
+  Paypal
   Stripe
 }
 
@@ -167,4 +175,9 @@ enum PaymentInterval {
   week
   month
   year
+}
+
+enum SubscriptionStatus {
+  Confirmed
+  Pending
 }

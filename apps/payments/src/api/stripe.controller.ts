@@ -3,8 +3,8 @@ import { CommandBus } from '@nestjs/cqrs';
 import { MessagePattern } from '@nestjs/microservices';
 import { PaymentsMicroserviceMessagesEnum } from '../../../../types/messages';
 import { AddNewSubscriptionTypeDto } from './dto/product.dto';
-import { CreateStripeProductCommand } from '../application/use-cases/create-stripe-product.command';
-import { FinishStripePaymentCommand } from '../application/use-cases/finish-stripe-payment.command';
+import { CreateStripeProductCommand } from '../application/use-cases/stripe/create-stripe-product.command';
+import { FinishStripePaymentCommand } from '../application/use-cases/stripe/finish-stripe-payment.command';
 
 @Controller()
 export class StripeController {

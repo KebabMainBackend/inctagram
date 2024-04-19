@@ -2,9 +2,10 @@ import Stripe from 'stripe';
 import { Injectable } from '@nestjs/common';
 import { AddNewSubscriptionTypeDto } from '../../api/dto/product.dto';
 import { ConfigService } from '@nestjs/config';
+import { ProductEntity } from "../../db/domain/product.entity";
 
 type StripeCheckoutData = {
-  productPriceId: string;
+  productInfo: ProductEntity;
   userId: number;
   currentSubscription: any;
   renewSubscriptionData: any;
@@ -20,7 +21,7 @@ export class StripeAdapter {
     newSubscription,
     currentSubscription,
     renewSubscriptionData,
-    productPriceId,
+    productInfo,
   }: StripeCheckoutData): Promise<any> {
     const stripe = new Stripe(this.configService.get('STRIPE_API_KEY'));
 
@@ -29,7 +30,7 @@ export class StripeAdapter {
       cancel_url: this.configService.get('PAYMENT_ERROR_URL'),
       line_items: [
         {
-          price: productPriceId,
+          price: productInfo.productPriceId,
           quantity: 1,
         },
       ],
@@ -39,6 +40,7 @@ export class StripeAdapter {
         newSubscription: JSON.stringify(newSubscription),
         currentSubscription: JSON.stringify(currentSubscription),
         renewSubscriptionData: JSON.stringify(renewSubscriptionData),
+        productInfo: JSON.stringify(productInfo),
       },
     });
   }
@@ -83,14 +85,16 @@ export class StripeAdapter {
     const event = stripe.webhooks.constructEvent(
       Buffer.from(payload.rawBody),
       payload.signature,
-      this.configService.get('STRIPE_WEBHOOK_SECRET'),
+      this.configService.get('STRIPE_WEBHOOK_SECRET_S'),
     );
+
     if (event.type === 'checkout.session.completed') {
       const data = event.data.object as Stripe.Checkout.Session;
       const dataPayment = {
         paymentsId: data.client_reference_id,
         price: data.amount_total,
       };
+
       return { data, dataPayment };
     }
     return null;

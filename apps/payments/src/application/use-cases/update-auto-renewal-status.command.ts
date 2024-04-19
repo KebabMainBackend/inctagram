@@ -3,7 +3,7 @@ import { UpdateAutoRenewalStatusDto } from '../../api/dto/subscription.dto';
 import { StripeAdapter } from '../../common/adapters/stripe.adapter';
 import { SubscriptionRepository } from '../../db/subscription.repository';
 import Stripe from 'stripe';
-import { CreateStripeCustomerCommand } from './create-stripe-customer.command';
+import { CreateStripeCustomerCommand } from './stripe/create-stripe-customer.command';
 import { PrismaService } from '../../prisma.service';
 
 export class UpdateAutoRenewalStatusCommand {

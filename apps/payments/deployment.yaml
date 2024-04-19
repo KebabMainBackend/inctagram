@@ -42,6 +42,21 @@ spec:
                  secretKeyRef:
                    name: payments-service-production-config-secret
                    key: PAYMENT_ERROR_URL
+             - name: STRIPE_API_KEY
+               valueFrom:
+                 secretKeyRef:
+                   name: payments-service-production-config-secret
+                   key: STRIPE_API_KEY
+             - name: PAYPAL_CLIENT_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: payments-service-production-config-secret
+                   key: PAYPAL_CLIENT_ID
+             - name: PAYPAL_CLIENT_SECRET
+               valueFrom:
+                 secretKeyRef:
+                   name: payments-service-production-config-secret
+                   key: PAYPAL_CLIENT_SECRET
              - name: AMQP_RABBIT
                valueFrom:
                  secretKeyRef:

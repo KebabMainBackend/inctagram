@@ -15,19 +15,25 @@ export class SubscriptionEntity {
   @IsBoolean()
   autoRenewal: boolean;
   @IsString()
-  paymentSystem: 'PayPal' | 'Stripe';
+  paymentSystem: 'Paypal' | 'Stripe';
   @IsDate()
   expireAt: Date;
   @IsString()
-  productPriceId: string;
+  productPriceId: string | null;
   @IsString()
-  subscriptionPriceId: string;
+  subscriptionPriceId: string | null;
+  @IsString()
+  paypalSubscriptionId: string | null;
   @IsString()
   interval: 'day' | 'week' | 'month' | 'year';
+  @IsString()
+  subscriptionStatus: 'Pending' | 'Confirmed';
   static create(
     data: PurchaseSubscriptionDto,
     productInfo: ProductEntity,
     userId: number,
+    paypalSubscriptionId: string | null,
+    subscriptionStatus?: 'Pending' | 'Confirmed',
   ) {
     const { paymentSystem } = data;
     const subscription = new SubscriptionEntity();
@@ -42,9 +48,12 @@ export class SubscriptionEntity {
 
     subscription.productPriceId = productInfo.productPriceId;
     subscription.subscriptionPriceId = productInfo.subscriptionPriceId;
+    subscription.paypalSubscriptionId = paypalSubscriptionId;
 
     subscription.period = productInfo.period;
     subscription.interval = productInfo.interval;
+
+    subscription.subscriptionStatus = subscriptionStatus ?? 'Confirmed';
 
     return subscription;
   }

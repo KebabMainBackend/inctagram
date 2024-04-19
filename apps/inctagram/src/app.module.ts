@@ -15,7 +15,6 @@ import { SubscriptionsModule } from './features/subscriptions/subscriptions.modu
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(
-        
         // 'C:\\Projects\\inctagram\\apps\\inctagram\\swagger-static',
         'D:\\job\\inctagram\\apps\\inctagram\\swagger-static',
       ),

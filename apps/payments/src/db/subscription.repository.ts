@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { PrismaService } from '../prisma.service';
+import { SubscriptionEntity } from "./domain/subscription.entity";
+import { PaymentsEntity } from "./domain/payments.entity";
 
 @Injectable()
 export class SubscriptionRepository {
@@ -20,6 +22,20 @@ export class SubscriptionRepository {
         },
       },
     });
+  }
+
+  async getCurrentSubscriptionByEmail(email: string) {
+    const user =
+      await this.prisma.user.findUnique({
+        where: {email}
+      })
+
+    if(!user) throw new BadRequestException({
+      message: 'no user getCurrentSubscriptionByEmail',
+      field: 'userId'
+    })
+
+    return await this.getCurrentSubscription(user.id)
   }
 
   async getSubscriptionByID(subscriptionId: number) {
@@ -45,10 +61,61 @@ export class SubscriptionRepository {
       orderBy: [{ dateOfNextPayment: 'asc' }, { autoRenewal: 'asc' }],
     });
   }
-  async updateCustomerId(userId: number, customerId: string) {
+
+  async getPayments(userId: number) {
+    console.log(userId);
+    return await this.prisma.payments.findMany({
+      where: { userId },
+    });
+  }
+  async updateStripeCustomerId(userId: number, customerId: string) {
     await this.prisma.currentSubscription.update({
       where: { userId },
-      data: { customerId },
+      data: { stripeCustomerId: customerId },
     });
+  }
+
+  async updatePaypalCustomerId(userId: number, customerId: string) {
+    await this.prisma.currentSubscription.update({
+      where: { userId },
+      data: { paypalCustomerId: customerId },
+    });
+  }
+
+  async addSubscriptionToDB(newSubscription: SubscriptionEntity) {
+    await this.prisma.subscription.create({ data: newSubscription });
+  }
+
+  async addPaymentToDB(paymentSystem,
+                       productInfo,
+                       endDateOfSubscription,
+                       userId,) {
+
+    const payment = PaymentsEntity.create(
+      paymentSystem,
+      productInfo,
+      endDateOfSubscription,
+      userId
+    )
+
+    await this.prisma.payments.create({data: payment});
+  }
+
+  async updateCurrentSubscription({
+                                    userId,
+                                    currentSubscription,
+                                    dateOfNextPayment,
+                                    expireAt
+                                  }) {
+    if (currentSubscription) {
+      await this.prisma.currentSubscription.update({
+        where: { userId },
+        data: { dateOfNextPayment, expireAt },
+      });
+    } else {
+      await this.prisma.currentSubscription.create({
+        data: { userId, expireAt, dateOfNextPayment },
+      });
+    }
   }
 }

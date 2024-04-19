@@ -7,9 +7,15 @@ export class ProductRepository {
   constructor(private prisma: PrismaService) {}
 
   async getProductInfo(productPriceId: string) {
-    return this.prisma.stripe.findUnique({ where: { productPriceId } });
+    return this.prisma.product.findFirst({ where: { productPriceId } });
   }
   async createProduct(data: ProductEntity) {
-    await this.prisma.stripe.create({ data });
+    await this.prisma.product.create({ data });
+  }
+  async updateProduct(period: number, paypalPlanId: string) {
+    await this.prisma.product.updateMany({
+      where: { period },
+      data: { paypalPlanId },
+    });
   }
 }
