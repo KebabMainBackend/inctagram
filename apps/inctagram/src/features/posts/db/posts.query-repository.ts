@@ -49,8 +49,11 @@ export class PostsQueryRepository {
     });
 
     const postsNPostImages = await this.prismaClient.post.findMany(filter);
-    if (postsNPostImages) {
-      lastPostId = postsNPostImages.length ? postsNPostImages.at(-2).id : 0;
+    if (postsNPostImages.length) {
+      lastPostId =
+        postsNPostImages.length > 2
+          ? postsNPostImages.at(-2).id
+          : postsNPostImages.at(-1).id;
       let userProfile;
       let userAvatar;
       if (userId) {
