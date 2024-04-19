@@ -23,17 +23,17 @@ export class SubscriptionEntity {
   @IsString()
   subscriptionPriceId: string | null;
   @IsString()
-  paypalSubscriptionId: string | null
+  paypalSubscriptionId: string | null;
   @IsString()
   interval: 'day' | 'week' | 'month' | 'year';
   @IsString()
-  subscriptionStatus: 'Pending' | 'Confirmed'
+  subscriptionStatus: 'Pending' | 'Confirmed';
   static create(
     data: PurchaseSubscriptionDto,
     productInfo: ProductEntity,
     userId: number,
     paypalSubscriptionId: string | null,
-    subscriptionStatus?: 'Pending' | 'Confirmed'
+    subscriptionStatus?: 'Pending' | 'Confirmed',
   ) {
     const { paymentSystem } = data;
     const subscription = new SubscriptionEntity();
@@ -48,12 +48,12 @@ export class SubscriptionEntity {
 
     subscription.productPriceId = productInfo.productPriceId;
     subscription.subscriptionPriceId = productInfo.subscriptionPriceId;
-    subscription.paypalSubscriptionId = paypalSubscriptionId
+    subscription.paypalSubscriptionId = paypalSubscriptionId;
 
     subscription.period = productInfo.period;
     subscription.interval = productInfo.interval;
 
-    subscription.subscriptionStatus = subscriptionStatus ?? 'Confirmed'
+    subscription.subscriptionStatus = subscriptionStatus ?? 'Confirmed';
 
     return subscription;
   }

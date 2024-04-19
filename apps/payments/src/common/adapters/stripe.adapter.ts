@@ -86,15 +86,12 @@ export class StripeAdapter {
       this.configService.get('STRIPE_WEBHOOK_SECRET_S'),
     );
 
-    console.log(1);
     if (event.type === 'checkout.session.completed') {
       const data = event.data.object as Stripe.Checkout.Session;
       const dataPayment = {
         paymentsId: data.client_reference_id,
         price: data.amount_total,
-      }
-
-
+      };
 
       return { data, dataPayment };
     }

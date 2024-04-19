@@ -14,7 +14,6 @@ import { PaymentsMicroserviceMessagesEnum } from '../../../../../../types/messag
 import { ChangeAccountTypeAndSendMessageCommand } from '../application/use-cases/finish-payment.command';
 import { CommandBus } from '@nestjs/cqrs';
 import { firstValueFrom } from 'rxjs';
-import { login } from "../../../../test/managers/login";
 
 @Controller('payments')
 @ApiExcludeController()
@@ -26,23 +25,18 @@ export class PaymentsController {
   ) {}
   @Post('stripe/create-product')
   async addNewProductToStripe(@Body() payload: AddNewSubscriptionTypeDto) {
-    const data = this.clientProxy.send(
+    return this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.STRIPE_CREATE_PRODUCT },
       { payload },
     );
-    console.log(data);
-    return data;
   }
 
   @Post('paypal/create-product')
   async addNewProductToPaypal(@Body() payload: AddNewSubscriptionTypeDto) {
-    const data = this.clientProxy.send(
+    return this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.PAYPAL_CREATE_PRODUCT },
       { payload },
     );
-    console.log(data);
-
-    return data;
   }
 
   @Post('stripe/webhook')
@@ -61,16 +55,13 @@ export class PaymentsController {
   }
 
   @Post('paypal/webhook')
-  async paypalPaymentInfo(@Body() payload) {
-    console.log(1);
-
+  async paypalPaymentInfo(@Body() payload: any) {
     const data = await firstValueFrom(
       this.clientProxy.send(
         { cmd: PaymentsMicroserviceMessagesEnum.PAYPAL_FINISH_PAYMENT },
         { payload },
       ),
     );
-
     return this.commandBus.execute(
       new ChangeAccountTypeAndSendMessageCommand(data.userId, data.email),
     );

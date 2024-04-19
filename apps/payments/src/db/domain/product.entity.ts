@@ -4,7 +4,7 @@ type ProductType = {
   period: number;
   subscriptionPriceId: string | null;
   productPriceId: string | null;
-  paypalPlanId: string | null
+  paypalPlanId: string | null;
   interval: 'day' | 'week' | 'month' | 'year';
 };
 export class ProductEntity {
@@ -13,14 +13,13 @@ export class ProductEntity {
   @IsInt()
   period: number;
   @IsString()
-  subscriptionPriceId: string | null
+  subscriptionPriceId: string | null;
   @IsString()
-  productPriceId: string | null
+  productPriceId: string | null;
   @IsString()
-  paypalPlanId: string | null
+  paypalPlanId: string | null;
   @IsString()
   interval: 'day' | 'week' | 'month' | 'year';
-
 
   static create({
     productPriceId,
@@ -28,7 +27,7 @@ export class ProductEntity {
     price,
     period,
     interval,
-    paypalPlanId
+    paypalPlanId,
   }: ProductType) {
     const product = new ProductEntity();
 

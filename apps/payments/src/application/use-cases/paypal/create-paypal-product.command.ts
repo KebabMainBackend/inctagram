@@ -1,9 +1,7 @@
-import { AddNewSubscriptionTypeDto } from "../../../api/dto/product.dto";
-import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
-import { ProductRepository } from "../../../db/product.repository";
-import { StripeAdapter } from "../../../common/adapters/stripe.adapter";
-import { ProductEntity } from "../../../db/domain/product.entity";
-import { PaypalAdapter } from "../../../common/adapters/paypal.adapter";
+import { AddNewSubscriptionTypeDto } from '../../../api/dto/product.dto';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { ProductRepository } from '../../../db/product.repository';
+import { PaypalAdapter } from '../../../common/adapters/paypal.adapter';
 
 export class CreatePaypalProductCommand {
   constructor(public payload: AddNewSubscriptionTypeDto) {}
@@ -20,8 +18,7 @@ export class CreatePaypalProductHandler
 
   async execute({ payload }: CreatePaypalProductCommand) {
     try {
-      const paypalPlanId =
-        await this.paypalAdapter.createProduct(payload);
+      const paypalPlanId = await this.paypalAdapter.createProduct(payload);
 
       await this.productRepo.updateProduct(payload.period, paypalPlanId);
       return true;

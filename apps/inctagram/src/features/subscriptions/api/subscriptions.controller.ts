@@ -70,7 +70,7 @@ export class SubscriptionsController {
     @User() user: UserTypes,
   ) {
     const userId = user.id;
-    const email = user.email
+    const email = user.email;
     return this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.PURCHASE_SUBSCRIPTION },
       { userId, email, payload },

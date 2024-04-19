@@ -17,11 +17,11 @@ import { UpdateAutoRenewalStatusHandler } from './application/use-cases/update-a
 import { StripeAdapter } from './common/adapters/stripe.adapter';
 import { PrismaService } from './prisma.service';
 import { EmailService } from '../../inctagram/src/auth/managers/email.manager';
-import { CreatePaypalProductHandler } from "./application/use-cases/paypal/create-paypal-product.command";
-import { PaypalAdapter } from "./common/adapters/paypal.adapter";
-import { PaypalController } from "./api/paypal.controller";
-import { FinishPaypalPaymentHandler } from "./application/use-cases/paypal/finish-paypal-payment.command";
-import { CreatePaypalCustomerHandler } from "./application/use-cases/paypal/create-paypal-customer.command";
+import { CreatePaypalProductHandler } from './application/use-cases/paypal/create-paypal-product.command';
+import { PaypalAdapter } from './common/adapters/paypal.adapter';
+import { PaypalController } from './api/paypal.controller';
+import { FinishPaypalPaymentHandler } from './application/use-cases/paypal/finish-paypal-payment.command';
+import { CreatePaypalCustomerHandler } from './application/use-cases/paypal/create-paypal-customer.command';
 
 const commandHandlers = [
   CreateStripeCustomerHandler,
@@ -32,7 +32,7 @@ const commandHandlers = [
   UpdateAutoRenewalStatusHandler,
   CreatePaypalProductHandler,
   FinishPaypalPaymentHandler,
-  CreatePaypalCustomerHandler
+  CreatePaypalCustomerHandler,
 ];
 
 const repos = [

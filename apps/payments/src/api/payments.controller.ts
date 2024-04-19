@@ -39,11 +39,16 @@ export class PaymentsController {
   })
   async purchaseSubscription(data: {
     userId: number;
-    email: string
+    email: string;
     payload: PurchaseSubscriptionDto;
   }) {
     return this.commandBus.execute(
-      new PurchaseSubscriptionCommand(data.userId, data.email, data.payload, null),
+      new PurchaseSubscriptionCommand(
+        data.userId,
+        data.email,
+        data.payload,
+        null,
+      ),
     );
   }
 

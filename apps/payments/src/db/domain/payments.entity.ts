@@ -25,7 +25,7 @@ export class PaymentsEntity {
   @IsString()
   subscriptionPriceId: string | null;
   @IsString()
-  paypalSubscriptionId: string | null
+  paypalSubscriptionId: string | null;
 
   static create({
     data,

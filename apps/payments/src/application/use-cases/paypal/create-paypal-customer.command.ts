@@ -1,7 +1,7 @@
-import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
-import { SubscriptionRepository } from "../../../db/subscription.repository";
-import { StripeAdapter } from "../../../common/adapters/stripe.adapter";
-import { PaypalAdapter } from "../../../common/adapters/paypal.adapter";
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { SubscriptionRepository } from '../../../db/subscription.repository';
+import { StripeAdapter } from '../../../common/adapters/stripe.adapter';
+import { PaypalAdapter } from '../../../common/adapters/paypal.adapter';
 
 export class CreatePaypalCustomerCommand {
   constructor(
@@ -20,17 +20,20 @@ export class CreatePaypalCustomerHandler
   ) {}
 
   async execute({ userId, email }: CreatePaypalCustomerCommand) {
-    let customer = await this.subscriptionRepo.getCurrentSubscription(userId);
-
-    if (!customer) {
-      const newCustomer = await this.paypalAdapter.createCustomer(
-        email,
-        userId,
-      );
-      await this.subscriptionRepo.updatePaypalCustomerId(userId, newCustomer.id);
-      customer = await this.subscriptionRepo.getCurrentSubscription(userId);
-    }
-
-    return customer;
+    // let customer = await this.subscriptionRepo.getCurrentSubscription(userId);
+    //
+    // if (!customer) {
+    //   const newCustomer = await this.paypalAdapter.createCustomer(
+    //     email,
+    //     userId,
+    //   );
+    //   await this.subscriptionRepo.updatePaypalCustomerId(
+    //     userId,
+    //     newCustomer.id,
+    //   );
+    //   customer = await this.subscriptionRepo.getCurrentSubscription(userId);
+    // }
+    //
+    // return customer;
   }
 }

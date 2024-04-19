@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { SubscriptionEntity } from "./domain/subscription.entity";
+import { SubscriptionEntity } from './domain/subscription.entity';
 
 @Injectable()
 export class SubscriptionRepository {
@@ -24,17 +24,17 @@ export class SubscriptionRepository {
   }
 
   async getCurrentSubscriptionByEmail(email: string) {
-    const user =
-      await this.prisma.user.findUnique({
-        where: {email}
-      })
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
 
-    if(!user) throw new BadRequestException({
-      message: 'no user getCurrentSubscriptionByEmail',
-      field: 'userId'
-    })
+    if (!user)
+      throw new BadRequestException({
+        message: 'no user getCurrentSubscriptionByEmail',
+        field: 'userId',
+      });
 
-    return await this.getCurrentSubscription(user.id)
+    return await this.getCurrentSubscription(user.id);
   }
 
   async getSubscriptionByID(subscriptionId: number) {
@@ -79,11 +79,11 @@ export class SubscriptionRepository {
   }
 
   async updateCurrentSubscription({
-                                    userId,
-                                    currentSubscription,
-                                    dateOfNextPayment,
-                                    expireAt
-                                  }) {
+    userId,
+    currentSubscription,
+    dateOfNextPayment,
+    expireAt,
+  }) {
     if (currentSubscription) {
       await this.prisma.currentSubscription.update({
         where: { userId },

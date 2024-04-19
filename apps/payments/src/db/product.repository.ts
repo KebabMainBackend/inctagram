@@ -15,7 +15,7 @@ export class ProductRepository {
   async updateProduct(period: number, paypalPlanId: string) {
     await this.prisma.product.updateMany({
       where: { period },
-      data: { paypalPlanId }
+      data: { paypalPlanId },
     });
   }
 }

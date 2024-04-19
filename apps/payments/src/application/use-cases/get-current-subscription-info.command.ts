@@ -21,9 +21,7 @@ export class GetCurrentSubscriptionInfoHandler
 
   async execute(command: GetCurrentSubscriptionInfoCommand) {
     const { userId } = command;
-    console.log(userId, '1');
     const current = await this.subscriptionRepo.getCurrentSubscription(userId);
-    console.log(userId, '2', current);
 
     if (!current) return { errorCode: HttpStatus.NOT_FOUND };
 
