@@ -6,9 +6,9 @@ import {
   Inject,
   NotFoundException,
   Post,
-  Put, Req,
-  UseGuards
-} from "@nestjs/common";
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { BearerAuthGuard } from '../../../auth/guards/bearer-auth.guard';
 import { PurchaseSubscriptionDto, UpdateAutoRenewalStatusDto } from './dto/dto';
 
@@ -19,6 +19,7 @@ import { User } from '../../../utils/decorators/user.decorator';
 import { UserTypes } from '../../../types';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiNotFoundResponse,
   ApiTags,
   ApiUnauthorizedResponse,
@@ -52,7 +53,7 @@ export class SubscriptionsController {
     console.log(user);
     return this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.GET_USER_PAYMENTS },
-       { userId: user.id } ,
+      { userId: user.id },
     );
   }
 
@@ -74,6 +75,10 @@ export class SubscriptionsController {
   }
 
   @Post('purchase')
+  @ApiBody({
+    description: 'purchase subscription',
+    type: PurchaseSubscriptionDto,
+  })
   async buySubscription(
     @Body() payload: PurchaseSubscriptionDto,
     @User() user: UserTypes,
@@ -87,6 +92,10 @@ export class SubscriptionsController {
   }
 
   @Put('auto-renewal')
+  @ApiBody({
+    description: 'change autorenewal for user',
+    type: UpdateAutoRenewalStatusDto,
+  })
   async updateAutoRenewalStatus(
     @Body() payload: UpdateAutoRenewalStatusDto,
     @User() user: UserTypes,
