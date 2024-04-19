@@ -25,6 +25,7 @@ import { SignInUserViaOauthProviderCommand } from '../application/use-cases/crea
 import { ProviderType } from '../domain/entities/oauth-provider.entity';
 import { ConfigService } from '@nestjs/config';
 import { LanguageEnums } from '../../types';
+import { cookieOptions } from '../../utils/constants/cookie-options';
 
 @Controller('auth/github')
 @ApiTags('Github-OAuth2')
@@ -70,11 +71,11 @@ export class GithubController {
     const refreshToken = await this.commandBus.execute(
       new CreateRefreshTokenCommand(userId, title, ip),
     );
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-    });
+    res.cookie(
+      'refreshToken',
+      refreshToken,
+      cookieOptions(this.configService.get('DOMAIN')),
+    );
     await this.commandBus.execute(new CreateAccessTokenCommand(userId));
     const frontLink = this.configService.get('FRONT_PROD');
     const accessToken = await this.commandBus.execute(
@@ -82,8 +83,8 @@ export class GithubController {
     );
     const fullLink =
       headers === LanguageEnums.en
-        ? `${frontLink}/general/redirect/github?code=${accessToken}`
-        : `${frontLink}/ru/general/redirect/github?code=${accessToken}`;
+        ? `${frontLink}/general/redirect/github?code=${accessToken}&userId=${userId}`
+        : `${frontLink}/ru/general/redirect/github?code=${accessToken}&userId=${userId}`;
     res
       .writeHead(301, {
         Location: fullLink,

@@ -137,4 +137,7 @@ export class UsersRepository {
       },
     });
   }
+  getUsersTotalCount() {
+    return this.prisma.user.count();
+  }
 }

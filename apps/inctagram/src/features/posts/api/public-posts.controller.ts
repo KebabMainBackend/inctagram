@@ -1,4 +1,12 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Query,
+} from '@nestjs/common';
 import { PostsQueryRepository } from '../db/posts.query-repository';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
@@ -6,9 +14,11 @@ import {
   PageSizeQueryOptions,
   SortByQueryOptions,
   SortDirectionQueryOptions,
+  UserIdQueryOptions,
 } from '../../../utils/constants/swagger-constants';
 import { GetDefaultUriDto } from '../../../utils/default-get-query.uri.dto';
 import { GetRequestPostsViewExample } from './swagger-examples/response-examples';
+import { DefaultUserIdQueryUriDto } from '../../../utils/default-user-id-query.uri.dto';
 
 @ApiTags('Public-Posts')
 @Controller('public-posts')
@@ -35,7 +45,8 @@ export class PublicPostsController {
     @Query() queryPost: GetDefaultUriDto,
     @Param('userId', ParseIntPipe) userId: number,
   ) {
-    return await this.postsQueryRepository.findPosts(queryPost, userId);
+    const data = await this.postsQueryRepository.findPosts(queryPost, userId);
+    return { userId, ...data };
   }
 
   @ApiOperation({ summary: 'Get all public posts' })
@@ -60,6 +71,7 @@ export class PublicPostsController {
   }
 
   @ApiOperation({ summary: 'Get post by id' })
+  @ApiQuery(UserIdQueryOptions)
   @ApiResponse({
     status: 200,
     description: 'Success',
@@ -68,7 +80,20 @@ export class PublicPostsController {
     },
   })
   @Get(':postId')
-  async getPostById(@Param('postId', ParseIntPipe) postId: number) {
-    return await this.postsQueryRepository.getPostById(postId);
+  async getPostById(
+    @Param('postId', ParseIntPipe) postId: number,
+    @Query() query: DefaultUserIdQueryUriDto,
+  ) {
+    const post = await this.postsQueryRepository.getPostById(postId);
+    if (post) {
+      if (query.userId) {
+        if (+query.userId === post.ownerId) {
+          return post;
+        }
+        throw new HttpException('wrong userId', HttpStatus.BAD_REQUEST);
+      }
+      return post;
+    }
+    throw new HttpException('Not found', HttpStatus.NOT_FOUND);
   }
 }

@@ -117,18 +117,21 @@ export class PostsQueryRepository {
   }
   async getPostById(postId: number) {
     const post = await this.prismaClient.post.findUnique({
-      where: { id: postId },
+      where: { id: postId, status: PostStatusEnum.ACTIVE },
     });
-    const userProfile = await this.getUserProfile(post.userId);
-    const userAvatar = await firstValueFrom(
-      this.getUserThumbnailAvatar(userProfile?.thumbnailId),
-    );
-    const postImages = await firstValueFrom(this.getPostImages(post.images));
-    return mapPostsWithImages({
-      post,
-      profile: userProfile,
-      userAvatar: userAvatar?.url,
-      postImages,
-    });
+    if (post) {
+      const userProfile = await this.getUserProfile(post.userId);
+      const userAvatar = await firstValueFrom(
+        this.getUserThumbnailAvatar(userProfile?.thumbnailId),
+      );
+      const postImages = await firstValueFrom(this.getPostImages(post.images));
+      return mapPostsWithImages({
+        post,
+        profile: userProfile,
+        userAvatar: userAvatar?.url,
+        postImages,
+      });
+    }
+    return null;
   }
 }

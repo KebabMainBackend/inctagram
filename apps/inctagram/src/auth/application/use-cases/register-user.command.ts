@@ -10,6 +10,7 @@ import { UsersRepository } from '../../db/users.repository';
 import { createErrorMessage } from '../../../utils/create-error-object';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { LanguageEnums } from '../../../types';
+import { ConfigService } from '@nestjs/config';
 
 type RegisterUserTypes = {
   username: string;
@@ -31,6 +32,7 @@ export class RegisterUserHandler
     private prisma: PrismaService,
     private emailService: EmailService,
     private userRepo: UsersRepository,
+    private configService: ConfigService,
   ) {}
   async execute({ data }: RegisterUserCommand) {
     const userByEmail = await this.userRepo.getUserByEmail(data.email);
@@ -60,6 +62,7 @@ export class RegisterUserHandler
         const user = await this.userRepo.createUser(newUser);
         const userConfirmation = UserConfirmationEntity.create(user.id);
         await this.userRepo.createUserConfirmationData(userConfirmation);
+        await this.checkLast5Users(user.id);
         await this.emailService.sendConfirmationCodeEmail(
           email,
           userConfirmation.confirmationCode,
@@ -70,5 +73,13 @@ export class RegisterUserHandler
       { timeout: 7000 },
     );
     return { email: email.toLowerCase() };
+  }
+  private async checkLast5Users(userId: number) {
+    const secret = this.configService.get('FRONT_VALIDATE_SECRET');
+    const frontUrl = this.configService.get('FRONT_PROD');
+
+    if (userId % 5 === 0) {
+      await fetch(`${frontUrl}/api/revalidate?secret=${secret}`);
+    }
   }
 }
