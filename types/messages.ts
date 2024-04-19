@@ -17,4 +17,5 @@ export enum PaymentsMicroserviceMessagesEnum {
   STRIPE_FINISH_PAYMENT = 'stripe-finish-payment',
   PAYPAL_CREATE_PRODUCT = 'paypal-create-product',
   PAYPAL_FINISH_PAYMENT = 'paypal-finish-payment',
+  GET_USER_PAYMENTS = 'get-user-payments',
 }

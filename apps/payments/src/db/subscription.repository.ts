@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { PrismaService } from '../prisma.service';
 import { SubscriptionEntity } from "./domain/subscription.entity";
+import { PaymentsEntity } from "./domain/payments.entity";
 
 @Injectable()
 export class SubscriptionRepository {
@@ -60,6 +61,13 @@ export class SubscriptionRepository {
       orderBy: [{ dateOfNextPayment: 'asc' }, { autoRenewal: 'asc' }],
     });
   }
+
+  async getPayments(userId: number) {
+    console.log(userId);
+    return await this.prisma.payments.findMany({
+      where: { userId },
+    });
+  }
   async updateStripeCustomerId(userId: number, customerId: string) {
     await this.prisma.currentSubscription.update({
       where: { userId },
@@ -76,6 +84,21 @@ export class SubscriptionRepository {
 
   async addSubscriptionToDB(newSubscription: SubscriptionEntity) {
     await this.prisma.subscription.create({ data: newSubscription });
+  }
+
+  async addPaymentToDB(paymentSystem,
+                       productInfo,
+                       endDateOfSubscription,
+                       userId,) {
+
+    const payment = PaymentsEntity.create(
+      paymentSystem,
+      productInfo,
+      endDateOfSubscription,
+      userId
+    )
+
+    await this.prisma.payments.create({data: payment});
   }
 
   async updateCurrentSubscription({

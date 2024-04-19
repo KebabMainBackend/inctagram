@@ -60,11 +60,11 @@ export class PurchaseSubscriptionHandler
     if(payload.paymentSystem === 'Stripe') {
       const session: Stripe.Response<Stripe.Checkout.Session> =
         await this.stripeAdapter.createPayment({
-          productPriceId: productInfo.productPriceId,
           userId,
           currentSubscription,
           renewSubscriptionData,
           newSubscription,
+          productInfo,
         });
       return { url: session.url };
     } else {
@@ -72,6 +72,12 @@ export class PurchaseSubscriptionHandler
       newSubscription.subscriptionStatus = 'Pending'
 
       await this.subscriptionRepo.addSubscriptionToDB(newSubscription)
+      await this.subscriptionRepo.addPaymentToDB(
+        'Paypal',
+        productInfo,
+        newSubscription.dateOfNextPayment,
+        userId
+      )
 
       const session =
         await this.paypalAdapter.createPayment({

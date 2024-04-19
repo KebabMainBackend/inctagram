@@ -126,6 +126,7 @@ model Payments {
   dateOfPayment         DateTime            @default(now())
   endDateOfSubscription DateTime
   price                 Int
+  interval              PaymentInterval?
   paymentSystem         AllowedPaymentTypes @default(Paypal)
   productPriceId        String?
   subscriptionPriceId   String?

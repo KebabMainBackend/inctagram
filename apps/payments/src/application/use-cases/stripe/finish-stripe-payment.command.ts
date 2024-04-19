@@ -28,8 +28,15 @@ export class FinishStripePaymentHandler
         JSON.parse(metadata.currentSubscription) || null;
       const renewSubscription = JSON.parse(metadata.renewSubscriptionData);
       const newSubscription = JSON.parse(metadata.newSubscription);
+      const productInfo = JSON.parse(metadata.productInfo);
 
       await this.subscriptionRepo.addSubscriptionToDB(newSubscription)
+      await this.subscriptionRepo.addPaymentToDB(
+        'Stripe',
+        productInfo,
+        newSubscription.dateOfNextPayment,
+        newSubscription.userId
+      )
 
       await this.subscriptionRepo.updateCurrentSubscription({
         userId: +metadata.userId,

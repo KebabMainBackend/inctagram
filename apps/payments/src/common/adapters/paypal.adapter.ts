@@ -4,23 +4,21 @@ import { AddNewSubscriptionTypeDto } from "../../api/dto/product.dto";
 import { addMinutes } from "date-fns";
 import { CommandBus } from "@nestjs/cqrs";
 import { notification } from "paypal-rest-sdk";
-
 const paypal = require('paypal-rest-sdk');
-
-paypal.configure({
-  'mode': 'live', // sandbox или live
-  'client_id': process.env.PAYPAL_CLIENT_ID,
-  'client_secret': process.env.PAYPAL_CLIENT_SECRET
-});
-
 @Injectable()
 export class PaypalAdapter {
   constructor(private configService: ConfigService,
-              private commandBus: CommandBus) {}
+              private commandBus: CommandBus) {
+
+    paypal.configure({
+      'mode': 'sandbox', // sandbox или live
+      'client_id': this.configService.get('PAYPAL_CLIENT_ID'),
+      'client_secret': this.configService.get('PAYPAL_CLIENT_SECRET')
+    });
+  }
 
   async createProduct(payload: AddNewSubscriptionTypeDto): Promise<string> {
     try {
-      console.log(3);
       const planData = {
         name: payload.productName,
         description: payload.description,
@@ -47,7 +45,6 @@ export class PaypalAdapter {
           initial_fail_amount_action: 'CONTINUE'
         }
       };
-      console.log(2);
       const paypalPlanId = await new Promise<string>((resolve, reject) => {
         paypal.billingPlan.create(planData, (error, billingPlan) => {
           if (error) {
@@ -59,9 +56,9 @@ export class PaypalAdapter {
           }
         })
       });
-      console.log(4);
+
       await this.activatePlan(paypalPlanId)
-      console.log(5);
+
       return paypalPlanId
     }
     catch (error) {
@@ -89,15 +86,6 @@ export class PaypalAdapter {
                         paypalPlanId,
                         email
                       }): Promise<any> {
-
-    const paypal = require('paypal-rest-sdk');
-
-    paypal.configure({
-      'mode': 'live', // sandbox или live
-      'client_id': process.env.PAYPAL_CLIENT_ID,
-      'client_secret': process.env.PAYPAL_CLIENT_SECRET
-    });
-
     const billingAgreementData = {
       name: newSubscription.interval,
       description: newSubscription.interval,
@@ -165,38 +153,6 @@ export class PaypalAdapter {
       })
     } catch (error) {
       console.error("Error creating PayPal plan:", error);
-      throw error;
-    }
-  }
-
-  async createWebhook(url: string, eventTypes: notification.NotificationEventType[]) {
-    try {
-      console.log(2);
-      console.log(url);
-      return new Promise((resolve, reject) => {
-        paypal.notification.webhook.create({url, event_types: eventTypes}, (error, webhookResponse) => {
-          if (error) {
-            console.log(webhookResponse);
-            console.error("Error creating PayPal webhook:", error);
-            reject(error);
-          } else {
-            console.log(webhookResponse);
-            resolve(webhookResponse);
-          }
-        });
-      });
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  }
-
-  async getWebhooks(): Promise<any[]> {
-    try {
-      const webhooks = await paypal.notification.webhook.list();
-      return webhooks;
-    } catch (error) {
-      console.error("Error fetching PayPal webhooks:", error);
       throw error;
     }
   }

@@ -21,19 +21,20 @@ export class PaymentsEntity {
   @IsString()
   paymentSystem: 'Paypal' | 'Stripe';
   @IsString()
+  interval: 'day' | 'week' | 'month' | 'year';
+  @IsString()
   productPriceId: string | null;
   @IsString()
   subscriptionPriceId: string | null;
   @IsString()
   paypalSubscriptionId: string | null
 
-  static create({
-    data,
+  static create(
+    paymentSystem,
     productInfo,
     endDateOfSubscription,
     userId,
-  }: PaymentType) {
-    const { paymentSystem } = data;
+  ) {
     const payment = new PaymentsEntity();
 
     payment.userId = userId;
@@ -41,6 +42,7 @@ export class PaymentsEntity {
     payment.endDateOfSubscription = endDateOfSubscription;
     payment.price = productInfo.price;
     payment.paymentSystem = paymentSystem;
+    payment.interval = productInfo.interval
 
     payment.productPriceId = productInfo.productPriceId;
     payment.subscriptionPriceId = productInfo.subscriptionPriceId;
