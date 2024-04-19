@@ -4,14 +4,16 @@ import { ApiProperty } from '@nestjs/swagger';
 export class PurchaseSubscriptionDto {
   @IsString()
   @ApiProperty({
-    name: 'productId from /products',
+    name: 'productPriceId',
     example: 'price_1P3HsVAPDz5prGS3BRdMfPwW',
+    description: 'productId from /products',
   })
   productPriceId: string;
   @IsString()
   @ApiProperty({
-    name: 'payment type',
+    name: 'paymentSystem',
     example: 'Paypal',
+    description: 'Paypal or Stripe',
   })
   paymentSystem: 'Paypal' | 'Stripe';
 }
@@ -19,8 +21,9 @@ export class PurchaseSubscriptionDto {
 export class UpdateAutoRenewalStatusDto {
   @IsNumber()
   @ApiProperty({
-    name: 'subscription id',
+    name: 'subscriptionId',
     example: 2,
+    description: 'subscription id',
   })
   subscriptionId: number;
   @IsBoolean()

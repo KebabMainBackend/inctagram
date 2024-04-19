@@ -56,13 +56,10 @@ export class SubscriptionsController {
 
   @Get('my-payments')
   async getUserPayments(@User() user: UserTypes) {
-    console.log(user, 'user');
-    const data = this.clientProxy.send(
+    return this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.GET_USER_PAYMENTS },
       { userId: user.id },
     );
-    console.log(data);
-    return data;
   }
 
   @Get('current')
