@@ -39,6 +39,12 @@ import { firstValueFrom } from 'rxjs';
 export class SubscriptionsController {
   constructor(@Inject('PAYMENTS_SERVICE') private clientProxy: ClientProxy) {}
 
+  @Get('hello')
+  @SwaggerDecoratorForGetProducts()
+  async hello() {
+    return this.clientProxy.send({ cmd: 'hello' }, { data: 124 });
+  }
+
   @Get('products')
   @SwaggerDecoratorForGetProducts()
   async get() {
@@ -50,11 +56,13 @@ export class SubscriptionsController {
 
   @Get('my-payments')
   async getUserPayments(@User() user: UserTypes) {
-    console.log(user);
-    return this.clientProxy.send(
+    console.log(user, 'user');
+    const data = this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.GET_USER_PAYMENTS },
       { userId: user.id },
     );
+    console.log(data);
+    return data;
   }
 
   @Get('current')

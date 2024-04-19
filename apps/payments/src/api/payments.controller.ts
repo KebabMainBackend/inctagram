@@ -10,7 +10,7 @@ import {
   UpdateAutoRenewalStatusDto,
 } from './dto/subscription.dto';
 import { UpdateAutoRenewalStatusCommand } from '../application/use-cases/update-auto-renewal-status.command';
-import { GetUserPaymentsCommand } from "../application/use-cases/get-user-payments.command";
+import { GetUserPaymentsCommand } from '../application/use-cases/get-user-payments.command';
 
 @Controller()
 export class PaymentsController {
@@ -18,6 +18,13 @@ export class PaymentsController {
     private readonly commandBus: CommandBus,
     private productQueryRepo: ProductQueryRepository,
   ) {}
+
+  @MessagePattern({
+    cmd: 'hello',
+  })
+  async hello() {
+    return 'hello';
+  }
 
   @MessagePattern({
     cmd: PaymentsMicroserviceMessagesEnum.GET_ALL_SUBSCRIPTIONS,
@@ -68,11 +75,7 @@ export class PaymentsController {
   @MessagePattern({
     cmd: PaymentsMicroserviceMessagesEnum.GET_USER_PAYMENTS,
   })
-  async getUserPayments(data: {
-    userId: number;
-  }) {
-    return this.commandBus.execute(
-      new GetUserPaymentsCommand(data.userId ),
-    )
+  async getUserPayments(data: { userId: number }) {
+    return this.commandBus.execute(new GetUserPaymentsCommand(data.userId));
   }
 }
