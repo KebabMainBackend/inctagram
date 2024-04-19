@@ -127,6 +127,16 @@ spec:
                  secretKeyRef:
                    name: main-service-production-config-secret
                    key: FRONT_VALIDATE_SECRET
+             - name: AMQP_RABBIT
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: AMQP_RABBIT
+             - name: QUEUE_NAME
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: QUEUE_NAME
              - name: DATABASE_URL
                valueFrom:
                  secretKeyRef:

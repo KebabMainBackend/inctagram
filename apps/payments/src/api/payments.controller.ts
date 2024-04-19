@@ -23,6 +23,7 @@ export class PaymentsController {
     cmd: 'hello',
   })
   async hello() {
+    console.log('yeet');
     return 'hello';
   }
 
