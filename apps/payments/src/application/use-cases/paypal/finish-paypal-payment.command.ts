@@ -18,7 +18,7 @@ export class FinishPaypalPaymentHandler
   async execute(payload: FinishPaypalPaymentCommand) {
     const data = payload.body.payload.resource;
     const payer = data.payer;
-
+    console.log(payload.body);
     const currentSubscription =
       await this.subscriptionRepo.getCurrentSubscriptionByEmail(
         payer.payer_info.email,
