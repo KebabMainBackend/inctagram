@@ -21,10 +21,14 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { SwaggerDecoratorForGetProducts } from '../swagger/swagger.decorators';
+import {
+  SwaggerDecoratorForGetCurrent,
+  SwaggerDecoratorForGetProducts,
+} from '../swagger/swagger.decorators';
 import {
   NotFoundResponseOptions,
   UnauthorizedRequestResponseOptions,
@@ -38,12 +42,6 @@ import { firstValueFrom } from 'rxjs';
 @ApiUnauthorizedResponse(UnauthorizedRequestResponseOptions)
 export class SubscriptionsController {
   constructor(@Inject('PAYMENTS_SERVICE') private clientProxy: ClientProxy) {}
-
-  @Get('hello')
-  @SwaggerDecoratorForGetProducts()
-  async hello() {
-    return this.clientProxy.send({ cmd: 'hello' }, { data: 124 });
-  }
 
   @Get('products')
   @SwaggerDecoratorForGetProducts()
@@ -63,6 +61,7 @@ export class SubscriptionsController {
   }
 
   @Get('current')
+  @SwaggerDecoratorForGetCurrent()
   @ApiNotFoundResponse(NotFoundResponseOptions)
   async getCurrentSubscribeInfo(@User() user: UserTypes) {
     const userId = user.id;

@@ -5,17 +5,17 @@ import { ProductRepository } from '../../db/product.repository';
 import { StripeAdapter } from '../../common/adapters/stripe.adapter';
 import { SubscriptionRepository } from '../../db/subscription.repository';
 import Stripe from 'stripe';
-import { HttpException, HttpStatus } from "@nestjs/common";
-import { incorrectProductIdMessage } from "../../errorsMessages";
-import { PaypalAdapter } from "../../common/adapters/paypal.adapter";
-import { PrismaService } from "../../prisma.service";
+import { HttpException, HttpStatus } from '@nestjs/common';
+import { incorrectProductIdMessage } from '../../errorsMessages';
+import { PaypalAdapter } from '../../common/adapters/paypal.adapter';
+import { PrismaService } from '../../prisma.service';
 
 export class PurchaseSubscriptionCommand {
   constructor(
     public userId: number,
     public email: string,
     public payload: PurchaseSubscriptionDto,
-    public paypalSubscriptionId: string | null
+    public paypalSubscriptionId: string | null,
   ) {}
 }
 
@@ -31,14 +31,22 @@ export class PurchaseSubscriptionHandler
     private prisma: PrismaService,
   ) {}
 
-  async execute({ userId, email, payload, paypalSubscriptionId }: PurchaseSubscriptionCommand) {
+  async execute({
+    userId,
+    email,
+    payload,
+    paypalSubscriptionId,
+  }: PurchaseSubscriptionCommand) {
     // get stripeProductId and stripePriceId
     const productInfo = await this.productRepository.getProductInfo(
       payload.productPriceId,
-    )
+    );
 
-    if(!productInfo)
-      throw new HttpException(incorrectProductIdMessage, HttpStatus.BAD_REQUEST)
+    if (!productInfo)
+      throw new HttpException(
+        incorrectProductIdMessage,
+        HttpStatus.BAD_REQUEST,
+      );
 
     const currentSubscription =
       await this.subscriptionRepo.getCurrentSubscription(userId);
@@ -57,7 +65,7 @@ export class PurchaseSubscriptionHandler
       productInfo.period,
     );
 
-    if(payload.paymentSystem === 'Stripe') {
+    if (payload.paymentSystem === 'Stripe') {
       const session: Stripe.Response<Stripe.Checkout.Session> =
         await this.stripeAdapter.createPayment({
           userId,
@@ -68,23 +76,22 @@ export class PurchaseSubscriptionHandler
         });
       return { url: session.url };
     } else {
+      console.log(2);
+      newSubscription.subscriptionStatus = 'Pending';
 
-      newSubscription.subscriptionStatus = 'Pending'
-
-      await this.subscriptionRepo.addSubscriptionToDB(newSubscription)
+      await this.subscriptionRepo.addSubscriptionToDB(newSubscription);
       await this.subscriptionRepo.addPaymentToDB(
         'Paypal',
         productInfo,
         newSubscription.dateOfNextPayment,
-        userId
-      )
+        userId,
+      );
 
-      const session =
-        await this.paypalAdapter.createPayment({
-          paypalPlanId: productInfo.paypalPlanId,
-          newSubscription,
-          email,
-        });
+      const session = await this.paypalAdapter.createPayment({
+        paypalPlanId: productInfo.paypalPlanId,
+        newSubscription,
+        email,
+      });
 
       return { url: session.url };
     }

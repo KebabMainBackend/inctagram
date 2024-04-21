@@ -39,8 +39,9 @@ export class GetCurrentSubscriptionInfoHandler
       return {
         subscriptions,
         expireAt: daysLeft,
+        nextPayment: null,
       };
-    } else if (current.hasAutoRenewal) {
+    } else {
       return {
         subscriptions,
         expireAt: daysLeft,

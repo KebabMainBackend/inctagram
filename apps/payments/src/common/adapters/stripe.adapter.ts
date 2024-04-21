@@ -2,7 +2,7 @@ import Stripe from 'stripe';
 import { Injectable } from '@nestjs/common';
 import { AddNewSubscriptionTypeDto } from '../../api/dto/product.dto';
 import { ConfigService } from '@nestjs/config';
-import { ProductEntity } from "../../db/domain/product.entity";
+import { ProductEntity } from '../../db/domain/product.entity';
 
 type StripeCheckoutData = {
   productInfo: ProductEntity;
@@ -24,7 +24,7 @@ export class StripeAdapter {
     productInfo,
   }: StripeCheckoutData): Promise<any> {
     const stripe = new Stripe(this.configService.get('STRIPE_API_KEY'));
-
+    console.log(this.configService.get('PAYMENT_SUCCESS_URL'));
     return await stripe.checkout.sessions.create({
       success_url: this.configService.get('PAYMENT_SUCCESS_URL'),
       cancel_url: this.configService.get('PAYMENT_ERROR_URL'),
