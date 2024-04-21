@@ -56,6 +56,7 @@ export class PaymentsController {
 
   @Post('paypal/webhook')
   async paypalPaymentInfo(@Body() payload: any) {
+    console.log(1);
     const data = await firstValueFrom(
       this.clientProxy.send(
         { cmd: PaymentsMicroserviceMessagesEnum.PAYPAL_FINISH_PAYMENT },

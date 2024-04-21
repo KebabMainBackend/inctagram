@@ -135,7 +135,7 @@ your account type to business
     };
     try {
       await this.sendMail(options, () => {
-        console.log('notification Email is delivered successfully');
+        console.log('NOTIFICATION mail is delivered successfully!');
         return true;
       });
     } catch (e) {
