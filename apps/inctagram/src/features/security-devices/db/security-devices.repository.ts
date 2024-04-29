@@ -8,13 +8,22 @@ export class SecurityDevicesRepository {
   constructor(private prisma: PrismaService) {}
   async createDevice(deviceBody: SecurityDevicesTypes) {
     return this.prisma.devices.create({
-      data: deviceBody,
+      data: {
+        ip: deviceBody.ip,
+        title: deviceBody.title,
+        id: deviceBody.id,
+      },
     });
   }
 
   async createSession(data: CreateSessionTypes) {
     const session = await this.prisma.session.create({
-      data,
+      data: {
+        userId: data.userId,
+        devicesId: data.devicesId,
+        lastActiveDate: data.lastActiveDate,
+        aliveTill: data.aliveTill,
+      },
     });
     return session.id;
   }
@@ -34,8 +43,18 @@ export class SecurityDevicesRepository {
     });
   }
   async deleteSessionById(sessionId: string) {
+    const session = await this.prisma.session.findUnique({
+      where: {
+        id: sessionId,
+      },
+    });
     await this.prisma.session.delete({
       where: { id: sessionId },
+    });
+    await this.prisma.devices.delete({
+      where: {
+        id: session.devicesId,
+      },
     });
   }
   getSession(sessionId: string) {
@@ -48,6 +67,24 @@ export class SecurityDevicesRepository {
     await this.prisma.blacklist.create({
       data: {
         refreshToken,
+      },
+    });
+  }
+  async deleteAllDevicesOfUserExceptCurrent(userId: number, sessionId: string) {
+    const sessions = await this.prisma.session.findMany({
+      where: {
+        id: { not: sessionId },
+        userId,
+      },
+    });
+    await this.prisma.session.deleteMany({
+      where: {
+        id: { in: sessions.map((s) => s.id) },
+      },
+    });
+    await this.prisma.devices.deleteMany({
+      where: {
+        id: { in: sessions.map((s) => s.devicesId) },
       },
     });
   }

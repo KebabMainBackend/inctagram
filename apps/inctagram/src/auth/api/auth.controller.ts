@@ -37,7 +37,7 @@ import { CreateAccessTokenCommand } from '../application/use-cases/create-access
 import { CommandBus } from '@nestjs/cqrs';
 import { AuthVerifyEmailDto } from './dto/auth-verify-email.dto';
 import { DecodeRefreshTokenCommand } from '../application/use-cases/decode-refresh-token.command';
-import { DeleteDeviceCommand } from '../../features/security-devices/commands/delete-device.command';
+import { DeleteDeviceCommand } from '../../features/security-devices/app/commands/delete-device.command';
 import { AuthPasswordRecoveryDto } from './dto/auth-password-recovery.dto';
 import { AuthResendCodeDto } from './dto/auth-resend-code.dto';
 import { AuthNewPasswordDto } from './dto/auth-new-password.dto';

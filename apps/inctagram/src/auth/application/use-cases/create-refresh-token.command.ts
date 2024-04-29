@@ -30,7 +30,7 @@ export class CreateRefreshTokenHandler
       ip: deviceIp,
     });
     const newDevice = await this.securityDevicesRepository.createDevice(device);
-    const session = SessionEntity.create(userId, newDevice.deviceId);
+    const session = SessionEntity.create(userId, newDevice.id);
     const sessionId = await this.securityDevicesRepository.createSession(
       session,
     );
