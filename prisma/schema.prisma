@@ -71,21 +71,21 @@ model Session {
   userId         Int
   lastActiveDate DateTime
   aliveTill      DateTime
-  deviceId       String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-  device         Devices  @relation(fields: [deviceId], references: [deviceId])
+  devicesId      String   @unique @map("deviceId")
+  device         Devices  @relation(fields: [devicesId], references: [id], onDelete: Cascade)
   User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Devices {
   title     String
   ip        String
-  deviceId  String    @id @unique
-  sessionId String?   @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  session   Session[]
+  id        String   @id @unique @map("deviceId")
+  sessionId String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  session   Session?
 }
 
 model OAuthProvider {
