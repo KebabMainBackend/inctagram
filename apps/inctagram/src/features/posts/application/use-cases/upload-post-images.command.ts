@@ -3,7 +3,7 @@ import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { mapPostImages } from '../../db/view/mapPost';
-import { MicroserviceMessagesEnum } from '../../../../../../../types/messages';
+import { FilesMicroserviceMessagesEnum } from '../../../../../../../types/messages';
 
 export class UploadPostImagesCommand {
   constructor(
@@ -25,7 +25,7 @@ export class UploadPostImagesHandler
     return { images: mapPostImages(data.postImages) };
   }
   async createFileImage(buffers: Buffer[], userId: number) {
-    const pattern = { cmd: MicroserviceMessagesEnum.UPLOAD_POST_IMAGES };
+    const pattern = { cmd: FilesMicroserviceMessagesEnum.UPLOAD_POST_IMAGES };
     const payload = {
       userId,
       buffers,

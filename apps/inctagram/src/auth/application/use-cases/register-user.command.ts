@@ -9,13 +9,18 @@ import {
 import { UsersRepository } from '../../db/users.repository';
 import { createErrorMessage } from '../../../utils/create-error-object';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { LanguageEnums } from '../../../types';
+import { ConfigService } from '@nestjs/config';
+
+type RegisterUserTypes = {
+  username: string;
+  password: string;
+  email: string;
+  language: LanguageEnums;
+};
 
 export class RegisterUserCommand {
-  constructor(
-    public username: string,
-    public password: string,
-    public email: string,
-  ) {}
+  constructor(public data: RegisterUserTypes) {}
 }
 
 @CommandHandler(RegisterUserCommand)
@@ -27,8 +32,9 @@ export class RegisterUserHandler
     private prisma: PrismaService,
     private emailService: EmailService,
     private userRepo: UsersRepository,
+    private configService: ConfigService,
   ) {}
-  async execute(data: RegisterUserCommand) {
+  async execute({ data }: RegisterUserCommand) {
     const userByEmail = await this.userRepo.getUserByEmail(data.email);
     const userByUsername = await this.userRepo.getUserByUsername(data.username);
     if (userByEmail) {
@@ -41,7 +47,7 @@ export class RegisterUserHandler
     }
     return this.createUser(data);
   }
-  async createUser({ username, password, email }: RegisterUserCommand) {
+  async createUser({ username, password, email, language }: RegisterUserTypes) {
     const { passwordHash, passwordSalt } =
       await this.userHashingManager.getHashAndSalt(password);
     const newUser = UserEntity.create({
@@ -56,14 +62,24 @@ export class RegisterUserHandler
         const user = await this.userRepo.createUser(newUser);
         const userConfirmation = UserConfirmationEntity.create(user.id);
         await this.userRepo.createUserConfirmationData(userConfirmation);
+        await this.checkLast5Users(user.id);
         await this.emailService.sendConfirmationCodeEmail(
           email,
           userConfirmation.confirmationCode,
           'Confirmation code',
+          language,
         );
       },
       { timeout: 7000 },
     );
     return { email: email.toLowerCase() };
+  }
+  private async checkLast5Users(userId: number) {
+    const secret = this.configService.get('FRONT_VALIDATE_SECRET');
+    const frontUrl = this.configService.get('FRONT_PROD');
+
+    if (userId % 5 === 0) {
+      await fetch(`${frontUrl}/api/revalidate?secret=${secret}`);
+    }
   }
 }

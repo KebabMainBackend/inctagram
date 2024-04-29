@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ProfileRepository } from '../../db/profile.repository';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { MicroserviceMessagesEnum } from '../../../../../../../types/messages';
+import { FilesMicroserviceMessagesEnum } from '../../../../../../../types/messages';
 import { firstValueFrom } from 'rxjs';
 import { mapUserImages } from '../../db/view/mapUserProfile';
 import { FileImageTypeEnum } from '../../../../../../../types/file-image-enum.types';
@@ -41,7 +41,7 @@ export class UploadAvatarHandler
     return mapUserImages(data.avatars);
   }
   async createFileImage(buffer: Buffer, userId: number) {
-    const pattern = { cmd: MicroserviceMessagesEnum.UPLOAD_AVATAR };
+    const pattern = { cmd: FilesMicroserviceMessagesEnum.UPLOAD_AVATAR };
     const payload = {
       userId,
       buffer,
@@ -49,7 +49,7 @@ export class UploadAvatarHandler
     return this.client.send(pattern, payload);
   }
   deleteFileImage(userId: number) {
-    const pattern = { cmd: MicroserviceMessagesEnum.DELETE_AVATAR };
+    const pattern = { cmd: FilesMicroserviceMessagesEnum.DELETE_AVATAR };
     const payload = {
       ownerId: userId,
     };

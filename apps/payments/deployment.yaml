@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: DEPLOYMENT_NAME
+  namespace: NAMESPACE
+  labels:
+    app: PROJECT
+spec:
+  selector:
+    matchLabels:
+      project: PROJECT
+  template:
+    metadata:
+      namespace: NAMESPACE
+      labels:
+        project: PROJECT
+    spec:
+      containers:
+         - name: PROJECT
+           image: REGISTRY_HOSTNAME/PROJECT:TAG_VERSION
+           ports:
+             - containerPort: PORT_CONTAINER
+
+           env:
+             - name: QUEUE_NAME
+               valueFrom:
+                 secretKeyRef:
+                   name: payments-service-production-config-secret
+                   key: QUEUE_NAME
+             - name: MONGO_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: payments-service-production-config-secret
+                   key: MONGO_URL
+             - name: PAYMENT_SUCCESS_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: payments-service-production-config-secret
+                   key: PAYMENT_SUCCESS_URL
+             - name: PAYMENT_ERROR_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: payments-service-production-config-secret
+                   key: PAYMENT_ERROR_URL
+             - name: STRIPE_API_KEY
+               valueFrom:
+                 secretKeyRef:
+                   name: payments-service-production-config-secret
+                   key: STRIPE_API_KEY
+             - name: PAYPAL_CLIENT_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: payments-service-production-config-secret
+                   key: PAYPAL_CLIENT_ID
+             - name: PAYPAL_CLIENT_SECRET
+               valueFrom:
+                 secretKeyRef:
+                   name: payments-service-production-config-secret
+                   key: PAYPAL_CLIENT_SECRET
+             - name: AMQP_RABBIT
+               valueFrom:
+                 secretKeyRef:
+                   name: payments-service-production-config-secret
+                   key: AMQP_RABBIT

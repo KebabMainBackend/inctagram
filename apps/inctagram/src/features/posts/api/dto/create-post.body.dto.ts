@@ -1,7 +1,6 @@
 import {
   ArrayMinSize,
   IsArray,
-  IsNotEmpty,
   IsOptional,
   IsString,
   MaxLength,
@@ -11,12 +10,10 @@ import { Transform } from 'class-transformer';
 import { trimTransformer } from '../../../../utils/custom-validators/trim-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsObjectId } from '../../../../utils/custom-validators/is-object-id.validator';
-
 export class CreatePostBodyDto {
   @Transform(({ value }) => trimTransformer(value, 'description'))
-  @IsString()
-  @IsNotEmpty()
   @IsOptional()
+  @IsString()
   @ApiProperty({
     description: 'post description',
     example: 'cool post about my journey',
@@ -34,6 +31,7 @@ export class CreatePostBodyDto {
     description: 'previously created images ids',
     example: ['string'],
     minLength: 1,
+    maxLength: 10,
   })
   images: string[];
 }

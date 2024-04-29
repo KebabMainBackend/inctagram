@@ -6,6 +6,7 @@ import {
   Get,
   Req,
   Res,
+  Headers,
 } from '@nestjs/common';
 import {
   ApiExcludeEndpoint,
@@ -23,6 +24,8 @@ import { CommandBus } from '@nestjs/cqrs';
 import { SignInUserViaOauthProviderCommand } from '../application/use-cases/create-user-via-oauth-provider.command';
 import { ProviderType } from '../domain/entities/oauth-provider.entity';
 import { ConfigService } from '@nestjs/config';
+import { LanguageEnums } from '../../types';
+import { cookieOptions } from '../../utils/constants/cookie-options';
 
 @Controller('auth/github')
 @ApiTags('Github-OAuth2')
@@ -52,29 +55,39 @@ export class GithubController {
   async redirect(
     @Req() req: Request & { user: { id: string; email: string } },
     @Res({ passthrough: true }) res: Response,
+    @Headers('X-Url-lang') headers: LanguageEnums,
   ) {
     const { email, id } = req.user;
     const userId = await this.commandBus.execute(
-      new SignInUserViaOauthProviderCommand(email, id, ProviderType.GITHUB),
+      new SignInUserViaOauthProviderCommand({
+        email,
+        providerId: id,
+        providerType: ProviderType.GITHUB,
+        language: headers,
+      }),
     );
     const title = req.get('User-Agent') || 'unknown user agent';
     const ip = req.socket.remoteAddress || '';
     const refreshToken = await this.commandBus.execute(
       new CreateRefreshTokenCommand(userId, title, ip),
     );
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-    });
+    res.cookie(
+      'refreshToken',
+      refreshToken,
+      cookieOptions(this.configService.get('DOMAIN')),
+    );
     await this.commandBus.execute(new CreateAccessTokenCommand(userId));
     const frontLink = this.configService.get('FRONT_PROD');
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );
+    const fullLink =
+      headers === LanguageEnums.en
+        ? `${frontLink}/general/redirect/github?code=${accessToken}&userId=${userId}`
+        : `${frontLink}/ru/general/redirect/github?code=${accessToken}&userId=${userId}`;
     res
       .writeHead(301, {
-        Location: `${frontLink}/general/redirect/github?code=${accessToken}`,
+        Location: fullLink,
       })
 
       .end();

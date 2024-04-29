@@ -8,6 +8,7 @@ type GetRequestMapperHelper<T> = {
   cursor: number;
   pageSize: number;
   totalCount: number;
+  hasMore: boolean;
   items: T[];
 };
 
@@ -42,10 +43,12 @@ export const getRequestReturnMapper = <T>({
   cursor,
   totalCount,
   items,
+  hasMore,
 }: GetRequestMapperHelper<T>) => ({
   pagesCount: Math.ceil(totalCount / pageSize),
   cursor,
   pageSize,
   totalCount,
+  hasMore,
   items,
 });

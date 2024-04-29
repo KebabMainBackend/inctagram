@@ -8,27 +8,32 @@ export class SessionEntity extends BaseEntity {
   lastActiveDate: string;
   aliveTill: Date;
   device: DeviceEntity;
-  deviceId: string;
+  devicesId: string;
 
   static create(userId: number, deviceId: string) {
     const currentTime = new Date();
     const session = new SessionEntity();
-    session.aliveTill = add(currentTime, { minutes: 15 });
     session.userId = userId;
     session.lastActiveDate = currentTime.toISOString();
-    session.deviceId = deviceId;
+    session.aliveTill = add(currentTime, { minutes: 15 });
+    session.devicesId = deviceId;
     return session;
+  }
+  update() {
+    const currentTime = new Date();
+    this.lastActiveDate = currentTime.toISOString();
+    this.aliveTill = add(currentTime, { minutes: 15 });
   }
 }
 
 export class DeviceEntity {
   title: string;
   ip: string;
-  deviceId: string;
+  id: string;
 
   static create(data: { ip: string; title: string }) {
     const device = new DeviceEntity();
-    device.deviceId = uuidv4();
+    device.id = uuidv4();
     device.ip = data.ip;
     device.title = data.title;
     return device;

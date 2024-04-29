@@ -14,6 +14,7 @@ export const mapUserProfile = (
     aboutMe: profile.aboutMe,
     avatars: avatars.length ? mapUserImages(avatars) : null,
     createdAt: profile.createdAt,
+    accountType: profile.accountType,
   };
 };
 

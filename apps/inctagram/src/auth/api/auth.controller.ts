@@ -10,6 +10,7 @@ import {
   Delete,
   Res,
   Get,
+  Headers,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthRegisterDto } from './dto/auth-register.dto';
@@ -36,7 +37,7 @@ import { CreateAccessTokenCommand } from '../application/use-cases/create-access
 import { CommandBus } from '@nestjs/cqrs';
 import { AuthVerifyEmailDto } from './dto/auth-verify-email.dto';
 import { DecodeRefreshTokenCommand } from '../application/use-cases/decode-refresh-token.command';
-import { DeleteDeviceCommand } from '../../features/security-devices/commands/delete-device.command';
+import { DeleteDeviceCommand } from '../../features/security-devices/app/commands/delete-device.command';
 import { AuthPasswordRecoveryDto } from './dto/auth-password-recovery.dto';
 import { AuthResendCodeDto } from './dto/auth-resend-code.dto';
 import { AuthNewPasswordDto } from './dto/auth-new-password.dto';
@@ -51,17 +52,21 @@ import { TestDeleteUserCommand } from '../test/delete-user.command';
 import { AddRefreshToBlacklistCommand } from '../application/use-cases/add-refresh-to-blacklist';
 import { UpdateRefreshTokenCommand } from '../application/use-cases/update-refresh-token.command';
 import { User } from '../../utils/decorators/user.decorator';
-import { UserTypes } from '../../types';
+import { LanguageEnums, UserTypes } from '../../types';
 import { CheckVerifyCodeDto } from './dto/check-verify-code.dto';
 import { CheckRecoveryCodeCommand } from '../application/use-cases/check-recovery-code.command';
 import { AuthResendRecoveryCodeDto } from './dto/auth-resend-recovery-code.dto';
 import { ResendRecoveryCodeCommand } from '../application/use-cases/resend-recovery-code.command';
 import { cookieOptions } from '../../utils/constants/cookie-options';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
-  constructor(private commandBus: CommandBus) {}
+  constructor(
+    private commandBus: CommandBus,
+    private configService: ConfigService,
+  ) {}
 
   @ApiOkResponse({
     description:
@@ -75,20 +80,24 @@ export class AuthController {
   @Post('registration')
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)
-  async register(@Body() registerDTO: AuthRegisterDto) {
+  async register(
+    @Body() registerDTO: AuthRegisterDto,
+    @Headers('X-Url-lang') headers: LanguageEnums,
+  ) {
     return await this.commandBus.execute(
-      new RegisterUserCommand(
-        registerDTO.username,
-        registerDTO.password,
-        registerDTO.email,
-      ),
+      new RegisterUserCommand({
+        username: registerDTO.username,
+        password: registerDTO.password,
+        email: registerDTO.email,
+        language: headers,
+      }),
     );
   }
 
   @ApiOkResponse({
     description: 'success',
     content: {
-      'application/json': { example: { accessToken: 'string' } },
+      'application/json': { example: { accessToken: 'string', userId: 1 } },
     },
   })
   @ApiBadRequestResponse(BadRequestResponseOptions)
@@ -115,22 +124,30 @@ export class AuthController {
       new CreateRefreshTokenCommand(userId, title, ip),
     );
 
-    res.cookie('refreshToken', refreshToken, cookieOptions);
+    res.cookie(
+      'refreshToken',
+      refreshToken,
+      cookieOptions(this.configService.get('DOMAIN')),
+    );
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );
-    return { accessToken };
+    return { accessToken, userId };
   }
 
   @ApiNoContentResponse(NoContentResponseOptions)
   @ApiBadRequestResponse(BadRequestResponseOptions)
   @Post('password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async passwordRecovery(@Body() passwordRecoveryDto: AuthPasswordRecoveryDto) {
+  async passwordRecovery(
+    @Body() passwordRecoveryDto: AuthPasswordRecoveryDto,
+    @Headers('X-Url-lang') headers: LanguageEnums,
+  ) {
     await this.commandBus.execute(
       new PasswordRecoveryCommand(
         passwordRecoveryDto.email,
         passwordRecoveryDto.recaptcha,
+        headers,
       ),
     );
     return;
@@ -153,7 +170,10 @@ export class AuthController {
         await this.commandBus.execute(
           new DeleteDeviceCommand(result.sessionId),
         );
-        res.clearCookie('refreshToken', cookieOptions);
+        res.clearCookie(
+          'refreshToken',
+          cookieOptions(this.configService.get('DOMAIN')),
+        );
         return;
       }
     }
@@ -177,9 +197,14 @@ export class AuthController {
   @Post('registration-email-resending')
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async registrationEmailResend(@Body() body: AuthResendCodeDto) {
+  async registrationEmailResend(
+    @Body() body: AuthResendCodeDto,
+    @Headers('X-Url-lang') headers: LanguageEnums,
+  ) {
     const email = body.email;
-    await this.commandBus.execute(new ResendConfirmationCodeCommand(email));
+    await this.commandBus.execute(
+      new ResendConfirmationCodeCommand(email, headers),
+    );
     return;
   }
 
@@ -227,7 +252,11 @@ export class AuthController {
       await this.commandBus.execute(
         new AddRefreshToBlacklistCommand(refreshToken),
       );
-      res.cookie('refreshToken', newRefreshToken, cookieOptions);
+      res.cookie(
+        'refreshToken',
+        newRefreshToken,
+        cookieOptions(this.configService.get('DOMAIN')),
+      );
       return { accessToken };
     }
     throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
@@ -256,9 +285,12 @@ export class AuthController {
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)
   @ApiBadRequestResponse(BadRequestResponseOptions)
-  async resendRecoveryCode(@Body() body: AuthResendRecoveryCodeDto) {
+  async resendRecoveryCode(
+    @Body() body: AuthResendRecoveryCodeDto,
+    @Headers('X-Url-lang') headers: LanguageEnums,
+  ) {
     return await this.commandBus.execute(
-      new ResendRecoveryCodeCommand(body.email),
+      new ResendRecoveryCodeCommand(body.email, headers),
     );
   }
   @Get('me')

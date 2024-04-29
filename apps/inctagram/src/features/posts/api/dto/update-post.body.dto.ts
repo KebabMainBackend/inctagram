@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsOptional, IsString, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { trimTransformer } from '../../../../utils/custom-validators/trim-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -6,7 +6,6 @@ import { ApiProperty } from '@nestjs/swagger';
 export class UpdatePostBodyDto {
   @Transform(({ value }) => trimTransformer(value, 'description'))
   @IsString()
-  @IsNotEmpty()
   @IsOptional()
   @ApiProperty({
     description: 'post description',

@@ -1,0 +1,1 @@
+{"statusCode":404,"message":"ENOENT: no such file or directory, stat 'C:\\Projects\\inctagram\\apps\\inctagram\\swagger-static\\index.html'"}
