@@ -23,12 +23,17 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { SwaggerDecoratorForGetProducts } from '../swagger/swagger.decorators';
+import {
+  SwaggerDecoratorForAutoRenewal,
+  SwaggerDecoratorForCurrentSubscription,
+  SwaggerDecoratorForGetProducts, SwaggerDecoratorGetPayments
+} from "../swagger/swagger.decorators";
 import {
   NotFoundResponseOptions,
   UnauthorizedRequestResponseOptions,
 } from '../../../utils/constants/swagger-constants';
 import { firstValueFrom } from 'rxjs';
+import { GetRequestCurrentSubscriptionViewExample } from "../swagger/swagger.examples";
 
 @Controller('subscription')
 @ApiTags('Subscription')
@@ -48,6 +53,7 @@ export class SubscriptionsController {
   }
 
   @Get('my-payments')
+  @SwaggerDecoratorGetPayments()
   async getUserPayments(@User() user: UserTypes,
                         @Query() payload: GetUserPaymentsQueryDto) {
     const { limit, page } = payload
@@ -60,6 +66,7 @@ export class SubscriptionsController {
   }
 
   @Get('current')
+  @SwaggerDecoratorForCurrentSubscription()
   @ApiNotFoundResponse(NotFoundResponseOptions)
   async getCurrentSubscribeInfo(@User() user: UserTypes) {
     const userId = user.id;
@@ -90,6 +97,7 @@ export class SubscriptionsController {
   }
 
   @Put('auto-renewal')
+  @SwaggerDecoratorForAutoRenewal()
   async updateAutoRenewalStatus(
     @Body() payload: UpdateAutoRenewalStatusDto,
     @User() user: UserTypes,

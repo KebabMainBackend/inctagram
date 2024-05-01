@@ -13,7 +13,6 @@ import { UpdateAutoRenewalStatusCommand } from '../application/use-cases/update-
 import { GetUserPaymentsCommand } from "../application/use-cases/get-user-payments.command";
 import { CreatePaypalWebhookCommand } from "../application/use-cases/paypal/create-paypal-webhook.command";
 import { createPaypalWebhook } from "../../../inctagram/src/features/subscriptions/api/dto/dto";
-import { GetUserPaymentsCommand } from '../application/use-cases/get-user-payments.command';
 
 @Controller()
 export class PaymentsController {
@@ -94,11 +93,8 @@ export class PaymentsController {
   async createPaypalWebhook (data: {
     payload: createPaypalWebhook;
   }) {
-
     return this.commandBus.execute(
       new CreatePaypalWebhookCommand(data.payload.url ),
     )
-  async getUserPayments(data: { userId: number }) {
-    return this.commandBus.execute(new GetUserPaymentsCommand(data.userId));
   }
 }

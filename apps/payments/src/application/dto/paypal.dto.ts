@@ -1,24 +1,10 @@
 import { addMinutes } from "date-fns";
 
 
-export const getBillingAgreementData = (newSubscription, paypalPlanId, email) => {
-  return {
-    name: newSubscription.interval,
-    description: newSubscription.interval,
-    start_date: addMinutes(new Date(), 5),
-    plan: {
-      id: paypalPlanId
-    },
-    payer: {
-      payment_method: 'paypal',
-      payer_info: {
-        email
-      }
-    },
-  }
-}
-
 export const getPlanDto = (product, interval, price, currency) => {
+  console.log('111111111111111111111111');
+  console.log(product, interval, price, currency);
+  console.log('2222222222222222222222222222');
   return {
     "product_id": `${product.id}`,
     "name": `${product.name}`,
@@ -48,17 +34,6 @@ export const getPlanDto = (product, interval, price, currency) => {
     }
   }
 }
-
-export const planPatch = [
-  {
-    op: 'replace',
-    path: '/',
-    value: {
-      state: 'ACTIVE'
-    }
-  }
-];
-
 
 export const getPaypalRequestHeaders = (paypalReqId, token) => {
   return {

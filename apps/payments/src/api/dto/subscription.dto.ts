@@ -19,8 +19,18 @@ export class PurchaseSubscriptionDto {
 
 export class UpdateAutoRenewalStatusDto {
   @IsInt()
+  @ApiProperty({
+    description: 'subscription id',
+    example: 1,
+    required: true,
+  })
   subscriptionId: number;
   @IsBoolean()
+  @ApiProperty({
+    description: 'auto renewal status',
+    example: true,
+    required: true,
+  })
   autoRenewal: boolean;
 }
 

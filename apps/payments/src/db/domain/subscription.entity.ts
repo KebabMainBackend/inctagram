@@ -26,8 +26,6 @@ export class SubscriptionEntity {
   paypalSubscriptionId: string | null
   @IsString()
   interval: 'day' | 'week' | 'month' | 'year';
-  @IsString()
-  subscriptionStatus: 'Pending' | 'Confirmed'
   static create(data: CreateSubscriptionDto) {
     const {
       paymentSystem,
@@ -54,8 +52,6 @@ export class SubscriptionEntity {
 
     subscription.period = period;
     subscription.interval = interval;
-
-    subscription.subscriptionStatus = 'Confirmed'
 
     return subscription;
   }
