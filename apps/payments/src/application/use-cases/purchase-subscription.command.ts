@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { SubscriptionEntity } from '../../db/domain/subscription.entity';
-import { PurchaseSubscriptionDto } from '../../api/dto/subscription.dto';
+import { CreateSubscriptionDto, PurchaseSubscriptionDto } from "../../api/dto/subscription.dto";
 import { ProductRepository } from '../../db/product.repository';
 import { StripeAdapter } from '../../common/adapters/stripe.adapter';
 import { SubscriptionRepository } from '../../db/subscription.repository';
@@ -25,10 +25,8 @@ export class PurchaseSubscriptionHandler
 {
   constructor(
     private productRepository: ProductRepository,
-    private subscriptionRepo: SubscriptionRepository,
     private stripeAdapter: StripeAdapter,
     private paypalAdapter: PaypalAdapter,
-    private prisma: PrismaService,
   ) {}
 
   async execute({ userId, email, payload, paypalSubscriptionId }: PurchaseSubscriptionCommand) {
@@ -40,53 +38,21 @@ export class PurchaseSubscriptionHandler
     if(!productInfo)
       throw new HttpException(incorrectProductIdMessage, HttpStatus.BAD_REQUEST)
 
-    const currentSubscription =
-      await this.subscriptionRepo.getCurrentSubscription(userId);
-
-    const newSubscription = SubscriptionEntity.create(
-      payload,
-      productInfo,
-      userId,
-      paypalSubscriptionId,
-    );
-
-    const renewSubscriptionData = SubscriptionEntity.renewSubscription(
-      currentSubscription
-        ? currentSubscription.dateOfNextPayment
-        : newSubscription.dateOfNextPayment,
-      productInfo.period,
-    );
-
-    if(payload.paymentSystem === 'Stripe') {
+    if( payload.paymentSystem === 'Stripe' ) {
       const session: Stripe.Response<Stripe.Checkout.Session> =
         await this.stripeAdapter.createPayment({
           userId,
-          currentSubscription,
-          renewSubscriptionData,
-          newSubscription,
           productInfo,
         });
       return { url: session.url };
-    } else {
-
-      newSubscription.subscriptionStatus = 'Pending'
-
-      await this.subscriptionRepo.addSubscriptionToDB(newSubscription)
-      await this.subscriptionRepo.addPaymentToDB(
-        'Paypal',
-        productInfo,
-        newSubscription.dateOfNextPayment,
-        userId
-      )
-
+    }
+    else if( payload.paymentSystem === 'Paypal' ) {
       const session =
-        await this.paypalAdapter.createPayment({
-          paypalPlanId: productInfo.paypalPlanId,
-          newSubscription,
-          email,
-        });
+        await this.paypalAdapter.subscribeUser(userId, productInfo.paypalPlanId)
 
-      return { url: session.url };
+      const sessionLink = session.links.find(obj => obj.rel === 'approve')
+
+      return { url: sessionLink.href };
     }
   }
 }

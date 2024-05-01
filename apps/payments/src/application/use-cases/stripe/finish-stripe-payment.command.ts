@@ -2,6 +2,9 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { StripeAdapter } from '../../../common/adapters/stripe.adapter';
 import { SubscriptionRepository } from '../../../db/subscription.repository';
 import { PrismaService } from '../../../prisma.service';
+import { CreateSubscriptionDto } from "../../../api/dto/subscription.dto";
+import { SubscriptionEntity } from "../../../db/domain/subscription.entity";
+import { PaymentsEntity } from "../../../db/domain/payments.entity";
 
 export class FinishStripePaymentCommand {
   constructor(
@@ -24,27 +27,37 @@ export class FinishStripePaymentHandler
     if (data) {
       const metadata = data.data.metadata;
       const email = data.data.customer_details.email;
-      const currentSubscription =
-        JSON.parse(metadata.currentSubscription) || null;
-      const renewSubscription = JSON.parse(metadata.renewSubscriptionData);
-      const newSubscription = JSON.parse(metadata.newSubscription);
-      const productInfo = JSON.parse(metadata.productInfo);
 
-      await this.subscriptionRepo.addSubscriptionToDB(newSubscription)
-      await this.subscriptionRepo.addPaymentToDB(
-        'Stripe',
-        productInfo,
-        newSubscription.dateOfNextPayment,
-        newSubscription.userId
+      const productInfo = JSON.parse(metadata.productInfo);
+      const userId = +metadata.userId
+
+      const currentSubscription =
+        await this.subscriptionRepo.getCurrentSubscription(userId);
+
+      const subscriptionDto = CreateSubscriptionDto.createSubscriptionDto(
+        productInfo, 'Stripe', null, userId
       )
 
+      const subscription = SubscriptionEntity.create(subscriptionDto)
+      const payment = PaymentsEntity.create('Stripe', productInfo, subscription.dateOfNextPayment, userId)
+
+      const renewSubscription = SubscriptionEntity.renewSubscription(
+        currentSubscription
+          ? currentSubscription.dateOfNextPayment
+          : subscription.dateOfSubscribe,
+        productInfo.period,
+      );
+
+      await this.subscriptionRepo.addSubscriptionToDB(subscription)
+      await this.subscriptionRepo.addPaymentToDB(payment)
+
       await this.subscriptionRepo.updateCurrentSubscription({
-        userId: +metadata.userId,
+        userId,
         currentSubscription,
         dateOfNextPayment: renewSubscription.dateOfNextPayment,
         expireAt: renewSubscription.expireAt,
       });
-      return { userId: +metadata.userId, email };
+      return { userId, email };
     }
   }
 }

@@ -1,12 +1,12 @@
 import {
   Body,
   Controller,
-  Get,
+  Get, HttpCode,
   Inject,
   Post,
   RawBodyRequest,
-  Req,
-} from '@nestjs/common';
+  Req
+} from "@nestjs/common";
 import { AddNewSubscriptionTypeDto } from '../../../../../payments/src/api/dto/product.dto';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { ClientProxy } from '@nestjs/microservices';
@@ -14,11 +14,10 @@ import { PaymentsMicroserviceMessagesEnum } from '../../../../../../types/messag
 import { ChangeAccountTypeAndSendMessageCommand } from '../application/use-cases/finish-payment.command';
 import { CommandBus } from '@nestjs/cqrs';
 import { firstValueFrom } from 'rxjs';
-import { login } from "../../../../test/managers/login";
+import { createPaypalWebhook } from "./dto/dto";
 
 @Controller('payments')
 @ApiExcludeController()
-// @UseGuards(BearerAuthGuard)
 export class PaymentsController {
   constructor(
     @Inject('PAYMENTS_SERVICE') private clientProxy: ClientProxy,
@@ -30,7 +29,7 @@ export class PaymentsController {
       { cmd: PaymentsMicroserviceMessagesEnum.STRIPE_CREATE_PRODUCT },
       { payload },
     );
-    console.log(data);
+    console.log(data)
     return data;
   }
 
@@ -39,8 +38,7 @@ export class PaymentsController {
     const data = this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.PAYPAL_CREATE_PRODUCT },
       { payload },
-    );
-    console.log(data);
+    )
 
     return data;
   }
@@ -61,19 +59,30 @@ export class PaymentsController {
   }
 
   @Post('paypal/webhook')
-  async paypalPaymentInfo(@Body() payload) {
-    console.log(1);
+  @HttpCode(200)
+  async paypalPaymentInfo(@Body() payload: any) {
+    console.log('PAYPAL WEBHOOK')
 
     const data = await firstValueFrom(
       this.clientProxy.send(
         { cmd: PaymentsMicroserviceMessagesEnum.PAYPAL_FINISH_PAYMENT },
         { payload },
       ),
-    );
+    )
 
     return this.commandBus.execute(
       new ChangeAccountTypeAndSendMessageCommand(data.userId, data.email),
-    );
+    )
+  }
+
+  @Post('paypal/create-webhook')
+  async paypalCreateWebhook(@Body() payload: createPaypalWebhook) {
+    await firstValueFrom(
+      this.clientProxy.send(
+        { cmd: PaymentsMicroserviceMessagesEnum.PAYPAL_CREATE_WEBHOOK },
+        { payload },
+      ),
+    )
   }
 
   @Get('success')

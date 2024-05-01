@@ -15,7 +15,7 @@ export class AddNewSubscriptionTypeDto {
   period: number;
 }
 
-export class MakeAPurchaseDto {
+export class CreatePaypalWebhookDto {
   @IsString()
-  priceId: string;
+  url: string;
 }

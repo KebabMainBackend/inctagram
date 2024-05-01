@@ -6,11 +6,11 @@ import {
   Inject,
   NotFoundException,
   Post,
-  Put, Req,
+  Put, Query, Req,
   UseGuards
 } from "@nestjs/common";
 import { BearerAuthGuard } from '../../../auth/guards/bearer-auth.guard';
-import { PurchaseSubscriptionDto, UpdateAutoRenewalStatusDto } from './dto/dto';
+import { GetUserPaymentsQueryDto, PurchaseSubscriptionDto, UpdateAutoRenewalStatusDto } from "./dto/dto";
 
 import { ClientProxy } from '@nestjs/microservices';
 
@@ -48,11 +48,14 @@ export class SubscriptionsController {
   }
 
   @Get('my-payments')
-  async getUserPayments(@User() user: UserTypes) {
-    console.log(user);
+  async getUserPayments(@User() user: UserTypes,
+                        @Query() payload: GetUserPaymentsQueryDto) {
+    const { limit, page } = payload
+
+    const offset = (Number(limit) * Number(page) - Number(limit))
     return this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.GET_USER_PAYMENTS },
-       { userId: user.id } ,
+       { userId: user.id, limit: +limit, offset: +offset } ,
     );
   }
 

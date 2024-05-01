@@ -135,6 +135,7 @@ your account type to business
     };
     try {
       await this.sendMail(options, () => {
+        console.log('from paypal webhook');
         console.log('notification Email is delivered successfully');
         return true;
       });

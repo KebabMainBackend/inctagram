@@ -1,6 +1,6 @@
 import { addDays } from 'date-fns';
 import { IsBoolean, IsDate, IsInt, IsString } from 'class-validator';
-import { PurchaseSubscriptionDto } from '../../api/dto/subscription.dto';
+import { CreateSubscriptionDto, PurchaseSubscriptionDto } from "../../api/dto/subscription.dto";
 import { ProductEntity } from './product.entity';
 
 export class SubscriptionEntity {
@@ -28,14 +28,16 @@ export class SubscriptionEntity {
   interval: 'day' | 'week' | 'month' | 'year';
   @IsString()
   subscriptionStatus: 'Pending' | 'Confirmed'
-  static create(
-    data: PurchaseSubscriptionDto,
-    productInfo: ProductEntity,
-    userId: number,
-    paypalSubscriptionId: string | null,
-    subscriptionStatus?: 'Pending' | 'Confirmed'
-  ) {
-    const { paymentSystem } = data;
+  static create(data: CreateSubscriptionDto) {
+    const {
+      paymentSystem,
+      userId,
+      period,
+      productPriceId,
+      subscriptionPriceId,
+      paypalSubscriptionId,
+      interval} = data;
+
     const subscription = new SubscriptionEntity();
 
     subscription.userId = userId;
@@ -44,16 +46,16 @@ export class SubscriptionEntity {
     subscription.autoRenewal = false;
 
     subscription.dateOfSubscribe = new Date();
-    subscription.dateOfNextPayment = addDays(new Date(), productInfo.period);
+    subscription.dateOfNextPayment = addDays(new Date(), period);
 
-    subscription.productPriceId = productInfo.productPriceId;
-    subscription.subscriptionPriceId = productInfo.subscriptionPriceId;
+    subscription.productPriceId = productPriceId;
+    subscription.subscriptionPriceId = subscriptionPriceId;
     subscription.paypalSubscriptionId = paypalSubscriptionId
 
-    subscription.period = productInfo.period;
-    subscription.interval = productInfo.interval;
+    subscription.period = period;
+    subscription.interval = interval;
 
-    subscription.subscriptionStatus = subscriptionStatus ?? 'Confirmed'
+    subscription.subscriptionStatus = 'Confirmed'
 
     return subscription;
   }
@@ -62,5 +64,9 @@ export class SubscriptionEntity {
     const expireAt = addDays(dateOfNextPayment, Number(period));
 
     return { dateOfNextPayment: expireAt, expireAt };
+  }
+
+  static getNewExpireAt(previousExpireAt: Date, period: number) {
+    return addDays(previousExpireAt, Number(period));
   }
 }
