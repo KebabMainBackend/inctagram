@@ -23,6 +23,7 @@ export class GetCurrentSubscriptionInfoHandler
     const { userId } = command;
 
     const current = await this.subscriptionRepo.getCurrentSubscription(userId);
+    console.log(userId, '2', current);
 
     if (!current) return { errorCode: HttpStatus.NOT_FOUND };
 

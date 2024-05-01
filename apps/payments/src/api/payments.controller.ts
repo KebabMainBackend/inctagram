@@ -13,6 +13,7 @@ import { UpdateAutoRenewalStatusCommand } from '../application/use-cases/update-
 import { GetUserPaymentsCommand } from "../application/use-cases/get-user-payments.command";
 import { CreatePaypalWebhookCommand } from "../application/use-cases/paypal/create-paypal-webhook.command";
 import { createPaypalWebhook } from "../../../inctagram/src/features/subscriptions/api/dto/dto";
+import { GetUserPaymentsCommand } from '../application/use-cases/get-user-payments.command';
 
 @Controller()
 export class PaymentsController {
@@ -20,6 +21,13 @@ export class PaymentsController {
     private readonly commandBus: CommandBus,
     private productQueryRepo: ProductQueryRepository,
   ) {}
+
+  @MessagePattern({
+    cmd: 'hello',
+  })
+  async hello() {
+    return 'hello';
+  }
 
   @MessagePattern({
     cmd: PaymentsMicroserviceMessagesEnum.GET_ALL_SUBSCRIPTIONS,
@@ -42,11 +50,16 @@ export class PaymentsController {
   })
   async purchaseSubscription(data: {
     userId: number;
-    email: string
+    email: string;
     payload: PurchaseSubscriptionDto;
   }) {
     return this.commandBus.execute(
-      new PurchaseSubscriptionCommand(data.userId, data.email, data.payload, null),
+      new PurchaseSubscriptionCommand(
+        data.userId,
+        data.email,
+        data.payload,
+        null,
+      ),
     );
   }
 
@@ -85,5 +98,7 @@ export class PaymentsController {
     return this.commandBus.execute(
       new CreatePaypalWebhookCommand(data.payload.url ),
     )
+  async getUserPayments(data: { userId: number }) {
+    return this.commandBus.execute(new GetUserPaymentsCommand(data.userId));
   }
 }

@@ -26,7 +26,10 @@ export class CreateStripeCustomerHandler
         email,
         userId,
       );
-      await this.subscriptionRepo.updateStripeCustomerId(userId, newCustomer.id);
+      await this.subscriptionRepo.updateStripeCustomerId(
+        userId,
+        newCustomer.id,
+      );
       customer = await this.subscriptionRepo.getCurrentSubscription(userId);
     }
 

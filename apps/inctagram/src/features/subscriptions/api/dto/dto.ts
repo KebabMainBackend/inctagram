@@ -1,11 +1,12 @@
-import { IsBoolean, IsInt, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { DefaultValuePipe } from "@nestjs/common";
 
 export class PurchaseSubscriptionDto {
   @IsString()
   @ApiProperty({
-    name: 'productId',
+    name: 'productId from /products',
+    example: 'price_1P3HsVAPDz5prGS3BRdMfPwW',
   })
   productPriceId: string;
   @IsString()
@@ -13,11 +14,15 @@ export class PurchaseSubscriptionDto {
     name: 'payment type',
     example: 'Paypal',
   })
-  paymentSystem: 'PayPal' | 'Stripe';
+  paymentSystem: 'Paypal' | 'Stripe';
 }
 
 export class UpdateAutoRenewalStatusDto {
-  @IsInt()
+  @IsNumber()
+  @ApiProperty({
+    name: 'subscription id',
+    example: 2,
+  })
   subscriptionId: number;
   @IsBoolean()
   autoRenewal: boolean;
