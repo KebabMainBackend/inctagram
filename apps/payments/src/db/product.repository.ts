@@ -21,7 +21,7 @@ export class ProductRepository {
 
   async getProductByPaypalPlanId(paypalPlanId) {
     return await this.prisma.product.findFirst({
-      where: {paypalPlanId}
-    })
+      where: { paypalPlanId },
+    });
   }
 }

@@ -23,7 +23,6 @@ export class ChangeAccountTypeAndSendMessageHandler
     userId,
     email,
   }: ChangeAccountTypeAndSendMessageCommand): Promise<boolean | void> {
-
     const profile = await this.prisma.profile.findUnique({
       where: { userId },
     });

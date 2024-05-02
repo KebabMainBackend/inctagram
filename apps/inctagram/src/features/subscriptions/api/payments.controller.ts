@@ -1,12 +1,13 @@
 import {
   Body,
   Controller,
-  Get, HttpCode,
+  Get,
+  HttpCode,
   Inject,
   Post,
   RawBodyRequest,
-  Req
-} from "@nestjs/common";
+  Req,
+} from '@nestjs/common';
 import { AddNewSubscriptionTypeDto } from '../../../../../payments/src/api/dto/product.dto';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { ClientProxy } from '@nestjs/microservices';
@@ -14,7 +15,7 @@ import { PaymentsMicroserviceMessagesEnum } from '../../../../../../types/messag
 import { ChangeAccountTypeAndSendMessageCommand } from '../application/use-cases/finish-payment.command';
 import { CommandBus } from '@nestjs/cqrs';
 import { firstValueFrom } from 'rxjs';
-import { createPaypalWebhook } from "./dto/dto";
+import { createPaypalWebhook } from './dto/dto';
 
 @Controller('payments')
 @ApiExcludeController()
@@ -29,7 +30,7 @@ export class PaymentsController {
       { cmd: PaymentsMicroserviceMessagesEnum.STRIPE_CREATE_PRODUCT },
       { payload },
     );
-    console.log(data)
+    console.log(data);
     return data;
   }
 
@@ -38,7 +39,7 @@ export class PaymentsController {
     const data = this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.PAYPAL_CREATE_PRODUCT },
       { payload },
-    )
+    );
 
     return data;
   }
@@ -61,17 +62,16 @@ export class PaymentsController {
   @Post('paypal/webhook')
   @HttpCode(200)
   async paypalPaymentInfo(@Body() payload: any) {
-
     const data = await firstValueFrom(
       this.clientProxy.send(
         { cmd: PaymentsMicroserviceMessagesEnum.PAYPAL_FINISH_PAYMENT },
         { payload },
       ),
-    )
+    );
 
     return this.commandBus.execute(
       new ChangeAccountTypeAndSendMessageCommand(data.userId, data.email),
-    )
+    );
   }
 
   @Post('paypal/create-webhook')
@@ -81,7 +81,7 @@ export class PaymentsController {
         { cmd: PaymentsMicroserviceMessagesEnum.PAYPAL_CREATE_WEBHOOK },
         { payload },
       ),
-    )
+    );
   }
 
   @Get('success')
