@@ -1,13 +1,4 @@
 import { IsDate, IsInt, IsString } from 'class-validator';
-import { ProductEntity } from './product.entity';
-import { PurchaseSubscriptionDto } from '../../api/dto/subscription.dto';
-
-type PaymentType = {
-  data: PurchaseSubscriptionDto;
-  productInfo: ProductEntity;
-  endDateOfSubscription: Date;
-  userId: number;
-};
 
 export class PaymentsEntity {
   @IsInt()
@@ -29,12 +20,7 @@ export class PaymentsEntity {
   @IsString()
   paypalSubscriptionId: string | null;
 
-  static create(
-    paymentSystem,
-    productInfo,
-    endDateOfSubscription,
-    userId,
-  ) {
+  static create(paymentSystem, productInfo, endDateOfSubscription, userId) {
     const payment = new PaymentsEntity();
 
     payment.userId = userId;
@@ -42,7 +28,7 @@ export class PaymentsEntity {
     payment.endDateOfSubscription = endDateOfSubscription;
     payment.price = productInfo.price;
     payment.paymentSystem = paymentSystem;
-    payment.interval = productInfo.interval
+    payment.interval = productInfo.interval;
 
     payment.productPriceId = productInfo.productPriceId;
     payment.subscriptionPriceId = productInfo.subscriptionPriceId;

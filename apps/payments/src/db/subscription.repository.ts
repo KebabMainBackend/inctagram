@@ -1,7 +1,7 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { SubscriptionEntity } from "./domain/subscription.entity";
-import { PaymentsEntity } from "./domain/payments.entity";
+import { SubscriptionEntity } from './domain/subscription.entity';
+import { PaymentsEntity } from './domain/payments.entity';
 
 @Injectable()
 export class SubscriptionRepository {
@@ -24,20 +24,6 @@ export class SubscriptionRepository {
     });
   }
 
-  async getCurrentSubscriptionByEmail(email: string) {
-    const user =
-      await this.prisma.user.findUnique({
-        where: {email}
-      })
-
-    if(!user) throw new BadRequestException({
-      message: 'no user getCurrentSubscriptionByEmail',
-      field: 'userId'
-    })
-
-    return await this.getCurrentSubscription(user.id)
-  }
-
   async getSubscriptionByID(subscriptionId: number) {
     return this.prisma.subscription.findUnique({
       where: { subscriptionId },
@@ -55,17 +41,33 @@ export class SubscriptionRepository {
     });
   }
 
-  async getSubscriptions(userId: number) {
-    return this.prisma.subscription.findMany({
-      where: { userId },
-      orderBy: [{ dateOfNextPayment: 'asc' }, { autoRenewal: 'asc' }],
+  async getSubscriptionByPaypalSubId(paypalSubscriptionId) {
+    return this.prisma.subscription.findFirst({
+      where: { paypalSubscriptionId },
     });
   }
 
-  async getPayments(userId: number) {
-    console.log(userId);
+  async getSubscriptions(userId: number) {
+    const autoRenewalSubscription = await this.prisma.subscription.findMany({
+      where: { userId, autoRenewal: true },
+    });
+
+    if (!autoRenewalSubscription.length)
+      return await this.prisma.subscription.findMany({
+        where: { userId },
+        orderBy: {
+          dateOfSubscribe: 'asc',
+        },
+      });
+    else return autoRenewalSubscription;
+  }
+
+  async getPayments(userId: number, limit, offset) {
     return await this.prisma.payments.findMany({
       where: { userId },
+      orderBy: { dateOfPayment: 'asc' },
+      take: limit,
+      skip: offset,
     });
   }
   async updateStripeCustomerId(userId: number, customerId: string) {
@@ -75,46 +77,73 @@ export class SubscriptionRepository {
     });
   }
 
-  async updatePaypalCustomerId(userId: number, customerId: string) {
-    await this.prisma.currentSubscription.update({
-      where: { userId },
-      data: { paypalCustomerId: customerId },
-    });
-  }
-
   async addSubscriptionToDB(newSubscription: SubscriptionEntity) {
     await this.prisma.subscription.create({ data: newSubscription });
   }
 
-  async addPaymentToDB(paymentSystem,
-                       productInfo,
-                       endDateOfSubscription,
-                       userId,) {
+  async addPaymentToDB(payment: PaymentsEntity) {
+    await this.prisma.payments.create({ data: payment });
+  }
 
-    const payment = PaymentsEntity.create(
-      paymentSystem,
-      productInfo,
-      endDateOfSubscription,
-      userId
-    )
-
-    await this.prisma.payments.create({data: payment});
+  async updatePayment(endDateOfSubscription, paypalSubscriptionId) {
+    await this.prisma.payments.updateMany({
+      where: { endDateOfSubscription },
+      data: { paypalSubscriptionId },
+    });
   }
 
   async updateCurrentSubscription({
-                                    userId,
-                                    currentSubscription,
-                                    dateOfNextPayment,
-                                    expireAt
-                                  }) {
-    if (currentSubscription) {
+    userId,
+    currentSubscription,
+    dateOfNextPayment,
+    expireAt,
+  }) {
+    if (!currentSubscription) {
+      const newExpireAt = SubscriptionEntity.getNewExpireAt(
+        new Date(),
+        dateOfNextPayment,
+      );
+
+      return await this.prisma.currentSubscription.create({
+        data: { userId, expireAt: newExpireAt, dateOfNextPayment },
+      });
+    } else if (currentSubscription) {
+      const autoRenewalSubscriptions = await this.prisma.subscription.findMany({
+        where: { userId, autoRenewal: true },
+        orderBy: [
+          {
+            dateOfNextPayment: 'asc',
+          },
+        ],
+      });
+
+      if (autoRenewalSubscriptions.length) {
+        await this.prisma.currentSubscription.update({
+          where: { userId },
+          data: {
+            dateOfNextPayment: autoRenewalSubscriptions[0].dateOfNextPayment,
+            expireAt,
+          },
+        });
+      } else if (!autoRenewalSubscriptions.length) {
+        await this.prisma.currentSubscription.update({
+          where: { userId },
+          data: { dateOfNextPayment, expireAt },
+        });
+      }
+    }
+  }
+
+  async updateCurrentSubscriptionHasAutoRenewalStatus(userId, autoRenewal) {
+    const autoRenewalOnSubscriptions = await this.prisma.subscription.findMany({
+      where: { userId, autoRenewal: true },
+      orderBy: [{ dateOfNextPayment: 'asc' }],
+    });
+
+    if (autoRenewalOnSubscriptions.length) {
       await this.prisma.currentSubscription.update({
         where: { userId },
-        data: { dateOfNextPayment, expireAt },
-      });
-    } else {
-      await this.prisma.currentSubscription.create({
-        data: { userId, expireAt, dateOfNextPayment },
+        data: { hasAutoRenewal: autoRenewal },
       });
     }
   }

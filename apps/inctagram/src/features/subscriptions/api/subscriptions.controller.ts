@@ -7,10 +7,16 @@ import {
   NotFoundException,
   Post,
   Put,
+  Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { BearerAuthGuard } from '../../../auth/guards/bearer-auth.guard';
-import { PurchaseSubscriptionDto, UpdateAutoRenewalStatusDto } from './dto/dto';
+import {
+  GetUserPaymentsQueryDto,
+  PurchaseSubscriptionDto,
+  UpdateAutoRenewalStatusDto,
+} from './dto/dto';
 
 import { ClientProxy } from '@nestjs/microservices';
 
@@ -19,21 +25,24 @@ import { User } from '../../../utils/decorators/user.decorator';
 import { UserTypes } from '../../../types';
 import {
   ApiBearerAuth,
-  ApiBody,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import {
-  SwaggerDecoratorForGetCurrent,
+  SwaggerDecoratorForAutoRenewal,
+  SwaggerDecoratorForCurrentSubscription,
   SwaggerDecoratorForGetProducts,
+  SwaggerDecoratorGetPayments,
 } from '../swagger/swagger.decorators';
+
 import {
   NotFoundResponseOptions,
   UnauthorizedRequestResponseOptions,
 } from '../../../utils/constants/swagger-constants';
 import { firstValueFrom } from 'rxjs';
+import { GetRequestCurrentSubscriptionViewExample } from '../swagger/swagger.examples';
 
 @Controller('subscription')
 @ApiTags('Subscription')
@@ -53,15 +62,23 @@ export class SubscriptionsController {
   }
 
   @Get('my-payments')
-  async getUserPayments(@User() user: UserTypes) {
+  @SwaggerDecoratorGetPayments()
+  async getUserPayments(
+    @User() user: UserTypes,
+    @Query() payload: GetUserPaymentsQueryDto,
+  ) {
+    const { limit, page } = payload;
+
+    const offset = Number(limit) * Number(page) - Number(limit);
+
     return this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.GET_USER_PAYMENTS },
-      { userId: user.id },
+      { userId: user.id, limit: +limit, offset: +offset },
     );
   }
 
   @Get('current')
-  @SwaggerDecoratorForGetCurrent()
+  @SwaggerDecoratorForCurrentSubscription()
   @ApiNotFoundResponse(NotFoundResponseOptions)
   async getCurrentSubscribeInfo(@User() user: UserTypes) {
     const userId = user.id;
@@ -79,10 +96,6 @@ export class SubscriptionsController {
   }
 
   @Post('purchase')
-  @ApiBody({
-    description: 'purchase subscription',
-    type: PurchaseSubscriptionDto,
-  })
   async buySubscription(
     @Body() payload: PurchaseSubscriptionDto,
     @User() user: UserTypes,
@@ -96,10 +109,7 @@ export class SubscriptionsController {
   }
 
   @Put('auto-renewal')
-  @ApiBody({
-    description: 'change autorenewal for user',
-    type: UpdateAutoRenewalStatusDto,
-  })
+  @SwaggerDecoratorForAutoRenewal()
   async updateAutoRenewalStatus(
     @Body() payload: UpdateAutoRenewalStatusDto,
     @User() user: UserTypes,

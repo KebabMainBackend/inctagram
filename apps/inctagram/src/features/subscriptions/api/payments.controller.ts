@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Inject,
   Post,
   RawBodyRequest,
@@ -14,10 +15,10 @@ import { PaymentsMicroserviceMessagesEnum } from '../../../../../../types/messag
 import { ChangeAccountTypeAndSendMessageCommand } from '../application/use-cases/finish-payment.command';
 import { CommandBus } from '@nestjs/cqrs';
 import { firstValueFrom } from 'rxjs';
+import { createPaypalWebhook } from './dto/dto';
 
 @Controller('payments')
 @ApiExcludeController()
-// @UseGuards(BearerAuthGuard)
 export class PaymentsController {
   constructor(
     @Inject('PAYMENTS_SERVICE') private clientProxy: ClientProxy,
@@ -25,18 +26,22 @@ export class PaymentsController {
   ) {}
   @Post('stripe/create-product')
   async addNewProductToStripe(@Body() payload: AddNewSubscriptionTypeDto) {
-    return this.clientProxy.send(
+    const data = this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.STRIPE_CREATE_PRODUCT },
       { payload },
     );
+    console.log(data);
+    return data;
   }
 
   @Post('paypal/create-product')
   async addNewProductToPaypal(@Body() payload: AddNewSubscriptionTypeDto) {
-    return this.clientProxy.send(
+    const data = this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.PAYPAL_CREATE_PRODUCT },
       { payload },
     );
+
+    return data;
   }
 
   @Post('stripe/webhook')
@@ -55,16 +60,27 @@ export class PaymentsController {
   }
 
   @Post('paypal/webhook')
+  @HttpCode(200)
   async paypalPaymentInfo(@Body() payload: any) {
-    console.log(1);
     const data = await firstValueFrom(
       this.clientProxy.send(
         { cmd: PaymentsMicroserviceMessagesEnum.PAYPAL_FINISH_PAYMENT },
         { payload },
       ),
     );
+
     return this.commandBus.execute(
       new ChangeAccountTypeAndSendMessageCommand(data.userId, data.email),
+    );
+  }
+
+  @Post('paypal/create-webhook')
+  async paypalCreateWebhook(@Body() payload: createPaypalWebhook) {
+    await firstValueFrom(
+      this.clientProxy.send(
+        { cmd: PaymentsMicroserviceMessagesEnum.PAYPAL_CREATE_WEBHOOK },
+        { payload },
+      ),
     );
   }
 

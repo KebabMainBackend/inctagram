@@ -19,7 +19,6 @@ const Repos = [SecurityDevicesRepository, SecurityDevicesQueryRepository];
 @Module({
   imports: [CqrsModule],
   controllers: [SecurityDevicesController],
-
   providers: [...CommandHandlers, ...Repos, PrismaService, JwtService],
 })
 export class SecurityDevicesModule {}
