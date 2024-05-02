@@ -30,7 +30,7 @@ import { VerifyConfirmationCodeHandler } from './application/use-cases/verify-co
 import { TestDeleteUserHandler } from './test/delete-user.command';
 import { CheckRecoveryCodeHandler } from './application/use-cases/check-recovery-code.command';
 import { ResendRecoveryCodeHandler } from './application/use-cases/resend-recovery-code.command';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 
 const CommandHandlers = [
   RegisterUserHandler,
@@ -55,7 +55,6 @@ const TestHandlers = [TestDeleteUserHandler];
 @Module({
   imports: [
     CqrsModule,
-    ConfigModule,
     PassportModule.register({ session: true }),
     JwtModule.registerAsync({
       useFactory: async (configService: ConfigService) => ({
