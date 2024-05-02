@@ -116,8 +116,6 @@ model Subscription {
   productPriceId       String?
   subscriptionPriceId  String?
   paypalSubscriptionId String?
-  subscriptionStatus   SubscriptionStatus  @default(Confirmed)
-  profile              Profile             @relation(fields: [userId], references: [userId])
 }
 
 model Payments {
@@ -175,9 +173,4 @@ enum PaymentInterval {
   week
   month
   year
-}
-
-enum SubscriptionStatus {
-  Confirmed
-  Pending
 }

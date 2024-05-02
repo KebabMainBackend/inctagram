@@ -7,9 +7,6 @@ import { ProductEntity } from '../../db/domain/product.entity';
 type StripeCheckoutData = {
   productInfo: ProductEntity;
   userId: number;
-  currentSubscription: any;
-  renewSubscriptionData: any;
-  newSubscription: any;
 };
 
 @Injectable()
@@ -18,9 +15,6 @@ export class StripeAdapter {
 
   async createPayment({
     userId,
-    newSubscription,
-    currentSubscription,
-    renewSubscriptionData,
     productInfo,
   }: StripeCheckoutData): Promise<any> {
     const stripe = new Stripe(this.configService.get('STRIPE_API_KEY'));
@@ -37,9 +31,6 @@ export class StripeAdapter {
       mode: 'payment',
       metadata: {
         userId: String(userId),
-        newSubscription: JSON.stringify(newSubscription),
-        currentSubscription: JSON.stringify(currentSubscription),
-        renewSubscriptionData: JSON.stringify(renewSubscriptionData),
         productInfo: JSON.stringify(productInfo),
       },
     });

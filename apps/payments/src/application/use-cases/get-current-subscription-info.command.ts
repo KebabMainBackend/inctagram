@@ -21,7 +21,9 @@ export class GetCurrentSubscriptionInfoHandler
 
   async execute(command: GetCurrentSubscriptionInfoCommand) {
     const { userId } = command;
+
     const current = await this.subscriptionRepo.getCurrentSubscription(userId);
+    console.log(userId, '2', current);
 
     if (!current) return { errorCode: HttpStatus.NOT_FOUND };
 
@@ -34,17 +36,18 @@ export class GetCurrentSubscriptionInfoHandler
 
     const daysLeft = differenceInDays(new Date(current.expireAt), new Date());
 
-    const subscriptions = await this.subscriptionRepo.getSubscriptions(userId);
+     const subscriptions = await this.subscriptionRepo.getSubscriptions(userId);
+
     if (!current.hasAutoRenewal) {
       return {
-        subscriptions,
-        expireAt: daysLeft,
-        nextPayment: null,
+        subscription: subscriptions[0],
+        expireAt: current.expireAt,
+
       };
     } else {
       return {
-        subscriptions,
-        expireAt: daysLeft,
+        subscription: subscriptions[0],
+        expireAt: current.expireAt,
         nextPayment: subscriptions[0].dateOfNextPayment,
       };
     }

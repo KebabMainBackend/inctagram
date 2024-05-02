@@ -10,7 +10,9 @@ import {
   UpdateAutoRenewalStatusDto,
 } from './dto/subscription.dto';
 import { UpdateAutoRenewalStatusCommand } from '../application/use-cases/update-auto-renewal-status.command';
-import { GetUserPaymentsCommand } from '../application/use-cases/get-user-payments.command';
+import { GetUserPaymentsCommand } from "../application/use-cases/get-user-payments.command";
+import { CreatePaypalWebhookCommand } from "../application/use-cases/paypal/create-paypal-webhook.command";
+import { createPaypalWebhook } from "../../../inctagram/src/features/subscriptions/api/dto/dto";
 
 @Controller()
 export class PaymentsController {
@@ -76,7 +78,24 @@ export class PaymentsController {
   @MessagePattern({
     cmd: PaymentsMicroserviceMessagesEnum.GET_USER_PAYMENTS,
   })
-  async getUserPayments(data: { userId: number }) {
-    return this.commandBus.execute(new GetUserPaymentsCommand(data.userId));
+  async getUserPayments(data: {
+    userId: number,
+    limit: number,
+    offset: number
+  }) {
+    return this.commandBus.execute(
+      new GetUserPaymentsCommand(data.userId, data.limit, data.offset ),
+    )
+  }
+
+  @MessagePattern({
+    cmd: PaymentsMicroserviceMessagesEnum.PAYPAL_CREATE_WEBHOOK,
+  })
+  async createPaypalWebhook (data: {
+    payload: createPaypalWebhook;
+  }) {
+    return this.commandBus.execute(
+      new CreatePaypalWebhookCommand(data.payload.url ),
+    )
   }
 }

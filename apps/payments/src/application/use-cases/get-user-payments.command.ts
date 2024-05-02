@@ -4,7 +4,9 @@ import { EmailService } from "../../../../inctagram/src/auth/managers/email.mana
 import { SubscriptionRepository } from "../../db/subscription.repository";
 
 export class GetUserPaymentsCommand {
-  constructor(public userId: number) {}
+  constructor(public userId: number,
+              public limit: number,
+              public offset: number) {}
 }
 
 @CommandHandler(GetUserPaymentsCommand)
@@ -16,10 +18,10 @@ export class GetUserPaymentsHandler
   ) {}
 
   async execute(command: GetUserPaymentsCommand) {
-    const { userId } = command
+    const { userId, limit, offset } = command
 
     const payments =
-      await this.subscriptionRepo.getPayments(userId)
+      await this.subscriptionRepo.getPayments(userId, limit, offset)
 
     return payments.map(p => {
       return {
