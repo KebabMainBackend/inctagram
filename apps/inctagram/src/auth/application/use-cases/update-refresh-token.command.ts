@@ -25,7 +25,7 @@ export class UpdateRefreshTokenHandler
   async execute({ oldRefresh }: UpdateRefreshTokenCommand) {
     const { userId, sessionId } = oldRefresh;
     const session = await this.securityDevicesRepository.getSession(sessionId);
-    const newSession = SessionEntity.create(userId, session.deviceId);
+    const newSession = SessionEntity.create(userId, session.devicesId);
     const newSessionId = await this.securityDevicesRepository.createSession(
       newSession,
     );

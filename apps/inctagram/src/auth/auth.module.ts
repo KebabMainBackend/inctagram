@@ -17,7 +17,7 @@ import { UpdateRefreshTokenHandler } from './application/use-cases/update-refres
 import { SecurityDevicesRepository } from '../features/security-devices/db/security-devices.repository';
 import { SecurityDevicesQueryRepository } from '../features/security-devices/db/security-devices.query-repository';
 import { AddRefreshToBlacklistHandler } from './application/use-cases/add-refresh-to-blacklist';
-import { DeleteDeviceHandler } from '../features/security-devices/commands/delete-device.command';
+import { DeleteDeviceHandler } from '../features/security-devices/app/commands/delete-device.command';
 import { PasswordRecoveryHandler } from './application/use-cases/password-recovery.command';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { PassportModule } from '@nestjs/passport';

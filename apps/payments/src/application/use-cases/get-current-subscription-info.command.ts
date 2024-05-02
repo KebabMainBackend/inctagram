@@ -42,8 +42,9 @@ export class GetCurrentSubscriptionInfoHandler
       return {
         subscription: subscriptions[0],
         expireAt: current.expireAt,
+
       };
-    } else if (current.hasAutoRenewal) {
+    } else {
       return {
         subscription: subscriptions[0],
         expireAt: current.expireAt,

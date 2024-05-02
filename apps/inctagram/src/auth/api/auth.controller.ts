@@ -37,7 +37,7 @@ import { CreateAccessTokenCommand } from '../application/use-cases/create-access
 import { CommandBus } from '@nestjs/cqrs';
 import { AuthVerifyEmailDto } from './dto/auth-verify-email.dto';
 import { DecodeRefreshTokenCommand } from '../application/use-cases/decode-refresh-token.command';
-import { DeleteDeviceCommand } from '../../features/security-devices/commands/delete-device.command';
+import { DeleteDeviceCommand } from '../../features/security-devices/app/commands/delete-device.command';
 import { AuthPasswordRecoveryDto } from './dto/auth-password-recovery.dto';
 import { AuthResendCodeDto } from './dto/auth-resend-code.dto';
 import { AuthNewPasswordDto } from './dto/auth-new-password.dto';
@@ -58,11 +58,15 @@ import { CheckRecoveryCodeCommand } from '../application/use-cases/check-recover
 import { AuthResendRecoveryCodeDto } from './dto/auth-resend-recovery-code.dto';
 import { ResendRecoveryCodeCommand } from '../application/use-cases/resend-recovery-code.command';
 import { cookieOptions } from '../../utils/constants/cookie-options';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
-  constructor(private commandBus: CommandBus) {}
+  constructor(
+    private commandBus: CommandBus,
+    private configService: ConfigService,
+  ) {}
 
   @ApiOkResponse({
     description:
@@ -93,7 +97,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'success',
     content: {
-      'application/json': { example: { accessToken: 'string' } },
+      'application/json': { example: { accessToken: 'string', userId: 1 } },
     },
   })
   @ApiBadRequestResponse(BadRequestResponseOptions)
@@ -120,11 +124,15 @@ export class AuthController {
       new CreateRefreshTokenCommand(userId, title, ip),
     );
 
-    res.cookie('refreshToken', refreshToken, cookieOptions);
+    res.cookie(
+      'refreshToken',
+      refreshToken,
+      cookieOptions(this.configService.get('DOMAIN')),
+    );
     const accessToken = await this.commandBus.execute(
       new CreateAccessTokenCommand(userId),
     );
-    return { accessToken };
+    return { accessToken, userId };
   }
 
   @ApiNoContentResponse(NoContentResponseOptions)
@@ -162,7 +170,10 @@ export class AuthController {
         await this.commandBus.execute(
           new DeleteDeviceCommand(result.sessionId),
         );
-        res.clearCookie('refreshToken', cookieOptions);
+        res.clearCookie(
+          'refreshToken',
+          cookieOptions(this.configService.get('DOMAIN')),
+        );
         return;
       }
     }
@@ -241,7 +252,11 @@ export class AuthController {
       await this.commandBus.execute(
         new AddRefreshToBlacklistCommand(refreshToken),
       );
-      res.cookie('refreshToken', newRefreshToken, cookieOptions);
+      res.cookie(
+        'refreshToken',
+        newRefreshToken,
+        cookieOptions(this.configService.get('DOMAIN')),
+      );
       return { accessToken };
     }
     throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);

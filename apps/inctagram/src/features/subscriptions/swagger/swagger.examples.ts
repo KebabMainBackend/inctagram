@@ -35,3 +35,4 @@ export const GetRequestPaymentsViewExample = {
   "paymentType": "Stripe"
 };
 
+
