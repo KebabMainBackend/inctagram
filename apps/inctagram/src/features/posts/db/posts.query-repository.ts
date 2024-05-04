@@ -1,4 +1,3 @@
-import { PrismaClient } from '@prisma/client';
 import { Inject, Injectable } from '@nestjs/common';
 import { mapPostsWithImages } from './view/mapPost';
 import { GetDefaultUriDto } from '../../../utils/default-get-query.uri.dto';
@@ -11,11 +10,12 @@ import { PostView } from './view/post.view';
 import { FilesMicroserviceMessagesEnum } from '../../../../../../types/messages';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { PrismaService } from '../../../prisma.service';
 const availableQueryParams = ['createdAt', 'description', 'userId', 'id'];
 @Injectable()
 export class PostsQueryRepository {
   constructor(
-    protected prismaClient: PrismaClient,
+    protected prismaClient: PrismaService,
     @Inject('FILES_SERVICE') private client: ClientProxy,
   ) {}
 
