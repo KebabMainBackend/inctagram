@@ -1,7 +1,9 @@
 import { IsBoolean, IsInt, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Optional } from '@nestjs/common';
-import { ProductEntity } from '../../db/domain/product.entity';
+import { Optional } from "@nestjs/common";
+import { ProductEntity } from "../../db/domain/product.entity";
+import { SubscriptionEntity } from "../../db/domain/subscription.entity";
+
 
 export class PurchaseSubscriptionDto {
   @IsString()
@@ -36,9 +38,10 @@ export class UpdateAutoRenewalStatusDto {
 
 export class CreateSubscriptionDto {
   @IsInt()
-  userId: number;
+  userId: number
+  @Optional()
   @IsInt()
-  price: number;
+  price?: number
   @IsInt()
   period: number;
   @IsString()
@@ -72,5 +75,19 @@ export class CreateSubscriptionDto {
       paymentSystem,
       userId,
     };
+  }
+
+  static createSubscriptionDtoByOldSubscription(
+    oldSubscription: SubscriptionEntity
+    ): CreateSubscriptionDto{
+    return {
+      period: oldSubscription.period,
+      interval: oldSubscription.interval,
+      subscriptionPriceId: oldSubscription.subscriptionPriceId,
+      productPriceId: oldSubscription.productPriceId,
+      paypalSubscriptionId: oldSubscription.paypalSubscriptionId,
+      paymentSystem: 'Paypal',
+      userId: oldSubscription.userId
+    }
   }
 }

@@ -135,16 +135,10 @@ export class SubscriptionRepository {
   }
 
   async updateCurrentSubscriptionHasAutoRenewalStatus(userId, autoRenewal) {
-    const autoRenewalOnSubscriptions = await this.prisma.subscription.findMany({
-      where: { userId, autoRenewal: true },
-      orderBy: [{ dateOfNextPayment: 'asc' }],
-    });
-
-    if (autoRenewalOnSubscriptions.length) {
       await this.prisma.currentSubscription.update({
         where: { userId },
         data: { hasAutoRenewal: autoRenewal },
-      });
-    }
+      })
+
   }
 }
