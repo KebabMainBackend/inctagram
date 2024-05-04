@@ -20,6 +20,7 @@ import { UserTypes } from '../../../types';
 import {
   ApiBearerAuth,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -28,6 +29,7 @@ import {
   SwaggerDecoratorForCurrentSubscription,
   SwaggerDecoratorForGetProducts, SwaggerDecoratorGetPayments
 } from "../swagger/swagger.decorators";
+
 import {
   NotFoundResponseOptions,
   UnauthorizedRequestResponseOptions,
@@ -59,6 +61,7 @@ export class SubscriptionsController {
     const { limit, page } = payload
 
     const offset = (Number(limit) * Number(page) - Number(limit))
+
     return this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.GET_USER_PAYMENTS },
        { userId: user.id, limit: +limit, offset: +offset } ,

@@ -51,6 +51,13 @@ export const SortDirectionQueryOptions = {
   required: false,
 };
 
+export const UserIdQueryOptions = {
+  name: 'userId',
+  description: 'user id',
+  type: 'string',
+  required: false,
+};
+
 export const CursorQueryOptions = (description: string) => ({
   name: 'cursor',
   description,

@@ -73,5 +73,6 @@ export class FinishPaypalPaymentHandler
     catch (err) {
       console.log(err);
     }
+
   }
 }

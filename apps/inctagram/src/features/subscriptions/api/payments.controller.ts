@@ -61,7 +61,6 @@ export class PaymentsController {
   @Post('paypal/webhook')
   @HttpCode(200)
   async paypalPaymentInfo(@Body() payload: any) {
-    console.log('PAYPAL WEBHOOK')
 
     const data = await firstValueFrom(
       this.clientProxy.send(

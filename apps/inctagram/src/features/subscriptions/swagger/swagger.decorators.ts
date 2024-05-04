@@ -7,6 +7,7 @@ import {
 } from "./swagger.examples";
 import { UpdateAutoRenewalStatusDto } from "../../../../../payments/src/api/dto/subscription.dto";
 
+
 export function SwaggerDecoratorForGetProducts(): MethodDecorator {
   return applyDecorators(
     ApiOperation({ summary: 'Get list of subscriptions ' }),
@@ -49,6 +50,7 @@ export function SwaggerDecoratorGetPayments(): MethodDecorator {
       description: 'Success',
       content: {
         'application/json': { example: [GetRequestPaymentsViewExample] },
+
       },
     }),
   );

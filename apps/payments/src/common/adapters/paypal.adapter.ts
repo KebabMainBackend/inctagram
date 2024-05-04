@@ -138,5 +138,6 @@ export class PaypalAdapter {
       await this.productRepository.getProductByPaypalPlanId(subscription.plan_id)
 
     return { plan, userId: subscription.custom_id, }
+
   }
 }

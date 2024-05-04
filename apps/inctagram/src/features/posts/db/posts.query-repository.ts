@@ -20,6 +20,8 @@ export class PostsQueryRepository {
   ) {}
 
   async findPosts(queryPost: GetDefaultUriDto, userId?: number) {
+    const items: PostView[] = [];
+    let lastPostId = 0;
     const { pageSize, cursor, sortDirection } =
       getRequestQueryMapper(queryPost);
     let { sortBy } = getRequestQueryMapper(queryPost);
@@ -47,36 +49,44 @@ export class PostsQueryRepository {
     });
 
     const postsNPostImages = await this.prismaClient.post.findMany(filter);
-    const lastPostId = postsNPostImages.length ? postsNPostImages.at(-2).id : 0;
-    let userProfile;
-    let userAvatar;
-    if (userId) {
-      userProfile = await this.getUserProfile(userId);
-      userAvatar = await firstValueFrom(
-        this.getUserThumbnailAvatar(userProfile?.thumbnailId),
-      );
-    }
-    if (postsNPostImages.length > pageSize) {
-      hasMore = true;
-      postsNPostImages.pop(); // Remove the extra post used to check for more
-    }
-    const items: PostView[] = [];
-    for (const post of postsNPostImages) {
-      if (!userId) {
-        userProfile = await this.getUserProfile(post.userId);
+    if (postsNPostImages.length) {
+      lastPostId =
+        postsNPostImages.length > 2
+          ? postsNPostImages.at(-2).id
+          : postsNPostImages.at(-1).id;
+      let userProfile;
+      let userAvatar;
+      if (userId) {
+        userProfile = await this.getUserProfile(userId);
         userAvatar = await firstValueFrom(
           this.getUserThumbnailAvatar(userProfile?.thumbnailId),
         );
       }
-      const postImages = await firstValueFrom(this.getPostImages(post.images));
-      const mappedPost = mapPostsWithImages({
-        post,
-        profile: userProfile,
-        userAvatar: userAvatar?.url,
-        postImages,
-      });
-      items.push(mappedPost);
+      if (postsNPostImages.length > pageSize) {
+        hasMore = true;
+        postsNPostImages.pop(); // Remove the extra post used to check for more
+      }
+
+      for (const post of postsNPostImages) {
+        if (!userId) {
+          userProfile = await this.getUserProfile(post.userId);
+          userAvatar = await firstValueFrom(
+            this.getUserThumbnailAvatar(userProfile?.thumbnailId),
+          );
+        }
+        const postImages = await firstValueFrom(
+          this.getPostImages(post.images),
+        );
+        const mappedPost = mapPostsWithImages({
+          post,
+          profile: userProfile,
+          userAvatar: userAvatar?.url,
+          postImages,
+        });
+        items.push(mappedPost);
+      }
     }
+
     return getRequestReturnMapper<PostView>({
       totalCount,
       items,
@@ -117,18 +127,21 @@ export class PostsQueryRepository {
   }
   async getPostById(postId: number) {
     const post = await this.prismaClient.post.findUnique({
-      where: { id: postId },
+      where: { id: postId, status: PostStatusEnum.ACTIVE },
     });
-    const userProfile = await this.getUserProfile(post.userId);
-    const userAvatar = await firstValueFrom(
-      this.getUserThumbnailAvatar(userProfile?.thumbnailId),
-    );
-    const postImages = await firstValueFrom(this.getPostImages(post.images));
-    return mapPostsWithImages({
-      post,
-      profile: userProfile,
-      userAvatar: userAvatar?.url,
-      postImages,
-    });
+    if (post) {
+      const userProfile = await this.getUserProfile(post.userId);
+      const userAvatar = await firstValueFrom(
+        this.getUserThumbnailAvatar(userProfile?.thumbnailId),
+      );
+      const postImages = await firstValueFrom(this.getPostImages(post.images));
+      return mapPostsWithImages({
+        post,
+        profile: userProfile,
+        userAvatar: userAvatar?.url,
+        postImages,
+      });
+    }
+    return null;
   }
 }

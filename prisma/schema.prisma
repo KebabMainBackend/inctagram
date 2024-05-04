@@ -50,10 +50,10 @@ model Profile {
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   accountType         AccountType          @default(PERSONAL)
+  CurrentSubscription CurrentSubscription?
+  payments            Payments[]
   user                User                 @relation(fields: [userId], references: [id])
   subscription        Subscription[]
-  payments            Payments[]
-  CurrentSubscription CurrentSubscription?
 }
 
 model UserConfirmation {
@@ -71,21 +71,21 @@ model Session {
   userId         Int
   lastActiveDate DateTime
   aliveTill      DateTime
-  deviceId       String
+  devicesId      String   @map("deviceId")
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-  device         Devices  @relation(fields: [deviceId], references: [deviceId])
+  device         Devices?
   User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Devices {
   title     String
   ip        String
-  deviceId  String    @id @unique
-  sessionId String?   @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  session   Session[]
+  id        String   @id @unique @map("deviceId")
+  sessionId String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  session   Session? @relation(fields: [sessionId], references: [id])
 }
 
 model OAuthProvider {
@@ -104,33 +104,32 @@ model Blacklist {
 }
 
 model Subscription {
-  subscriptionId       Int                 @id @unique @default(autoincrement())
   userId               Int
-  profile              Profile             @relation(fields: [userId], references: [userId])
-  period               Int
-  interval             PaymentInterval
   dateOfSubscribe      DateTime            @default(now())
   dateOfNextPayment    DateTime
   autoRenewal          Boolean             @default(false)
+  interval             PaymentInterval
   paymentSystem        AllowedPaymentTypes @default(Paypal)
+  period               Int
+  subscriptionId       Int                 @id @unique @default(autoincrement())
+  stripeSubscriptionId String?
   productPriceId       String?
   subscriptionPriceId  String?
-  stripeSubscriptionId String?
   paypalSubscriptionId String?
 }
 
 model Payments {
-  paymentId             Int                 @id @unique @default(autoincrement())
   userId                Int
-  profile               Profile             @relation(fields: [userId], references: [userId])
-  dateOfPayment         DateTime            @default(now())
   endDateOfSubscription DateTime
   price                 Int
-  interval              PaymentInterval?
+  paymentId             Int                 @id @unique @default(autoincrement())
+  dateOfPayment         DateTime            @default(now())
   paymentSystem         AllowedPaymentTypes @default(Paypal)
   productPriceId        String?
   subscriptionPriceId   String?
   paypalSubscriptionId  String?
+  interval              PaymentInterval?
+  profile               Profile             @relation(fields: [userId], references: [userId])
 }
 
 model Product {
@@ -145,12 +144,12 @@ model Product {
 
 model CurrentSubscription {
   userId            Int      @id @unique
-  profile           Profile  @relation(fields: [userId], references: [userId])
   expireAt          DateTime
   dateOfNextPayment DateTime
   hasAutoRenewal    Boolean  @default(false)
-  stripeCustomerId  String?
   paypalCustomerId  String?
+  stripeCustomerId  String?
+  profile           Profile  @relation(fields: [userId], references: [userId])
 }
 
 enum PostStatus {

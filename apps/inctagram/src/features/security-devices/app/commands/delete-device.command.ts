@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { SecurityDevicesRepository } from '../db/security-devices.repository';
+import { SecurityDevicesRepository } from '../../db/security-devices.repository';
 
 export class DeleteDeviceCommand {
   constructor(public sessionId: string) {}
