@@ -48,7 +48,7 @@ export class PurchaseSubscriptionHandler
     }
     else if( payload.paymentSystem === 'Paypal' ) {
       const session =
-        await this.paypalAdapter.subscribeUser(userId, productInfo.paypalPlanId)
+        await this.paypalAdapter.subscribeUser(userId, productInfo.paypalPlanId, false)
 
       const sessionLink = session.links.find(obj => obj.rel === 'approve')
 

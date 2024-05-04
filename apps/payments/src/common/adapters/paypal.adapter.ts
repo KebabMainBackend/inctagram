@@ -2,8 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { CommandBus } from "@nestjs/cqrs";
 import {
+  getPaypalDefaultHeaders,
   getPaypalRequestHeaders,
-  getPlanDto, getSubscriptionDto,
+  getPlanDto, getSubscriptionDto
 } from "../../application/dto/paypal.dto";
 import { ProductRepository } from "../../db/product.repository";
 @Injectable()
@@ -32,9 +33,29 @@ export class PaypalAdapter {
         "type": "DIGITAL",
         "category": "DIRECT_MARKETING_SUBSCRIPTION" })
     })
+    const test = await fetch('https://api-m.sandbox.paypal.com/v1/catalogs/products', {
+      method: 'POST',
+      headers: {
+        'X-PAYPAL-SECURITY-CONTEXT': '{"consumer":{"accountNumber":1181198218909172527,"merchantId":"5KW8F2FXKX5HA"},"merchant":{"accountNumber":1659371090107732880,"merchantId":"2J6QB8YJQSJRJ"},"apiCaller":{"clientId":"AdtlNBDhgmQWi2xk6edqJVKklPFyDWxtyKuXuyVT-OgdnnKpAVsbKHgvqHHP","appId":"APP-6DV794347V142302B","payerId":"2J6QB8YJQSJRJ","accountNumber":"1659371090107732880"},"scopes":["https://api-m.paypal.com/v1/subscription/.*","https://uri.paypal.com/services/subscription","openid"]}',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'PayPal-Request-Id': 'PRODUCT-18062019-001',
+        'Prefer': 'return=representation',
+        'Authorization': `Basic ${this.token}`
+      },
+      body: JSON.stringify({
+        "name": "Video Streaming Service",
+        "description": "Video streaming service",
+        "type": "SERVICE",
+        "category": "SOFTWARE",
+        "image_url": "https://example.com/streaming.jpg",
+        "home_url": "https://example.com/home" })
+    });
+
+    console.log(await test.json());
 
     const product = await result.json();
-    console.log(product, 'PRODUCT');
+    // console.log(product, 'PRODUCT');
 
     return product
   }
@@ -60,7 +81,7 @@ export class PaypalAdapter {
     return plan
   }
 
-  async subscribeUser(userId, planId) {
+  async subscribeUser(userId, planId, autoRenewal) {
     const headers =
       getPaypalRequestHeaders('SUBSCRIPTION-21092019-001', this.token)
 
@@ -71,6 +92,7 @@ export class PaypalAdapter {
         userId,
         this.configService.get('PAYMENT_SUCCESS_URL'),
         this.configService.get('PAYMENT_ERROR_URL'),
+        autoRenewal
         )
 
     const result =
@@ -85,26 +107,29 @@ export class PaypalAdapter {
     return subscription
   }
 
-  async cancelSubscription() {
-    
+  async cancelSubscription(paypalSubscriptionId) {
+    const headers = getPaypalDefaultHeaders(this.token)
+
+    const result = await fetch(
+      `https://api-m.sandbox.paypal.com/v1/billing/subscriptions/${paypalSubscriptionId}/cancel`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        "reason": `Subscription was cancelled due to updating auto renewal status`
+      })
+    })
+
+    const cancelledSubscription = await result.json()
+    console.log(cancelledSubscription)
+    return cancelledSubscription
   }
 
   async getPaypalSubscriptionInfo(token, paypalSubscriptionId) {
+    const headers = getPaypalDefaultHeaders(token)
+
     const paypalSubscriptionInfo =
       await fetch(`https://api-m.sandbox.paypal.com/v1/billing/subscriptions/${paypalSubscriptionId}`, {
-        headers: {
-          'X-PAYPAL-SECURITY-CONTEXT': '{' +
-            '"apiCaller":{' +
-            '"clientId":"AdtlNBDhgmQWi2xk6edqJVKklPFyDWxtyKuXuyVT-OgdnnKpAVsbKHgvqHHP",' +
-            '"scopes":[' +
-            '"https://api-m.paypal.com/v1/subscription/.*",' +
-            '"https://uri.paypal.com/services/subscription",' +
-            '"openid"' +
-            ']}',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Basic ${token}`
-        }
+        headers
       })
 
     const subscription = await paypalSubscriptionInfo.json()

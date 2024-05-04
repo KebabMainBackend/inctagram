@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { HttpStatus } from '@nestjs/common';
 import { EmailService } from '../../../../inctagram/src/auth/managers/email.manager';
-import { differenceInDays } from 'date-fns';
+import { differenceInDays, format, parseISO } from "date-fns";
 import { SubscriptionRepository } from '../../db/subscription.repository';
 import { PrismaService } from '../../prisma.service';
 
@@ -23,7 +23,6 @@ export class GetCurrentSubscriptionInfoHandler
     const { userId } = command;
 
     const current = await this.subscriptionRepo.getCurrentSubscription(userId);
-    console.log(userId, '2', current);
 
     if (!current) return { errorCode: HttpStatus.NOT_FOUND };
 
@@ -33,21 +32,26 @@ export class GetCurrentSubscriptionInfoHandler
         current.profile.user.email,
       );
     }
-
     const daysLeft = differenceInDays(new Date(current.expireAt), new Date());
 
      const subscriptions = await this.subscriptionRepo.getSubscriptions(userId);
 
+    const expireAtFormatted =
+      format(parseISO(current.expireAt.toISOString()), "dd.MM.yyyy")
+    const nextPaymentFormatted =
+      format(parseISO(subscriptions[0].dateOfNextPayment.toISOString()), "dd.MM.yyyy")
+
+
     if (!current.hasAutoRenewal) {
       return {
         subscription: subscriptions[0],
-        expireAt: current.expireAt,
+        expireAt: expireAtFormatted,
       };
     } else if (current.hasAutoRenewal) {
       return {
         subscription: subscriptions[0],
-        expireAt: current.expireAt,
-        nextPayment: subscriptions[0].dateOfNextPayment,
+        expireAt: expireAtFormatted,
+        nextPayment: nextPaymentFormatted,
       };
     }
   }

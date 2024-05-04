@@ -1,5 +1,5 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UpdateAutoRenewalStatusDto } from '../../api/dto/subscription.dto';
+import { CreateSubscriptionDto, UpdateAutoRenewalStatusDto } from "../../api/dto/subscription.dto";
 import { StripeAdapter } from '../../common/adapters/stripe.adapter';
 import { SubscriptionRepository } from '../../db/subscription.repository';
 import Stripe from 'stripe';
@@ -7,6 +7,8 @@ import { CreateStripeCustomerCommand } from './stripe/create-stripe-customer.com
 import { PrismaService } from '../../prisma.service';
 import { BadRequestException } from "@nestjs/common";
 import { existedAutoRenewalStatus, incorrectSubscriptionId } from "../../errorsMessages";
+import { PaypalAdapter } from "../../common/adapters/paypal.adapter";
+import { SubscriptionEntity } from "../../db/domain/subscription.entity";
 
 export class UpdateAutoRenewalStatusCommand {
   constructor(
@@ -22,32 +24,49 @@ export class UpdateAutoRenewalStatusHandler
   constructor(
     private subscriptionRepository: SubscriptionRepository,
     private stripeAdapter: StripeAdapter,
+    private paypalAdapter: PaypalAdapter,
     private commandBus: CommandBus,
     private prisma: PrismaService,
   ) {}
 
+  // если ауто реневал может быт ьтолько один
+  // то можно отменять предыдущую подписку и создавать новую на план с автопродлением
+
   async execute({ payload, userId }: UpdateAutoRenewalStatusCommand) {
     const { subscriptionId, autoRenewal } = payload;
-    const product =
+    const subscription: SubscriptionEntity =
       await this.subscriptionRepository.getSubscriptionByID(subscriptionId)
 
-    if (!product)
+    if (!subscription)
       throw new BadRequestException(incorrectSubscriptionId)
 
-    if(product.autoRenewal === autoRenewal)
+    if(subscription.autoRenewal === autoRenewal)
       throw new BadRequestException(existedAutoRenewalStatus)
 
-    if(product.paymentSystem === 'Stripe')
-      await this.updateAutoRenewalStatus(product, autoRenewal, userId);
+    if(subscription.paymentSystem === 'Stripe')
+      await this.updateAutoRenewalStatus(subscription, autoRenewal, userId);
 
-    else if(product.paymentSystem === 'Paypal') {
-      const paypalSubscriptionId = product.paypalSubscriptionId
+    else if(subscription.paymentSystem === 'Paypal') {
+      const paypalSubscriptionId = subscription.paypalSubscriptionId
 
-      
+      const cancelledSubscription = await this.paypalAdapter.cancelSubscription(paypalSubscriptionId)
+
+      const newPaypalSubscription = await this.paypalAdapter.subscribeUser(userId, cancelledSubscription.plan_id, autoRenewal)
+
+      // надо добавить trial периоды для подписок с auto renewal на основе expireAt
+
+      const subscriptionDto =
+        CreateSubscriptionDto.createSubscriptionDtoByOldSubscription(subscription)
+
+      const newDbSubscription = SubscriptionEntity.create(subscriptionDto, autoRenewal)
+
+      await this.subscriptionRepository.addSubscriptionToDB(newDbSubscription)
     }
 
     await this.subscriptionRepository
       .updateCurrentSubscriptionHasAutoRenewalStatus(userId, autoRenewal)
+
+    return 'Auto renewal status was updated successfully!'
   }
 
   async updateAutoRenewalStatus(dbSubscription, autoRenewal: boolean, userId: number) {
@@ -60,7 +79,7 @@ export class UpdateAutoRenewalStatusHandler
     if (autoRenewal && !dbSubscription.stripeSubscriptionId) {
       const subscription =
         await stripe.subscriptions.create({
-        customer: customer.customerId,
+        customer: customer.stripeCustomerId,
         cancel_at_period_end: !autoRenewal,
         items: [{ price: dbSubscription.subscriptionPriceId }],
         trial_end: Math.floor(dbSubscription.dateOfNextPayment.getTime() / 1000),

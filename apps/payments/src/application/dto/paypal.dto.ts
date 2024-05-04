@@ -1,10 +1,8 @@
 import { addMinutes } from "date-fns";
+import { rethrow } from "@nestjs/core/helpers/rethrow";
 
 
 export const getPlanDto = (product, interval, price, currency) => {
-  console.log('111111111111111111111111');
-  console.log(product, interval, price, currency);
-  console.log('2222222222222222222222222222');
   return {
     "product_id": `${product.id}`,
     "name": `${product.name}`,
@@ -53,11 +51,27 @@ export const getPaypalRequestHeaders = (paypalReqId, token) => {
   }
 }
 
-export const getSubscriptionDto = (planId, userId, return_url, cancel_url) => {
+export const getPaypalDefaultHeaders = (token) => {
+  return {
+    'X-PAYPAL-SECURITY-CONTEXT': '{' +
+      '"apiCaller":{' +
+      '"clientId":"AdtlNBDhgmQWi2xk6edqJVKklPFyDWxtyKuXuyVT-OgdnnKpAVsbKHgvqHHP",' +
+      '"scopes":[' +
+      '"https://api-m.paypal.com/v1/subscription/.*",' +
+      '"https://uri.paypal.com/services/subscription",' +
+      '"openid"' +
+      ']}',
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': `Basic ${token}`
+  }
+}
+
+export const getSubscriptionDto = (planId, userId, return_url, cancel_url, autoRenewal) => {
   return {
     "plan_id": `${planId}`,
     "start_time": `${addMinutes(new Date(), 10).toISOString()}`,
-    "auto_renewal": "false",
+    "auto_renewal": `${autoRenewal}`,
     "custom_id": `${userId}`,
     "application_context": {
       "brand_name": "inctagram",
