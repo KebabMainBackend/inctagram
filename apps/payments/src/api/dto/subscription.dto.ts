@@ -4,6 +4,7 @@ import { Optional } from "@nestjs/common";
 import { ProductEntity } from "../../db/domain/product.entity";
 import { SubscriptionEntity } from "../../db/domain/subscription.entity";
 
+
 export class PurchaseSubscriptionDto {
   @IsString()
   @ApiProperty({
@@ -42,27 +43,28 @@ export class CreateSubscriptionDto {
   @IsInt()
   price?: number
   @IsInt()
-  period: number
+  period: number;
   @IsString()
   interval: 'day' | 'week' | 'month' | 'year';
   @IsString()
-  paymentSystem: 'Stripe' | 'Paypal'
+  paymentSystem: 'Stripe' | 'Paypal';
   @IsString()
   @Optional()
-  paypalSubscriptionId: string | null
+  paypalSubscriptionId: string | null;
   @IsString()
   @Optional()
-  productPriceId: string | null
+  productPriceId: string | null;
   @IsString()
   @Optional()
-  subscriptionPriceId: string | null
-  constructor() {
-  }
+  subscriptionPriceId: string | null;
+  constructor() {}
 
-  static createSubscriptionDto(productInfo: ProductEntity,
-                               paymentSystem: 'Stripe' | 'Paypal',
-                               paypalSubscriptionId: string | null,
-                               userId): CreateSubscriptionDto {
+  static createSubscriptionDto(
+    productInfo: ProductEntity,
+    paymentSystem: 'Stripe' | 'Paypal',
+    paypalSubscriptionId: string | null,
+    userId,
+  ): CreateSubscriptionDto {
     return {
       price: productInfo.price,
       period: productInfo.period,
@@ -71,8 +73,8 @@ export class CreateSubscriptionDto {
       productPriceId: productInfo.productPriceId,
       paypalSubscriptionId,
       paymentSystem,
-      userId
-    }
+      userId,
+    };
   }
 
   static createSubscriptionDtoByOldSubscription(

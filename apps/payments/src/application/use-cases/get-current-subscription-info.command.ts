@@ -34,7 +34,7 @@ export class GetCurrentSubscriptionInfoHandler
     }
     const daysLeft = differenceInDays(new Date(current.expireAt), new Date());
 
-     const subscriptions = await this.subscriptionRepo.getSubscriptions(userId);
+    const subscriptions = await this.subscriptionRepo.getSubscriptions(userId);
 
     const expireAtFormatted =
       format(parseISO(current.expireAt.toISOString()), "dd.MM.yyyy")
@@ -46,6 +46,7 @@ export class GetCurrentSubscriptionInfoHandler
       return {
         subscription: subscriptions[0],
         expireAt: expireAtFormatted,
+
       };
     } else if (current.hasAutoRenewal) {
       return {

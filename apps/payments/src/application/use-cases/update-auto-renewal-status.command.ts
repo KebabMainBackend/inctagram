@@ -10,6 +10,7 @@ import { existedAutoRenewalStatus, incorrectSubscriptionId } from "../../errorsM
 import { PaypalAdapter } from "../../common/adapters/paypal.adapter";
 import { SubscriptionEntity } from "../../db/domain/subscription.entity";
 
+
 export class UpdateAutoRenewalStatusCommand {
   constructor(
     public userId: number,
@@ -67,40 +68,49 @@ export class UpdateAutoRenewalStatusHandler
       .updateCurrentSubscriptionHasAutoRenewalStatus(userId, autoRenewal)
 
     return 'Auto renewal status was updated successfully!'
+
   }
 
-  async updateAutoRenewalStatus(dbSubscription, autoRenewal: boolean, userId: number) {
+  async updateAutoRenewalStatus(
+    dbSubscription,
+    autoRenewal: boolean,
+    userId: number,
+  ) {
     const stripe = new Stripe(process.env.STRIPE_API_KEY);
 
     const customer = await this.commandBus.execute(
-      new CreateStripeCustomerCommand(userId, dbSubscription.profile.user.email),
-    )
+      new CreateStripeCustomerCommand(
+        userId,
+        dbSubscription.profile.user.email,
+      ),
+    );
 
     if (autoRenewal && !dbSubscription.stripeSubscriptionId) {
       const subscription =
         await stripe.subscriptions.create({
         customer: customer.stripeCustomerId,
+
         cancel_at_period_end: !autoRenewal,
         items: [{ price: dbSubscription.subscriptionPriceId }],
-        trial_end: Math.floor(dbSubscription.dateOfNextPayment.getTime() / 1000),
-      })
-
+        trial_end: Math.floor(
+          dbSubscription.dateOfNextPayment.getTime() / 1000,
+        ),
+      });
 
       await this.prisma.subscription.update({
         where: { subscriptionId: dbSubscription.subscriptionId },
         data: { stripeSubscriptionId: subscription.id, autoRenewal },
-      })
-
+      });
     } else {
       await stripe.subscriptions.update(dbSubscription.stripeSubscriptionId, {
         cancel_at_period_end: !autoRenewal,
         metadata: { key: process.env.STRIPE_API_KEY },
-      })
+      });
 
       await this.prisma.subscription.update({
         where: { subscriptionId: dbSubscription.subscriptionId },
         data: { autoRenewal },
-      })
+      });
     }
   }
 }

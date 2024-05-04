@@ -1,6 +1,6 @@
 import { IsBoolean, IsNumber, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { DefaultValuePipe } from "@nestjs/common";
+import { DefaultValuePipe } from '@nestjs/common';
 
 export class PurchaseSubscriptionDto {
   @IsString()
@@ -33,12 +33,12 @@ export class UpdateAutoRenewalStatusDto {
 
 export class createPaypalWebhook {
   @IsString()
-  url: string
+  url: string;
 }
 
 export class GetUserPaymentsQueryDto {
   @IsString()
-  limit: string = '3'
+  limit: string = '3';
   @IsString()
-  page: string = '1'
+  page: string = '1';
 }

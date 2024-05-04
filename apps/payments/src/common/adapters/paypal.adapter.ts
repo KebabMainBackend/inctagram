@@ -1,22 +1,25 @@
-import { Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { CommandBus } from "@nestjs/cqrs";
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { CommandBus } from '@nestjs/cqrs';
 import {
   getPaypalDefaultHeaders,
   getPaypalRequestHeaders,
   getPlanDto, getSubscriptionDto
 } from "../../application/dto/paypal.dto";
 import { ProductRepository } from "../../db/product.repository";
+
 @Injectable()
 export class PaypalAdapter {
-  public token: string
-  constructor(private configService: ConfigService,
-              private productRepository: ProductRepository) {
-
-    this.token =
-      Buffer.from(
-      `${this.configService.get('PAYPAL_CLIENT_ID')}:${this.configService.get('PAYPAL_CLIENT_SECRET')}`)
-      .toString('base64');
+  public token: string;
+  constructor(
+    private configService: ConfigService,
+    private productRepository: ProductRepository,
+  ) {
+    this.token = Buffer.from(
+      `${this.configService.get('PAYPAL_CLIENT_ID')}:${this.configService.get(
+        'PAYPAL_CLIENT_SECRET',
+      )}`,
+    ).toString('base64');
   }
 
   async createProduct(name, description) {
@@ -54,31 +57,33 @@ export class PaypalAdapter {
 
     console.log(await test.json());
 
+
     const product = await result.json();
     // console.log(product, 'PRODUCT');
 
-    return product
+    return product;
   }
 
   async createPlan(product, interval, price, currency, period) {
-    const headers =
-      getPaypalRequestHeaders('PLAN-18062019-001', this.token)
+    const headers = getPaypalRequestHeaders('PLAN-18062019-001', this.token);
 
-    const planDto = getPlanDto(product, interval, price, currency)
+    const planDto = getPlanDto(product, interval, price, currency);
 
-    const result =
-      await fetch('https://api-m.sandbox.paypal.com/v1/billing/plans', {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(planDto)
-    })
+    const result = await fetch(
+      'https://api-m.sandbox.paypal.com/v1/billing/plans',
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(planDto),
+      },
+    );
 
     const plan = await result.json();
     console.log(plan, 'PLAN');
 
-    await this.productRepository.updateProduct(period, plan.id)
+    await this.productRepository.updateProduct(period, plan.id);
 
-    return plan
+    return plan;
   }
 
   async subscribeUser(userId, planId, autoRenewal) {
@@ -134,10 +139,13 @@ export class PaypalAdapter {
 
     const subscription = await paypalSubscriptionInfo.json()
 
-    const plan =
-      await this.productRepository.getProductByPaypalPlanId(subscription.plan_id)
 
-    return { plan, userId: subscription.custom_id, }
+    const subscription = await paypalSubscriptionInfo.json();
 
+    const plan = await this.productRepository.getProductByPaypalPlanId(
+      subscription.plan_id,
+    );
+
+    return { plan, userId: subscription.custom_id };
   }
 }

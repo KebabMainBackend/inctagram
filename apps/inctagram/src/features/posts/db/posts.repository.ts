@@ -1,11 +1,11 @@
-import { PrismaClient } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PostEntity } from '../domain/entities/post.entity';
 import { PostStatusEnum } from '../domain/types/post.enum';
+import { PrismaService } from '../../../prisma.service';
 
 @Injectable()
 export class PostsRepository {
-  constructor(protected prismaClient: PrismaClient) {}
+  constructor(protected prismaClient: PrismaService) {}
   async getPostById(postId: number) {
     return this.prismaClient.post.findUnique({
       where: {

@@ -6,11 +6,17 @@ import {
   Inject,
   NotFoundException,
   Post,
-  Put, Query, Req,
-  UseGuards
-} from "@nestjs/common";
+  Put,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { BearerAuthGuard } from '../../../auth/guards/bearer-auth.guard';
-import { GetUserPaymentsQueryDto, PurchaseSubscriptionDto, UpdateAutoRenewalStatusDto } from "./dto/dto";
+import {
+  GetUserPaymentsQueryDto,
+  PurchaseSubscriptionDto,
+  UpdateAutoRenewalStatusDto,
+} from './dto/dto';
 
 import { ClientProxy } from '@nestjs/microservices';
 
@@ -27,15 +33,16 @@ import {
 import {
   SwaggerDecoratorForAutoRenewal,
   SwaggerDecoratorForCurrentSubscription,
-  SwaggerDecoratorForGetProducts, SwaggerDecoratorGetPayments
-} from "../swagger/swagger.decorators";
+  SwaggerDecoratorForGetProducts,
+  SwaggerDecoratorGetPayments,
+} from '../swagger/swagger.decorators';
 
 import {
   NotFoundResponseOptions,
   UnauthorizedRequestResponseOptions,
 } from '../../../utils/constants/swagger-constants';
 import { firstValueFrom } from 'rxjs';
-import { GetRequestCurrentSubscriptionViewExample } from "../swagger/swagger.examples";
+import { GetRequestCurrentSubscriptionViewExample } from '../swagger/swagger.examples';
 
 @Controller('subscription')
 @ApiTags('Subscription')
@@ -56,15 +63,17 @@ export class SubscriptionsController {
 
   @Get('my-payments')
   @SwaggerDecoratorGetPayments()
-  async getUserPayments(@User() user: UserTypes,
-                        @Query() payload: GetUserPaymentsQueryDto) {
-    const { limit, page } = payload
+  async getUserPayments(
+    @User() user: UserTypes,
+    @Query() payload: GetUserPaymentsQueryDto,
+  ) {
+    const { limit, page } = payload;
 
-    const offset = (Number(limit) * Number(page) - Number(limit))
+    const offset = Number(limit) * Number(page) - Number(limit);
 
     return this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.GET_USER_PAYMENTS },
-       { userId: user.id, limit: +limit, offset: +offset } ,
+      { userId: user.id, limit: +limit, offset: +offset },
     );
   }
 
@@ -92,7 +101,7 @@ export class SubscriptionsController {
     @User() user: UserTypes,
   ) {
     const userId = user.id;
-    const email = user.email
+    const email = user.email;
     return this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.PURCHASE_SUBSCRIPTION },
       { userId, email, payload },

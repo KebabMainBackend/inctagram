@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
-import { PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../prisma.service';
 import { PostsController } from './api/posts.controller';
 import { ClientProxyFactory, Transport } from '@nestjs/microservices';
@@ -49,11 +48,8 @@ const Repos = [
       },
       inject: [ConfigService],
     },
-
-    PrismaClient,
     PrismaService,
     JwtService,
-    ConfigService,
     ...CommandHandlers,
     ...Repos,
   ],

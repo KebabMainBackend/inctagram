@@ -1,7 +1,6 @@
 import { addDays } from 'date-fns';
 import { IsBoolean, IsDate, IsInt, IsString } from 'class-validator';
-import { CreateSubscriptionDto, PurchaseSubscriptionDto } from "../../api/dto/subscription.dto";
-import { ProductEntity } from './product.entity';
+import { CreateSubscriptionDto } from '../../api/dto/subscription.dto';
 
 export class SubscriptionEntity {
   @IsInt()
@@ -21,7 +20,7 @@ export class SubscriptionEntity {
   @IsString()
   subscriptionPriceId: string | null;
   @IsString()
-  paypalSubscriptionId: string | null
+  paypalSubscriptionId: string | null;
   @IsString()
   interval: 'day' | 'week' | 'month' | 'year';
   static create(data: CreateSubscriptionDto, autoRenewal = false) {
@@ -32,7 +31,8 @@ export class SubscriptionEntity {
       productPriceId,
       subscriptionPriceId,
       paypalSubscriptionId,
-      interval} = data;
+      interval,
+    } = data;
 
     const subscription = new SubscriptionEntity();
 
@@ -46,7 +46,7 @@ export class SubscriptionEntity {
 
     subscription.productPriceId = productPriceId;
     subscription.subscriptionPriceId = subscriptionPriceId;
-    subscription.paypalSubscriptionId = paypalSubscriptionId
+    subscription.paypalSubscriptionId = paypalSubscriptionId;
 
     subscription.period = period;
     subscription.interval = interval;
