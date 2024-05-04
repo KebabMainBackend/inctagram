@@ -15,8 +15,6 @@ export class SubscriptionEntity {
   autoRenewal: boolean;
   @IsString()
   paymentSystem: 'Paypal' | 'Stripe';
-  @IsDate()
-  expireAt: Date;
   @IsString()
   productPriceId: string | null;
   @IsString()
@@ -25,7 +23,7 @@ export class SubscriptionEntity {
   paypalSubscriptionId: string | null;
   @IsString()
   interval: 'day' | 'week' | 'month' | 'year';
-  static create(data: CreateSubscriptionDto) {
+  static create(data: CreateSubscriptionDto, autoRenewal = false) {
     const {
       paymentSystem,
       userId,
@@ -41,7 +39,7 @@ export class SubscriptionEntity {
     subscription.userId = userId;
 
     subscription.paymentSystem = paymentSystem;
-    subscription.autoRenewal = false;
+    subscription.autoRenewal = autoRenewal;
 
     subscription.dateOfSubscribe = new Date();
     subscription.dateOfNextPayment = addDays(new Date(), period);

@@ -21,11 +21,12 @@ export class CreateStripeCustomerHandler
   async execute({ userId, email }: CreateStripeCustomerCommand) {
     let customer = await this.subscriptionRepo.getCurrentSubscription(userId);
 
-    if (!customer) {
+    if (!customer.stripeCustomerId) {
       const newCustomer = await this.stripeAdapter.createCustomer(
         email,
         userId,
       );
+
       await this.subscriptionRepo.updateStripeCustomerId(
         userId,
         newCustomer.id,

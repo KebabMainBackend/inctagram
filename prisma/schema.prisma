@@ -116,8 +116,7 @@ model Subscription {
   productPriceId       String?
   subscriptionPriceId  String?
   paypalSubscriptionId String?
-  profile              Profile?            @relation(fields: [profileUserId], references: [userId])
-  profileUserId        Int?
+  profile              Profile             @relation(fields: [userId], references: [userId])
 }
 
 model Payments {
