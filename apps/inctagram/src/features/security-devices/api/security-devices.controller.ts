@@ -62,21 +62,18 @@ export class SecurityDevicesController {
     const data = await this.commandBus.execute(
       new DecodeRefreshTokenCommand(refreshToken),
     );
-    const device = await this.securityDevicesQueryRepository.getDeviceById(
-      deviceId,
-    );
-    if (device) {
-      if (data) {
-        if (device.session.userId.toString() === data.userId.toString()) {
-          await this.commandBus.execute(
-            new DeleteDeviceCommand(device.session.id),
-          );
+    const session =
+      await this.securityDevicesQueryRepository.getSessionByDevice(deviceId);
+    if (data) {
+      if (session) {
+        if (session.id !== data.sessionId) {
+          await this.commandBus.execute(new DeleteDeviceCommand(session.id));
           return;
         }
         throw new HttpException('Forbidden request', HttpStatus.FORBIDDEN);
       }
-      throw new HttpException('Unauthorized request', HttpStatus.UNAUTHORIZED);
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     }
-    throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    throw new HttpException('Unauthorized request', HttpStatus.UNAUTHORIZED);
   }
 }
