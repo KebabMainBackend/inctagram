@@ -10,6 +10,9 @@ import { SecurityDevicesModule } from './features/security-devices/security-devi
 import { ProfileModule } from './features/profile/profile.module';
 import { PostsModule } from './features/posts/posts.module';
 import { SubscriptionsModule } from './features/subscriptions/subscriptions.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { AdminModule } from './features/admin/admin.module';
 
 @Module({
   imports: [
@@ -35,6 +38,13 @@ import { SubscriptionsModule } from './features/subscriptions/subscriptions.modu
     PostsModule,
     ProfileModule,
     SubscriptionsModule,
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      playground: true,
+      autoSchemaFile: 'schema.gql',
+      include: [AdminModule],
+    }),
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

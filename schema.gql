@@ -1,0 +1,47 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type ProfileModel {
+  """user full name"""
+  fullName: String!
+
+  """birthDate"""
+  birthDate: String!
+
+  """user createdAt"""
+  createdAt: String!
+
+  """user city"""
+  city: String!
+
+  """about user"""
+  aboutMe: String!
+
+  """user avatar"""
+  avatar: String!
+}
+
+type UserModel {
+  """user id"""
+  id: Int!
+
+  """user full name"""
+  fullName: String!
+
+  """username"""
+  username: String!
+
+  """user createdAt"""
+  createdAt: String!
+  profile: ProfileModel!
+}
+
+type Query {
+  getUsers(pageSize: Int = 10, pageNumber: Int = 1, sortBy: String = "createdAt", sortDirection: String = "desc", searchTerm: String): [UserModel!]!
+  getUser(id: Int!): UserModel!
+}
+
+type Mutation {
+  removeAdmin(id: Int!): UserModel!
+}

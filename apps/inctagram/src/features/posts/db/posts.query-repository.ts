@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { mapPostsWithImages } from './view/mapPost';
-import { GetDefaultUriDto } from '../../../utils/default-get-query.uri.dto';
+import { GetDefaultUriDtoWithCursor } from '../../../utils/default-get-query.uri.dto';
 import {
-  getRequestQueryMapper,
-  getRequestReturnMapper,
-} from '../../../utils/helpers/get-request-mapper.helper';
+  getRequestQueryMapperWithCursor,
+  getRequestReturnMapperWithCursor,
+} from '../../../utils/helpers/get-request-mapper-helper-with.cursor';
 import { PostStatusEnum } from '../domain/types/post.enum';
 import { PostView } from './view/post.view';
 import { FilesMicroserviceMessagesEnum } from '../../../../../../types/messages';
@@ -19,12 +19,12 @@ export class PostsQueryRepository {
     @Inject('FILES_SERVICE') private client: ClientProxy,
   ) {}
 
-  async findPosts(queryPost: GetDefaultUriDto, userId?: number) {
+  async findPosts(queryPost: GetDefaultUriDtoWithCursor, userId?: number) {
     const items: PostView[] = [];
     let lastPostId = 0;
     const { pageSize, cursor, sortDirection } =
-      getRequestQueryMapper(queryPost);
-    let { sortBy } = getRequestQueryMapper(queryPost);
+      getRequestQueryMapperWithCursor(queryPost);
+    let { sortBy } = getRequestQueryMapperWithCursor(queryPost);
     let hasMore = false;
     const filterByStatusAndOptionalUserId: any = {
       status: PostStatusEnum.ACTIVE,
@@ -87,7 +87,7 @@ export class PostsQueryRepository {
       }
     }
 
-    return getRequestReturnMapper<PostView>({
+    return getRequestReturnMapperWithCursor<PostView>({
       totalCount,
       items,
       cursor: lastPostId,
