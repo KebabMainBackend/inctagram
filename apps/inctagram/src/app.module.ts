@@ -18,8 +18,8 @@ import { AdminModule } from './features/admin/admin.module';
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(
-        // 'C:\\Projects\\inctagram\\apps\\inctagram\\swagger-static',
-        'D:\\job\\inctagram\\apps\\inctagram\\swagger-static',
+        'C:\\Projects\\inctagram\\apps\\inctagram\\swagger-static',
+        //'D:\\job\\inctagram\\apps\\inctagram\\swagger-static',
       ),
       serveRoot: process.env.NODE_ENV === 'development' ? '/' : '/swagger',
     }),
