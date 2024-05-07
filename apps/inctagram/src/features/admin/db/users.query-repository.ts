@@ -1,13 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { GetUsersQueryDto } from '../api/dto/get-users.dto';
-import { PostView } from '../../posts/db/view/post.view';
 import {
   getRequestQueryMapperWithPageNumber,
   getRequestReturnMapperWithPageNumber,
 } from '../../../utils/helpers/get-request-mapper-helper-with.cursor';
-import { firstValueFrom } from 'rxjs';
-import { mapPostsWithImages } from '../../posts/db/view/mapPost';
 import { PrismaService } from '../../../prisma.service';
 import { FilesMicroserviceMessagesEnum } from '../../../../../../types/messages';
 
@@ -21,7 +18,6 @@ export class UsersQueryRepository {
   ) {}
 
   async getAllUsers(query: GetUsersQueryDto) {
-    const items: PostView[] = [];
     const { pageSize, pageNumber, sortDirection } =
       getRequestQueryMapperWithPageNumber(query);
     let { sortBy } = getRequestQueryMapperWithPageNumber(query);
@@ -46,16 +42,17 @@ export class UsersQueryRepository {
       take: pageSize + 1,
       orderBy: { [sortBy]: sortDirection },
     });
-    if (users.length) {
-      let userProfile;
-    }
+    console.log(users);
 
-    return getRequestReturnMapperWithPageNumber<PostView>({
-      totalCount,
-      items,
-      pageSize,
-      pageNumber,
-    });
+    return {
+      pagination: getRequestReturnMapperWithPageNumber<any>({
+        totalCount,
+        items: users,
+        pageSize,
+        pageNumber,
+      }),
+      users: users.map((u) => this.mapUser(u)),
+    };
   }
   private getUserThumbnailAvatar(imageId: string) {
     const pattern = {
@@ -65,5 +62,13 @@ export class UsersQueryRepository {
       imageId,
     };
     return this.client.send(pattern, payload);
+  }
+  private mapUser(user: any) {
+    return {
+      id: user.id,
+      username: user.username,
+      fullName: user.profile.firstname + ' ' + user.profile.lastname,
+      createdAt: user.createdAt,
+    };
   }
 }

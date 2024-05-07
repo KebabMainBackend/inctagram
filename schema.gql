@@ -37,8 +37,21 @@ type UserModel {
   profile: ProfileModel!
 }
 
+type PaginationModel {
+  pagesCount: Int!
+  pageNumber: Int!
+  pageSize: Int!
+  totalCount: Int!
+}
+
+type UserPaginationModel {
+  """users"""
+  users: [UserModel!]!
+  pagination: PaginationModel!
+}
+
 type Query {
-  getUsers(pageSize: Int = 10, pageNumber: Int = 1, sortBy: String = "createdAt", sortDirection: String = "desc", searchTerm: String): [UserModel!]!
+  getUsers(pageSize: Int = 10, pageNumber: Int = 1, sortBy: String = "createdAt", sortDirection: String = "desc", searchTerm: String): UserPaginationModel!
   getUser(id: Int!): UserModel!
 }
 
