@@ -1,8 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
 import { SecurityDevicesRepository } from '../../../features/security-devices/db/security-devices.repository';
-import { SessionEntity } from '../../domain/entities/session.entity';
 import { ConfigService } from '@nestjs/config';
+import { add } from 'date-fns';
 
 export class UpdateRefreshTokenCommand {
   constructor(
@@ -25,15 +25,19 @@ export class UpdateRefreshTokenHandler
   async execute({ oldRefresh }: UpdateRefreshTokenCommand) {
     const { userId, sessionId } = oldRefresh;
     const session = await this.securityDevicesRepository.getSession(sessionId);
-    const newSession = SessionEntity.create(userId, session.devicesId);
-    const newSessionId = await this.securityDevicesRepository.createSession(
-      newSession,
+    const currentTime = new Date();
+    const lastActiveDate = currentTime.toISOString();
+    const aliveTill = add(currentTime, { minutes: 15 });
+    await this.securityDevicesRepository.updateLastActiveDateOfSession(
+      sessionId,
+      lastActiveDate,
+      aliveTill,
     );
-    await this.securityDevicesRepository.deleteSessionById(sessionId);
+
     return await this.jwtService.signAsync(
       {
         userId: oldRefresh.userId,
-        sessionId: newSessionId,
+        sessionId,
       },
       {
         expiresIn: this.configService.get('JWT_REFRESH_EXPIRATION_TIME'),

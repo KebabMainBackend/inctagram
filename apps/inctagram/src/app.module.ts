@@ -10,13 +10,16 @@ import { SecurityDevicesModule } from './features/security-devices/security-devi
 import { ProfileModule } from './features/profile/profile.module';
 import { PostsModule } from './features/posts/posts.module';
 import { SubscriptionsModule } from './features/subscriptions/subscriptions.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { AdminModule } from './features/admin/admin.module';
 
 @Module({
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(
-        // 'C:\\Projects\\inctagram\\apps\\inctagram\\swagger-static',
-        'D:\\job\\inctagram\\apps\\inctagram\\swagger-static',
+        'C:\\Projects\\inctagram\\apps\\inctagram\\swagger-static',
+        //'D:\\job\\inctagram\\apps\\inctagram\\swagger-static',
       ),
       serveRoot: process.env.NODE_ENV === 'development' ? '/' : '/swagger',
     }),
@@ -35,6 +38,13 @@ import { SubscriptionsModule } from './features/subscriptions/subscriptions.modu
     PostsModule,
     ProfileModule,
     SubscriptionsModule,
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      playground: true,
+      autoSchemaFile: 'schema.gql',
+      include: [AdminModule],
+    }),
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

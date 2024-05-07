@@ -42,6 +42,7 @@ export class SubscriptionEntity {
     subscription.autoRenewal = autoRenewal;
 
     subscription.dateOfSubscribe = new Date();
+    //subscription.dateOfNextPayment = new Date()
     subscription.dateOfNextPayment = addDays(new Date(), period);
 
     subscription.productPriceId = productPriceId;

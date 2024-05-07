@@ -59,7 +59,7 @@ import { CheckMimetype } from '../../../utils/custom-validators/file.validator';
 import { POST_IMAGE_NORMAL_SIZE } from '../../../utils/constants/default-query-params';
 import { UploadPostImagesCommand } from '../application/use-cases/upload-post-images.command';
 import { FilesMicroserviceMessagesEnum } from '../../../../../../types/messages';
-import { GetDefaultUriDto } from '../../../utils/default-get-query.uri.dto';
+import { GetDefaultUriDtoWithCursor } from '../../../utils/default-get-query.uri.dto';
 import { createErrorMessage } from '../../../utils/create-error-object';
 import { DeletePostCommand } from '../application/use-cases/delete-post.command';
 import {
@@ -102,7 +102,7 @@ export class PostsController {
   @ApiQuery(PageSizeQueryOptions)
   async getPosts(
     @User() user: UserTypes,
-    @Query() queryPost: GetDefaultUriDto,
+    @Query() queryPost: GetDefaultUriDtoWithCursor,
   ) {
     return await this.postsQueryRepository.findPosts(queryPost, user.id);
   }

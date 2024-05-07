@@ -44,8 +44,8 @@ export class CreatePaypalWebhookHandler
             event_types: [
               {
                 name: 'PAYMENT.SALE.COMPLETED',
-              },
-            ],
+              }
+            ]
           }),
         },
       );
