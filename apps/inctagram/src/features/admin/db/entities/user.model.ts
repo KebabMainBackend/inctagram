@@ -15,6 +15,6 @@ export class UserModel {
   @Field({ description: 'user createdAt' })
   createdAt: string;
 
-  @Field(() => ProfileModel, { description: 'user profile' })
-  profile: ProfileModel;
+  @Field(() => ProfileModel, { description: 'user profile', nullable: true })
+  profile?: ProfileModel;
 }

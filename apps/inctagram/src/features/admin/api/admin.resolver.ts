@@ -11,19 +11,24 @@ import { UserModel } from '../db/entities/user.model';
 import { CommandBus } from '@nestjs/cqrs';
 import { ProfileModel } from '../db/entities/profile.model';
 import { GetUsersQueryDto } from './dto/get-users.dto';
+import { UsersQueryRepository } from '../db/users.query-repository';
+import { UserPaginationModel } from '../db/entities/return.model';
 
 @Resolver(() => UserModel)
 export class AdminResolver {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private userQueryRepo: UsersQueryRepository,
+  ) {}
 
-  @Query(() => [UserModel], { name: 'getUsers' })
-  findAll(@Args() args: GetUsersQueryDto) {
-    console.log(args);
-    // return this.adminService.findAll();
+  @Query(() => UserPaginationModel, { name: 'getUsers' })
+  async findAll(@Args() args: GetUsersQueryDto): Promise<UserPaginationModel> {
+    return this.userQueryRepo.getAllUsers(args);
   }
 
   @Query(() => UserModel, { name: 'getUser' })
   findOne(@Args('id', { type: () => Int }) id: number) {
+    return id;
     // return this.adminService.findOne(id);
   }
 
