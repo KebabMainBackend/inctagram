@@ -1,4 +1,6 @@
 export const PAGE_SIZE_DEFAULT = 8;
+export const PAGE_SIZE_DEFAULT__LARGE = 10;
+export const PAGE_NUMBER_DEFAULT = 1;
 
 export enum SortDirection {
   ASC = 'asc',

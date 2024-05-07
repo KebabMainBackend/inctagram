@@ -20,7 +20,7 @@ export class SecurityDevicesRepository {
     const session = await this.prisma.session.create({
       data: {
         userId: data.userId,
-        devicesId: data.devicesId,
+        devicesId: data.deviceId,
         lastActiveDate: data.lastActiveDate,
         aliveTill: data.aliveTill,
       },
@@ -30,7 +30,7 @@ export class SecurityDevicesRepository {
   async updateLastActiveDateOfSession(
     sessionId: string,
     newDate: string,
-    aliveTill: string,
+    aliveTill: Date,
   ) {
     this.prisma.session.update({
       where: {
@@ -43,17 +43,14 @@ export class SecurityDevicesRepository {
     });
   }
   async deleteSessionById(sessionId: string) {
-    const session = await this.prisma.session.findUnique({
-      where: {
-        id: sessionId,
-      },
-    });
     await this.prisma.session.delete({
       where: { id: sessionId },
     });
+  }
+  async deleteDevice(deviceId: string) {
     await this.prisma.devices.delete({
       where: {
-        id: session.devicesId,
+        id: deviceId,
       },
     });
   }
@@ -63,6 +60,7 @@ export class SecurityDevicesRepository {
       include: { device: true },
     });
   }
+
   async addTokenToBlacklist(refreshToken: string) {
     await this.prisma.blacklist.create({
       data: {

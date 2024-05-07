@@ -12,6 +12,8 @@ export class DeleteDeviceHandler
   constructor(private securityDevicesRepository: SecurityDevicesRepository) {}
 
   async execute({ sessionId }: DeleteDeviceCommand) {
+    const session = await this.securityDevicesRepository.getSession(sessionId);
     await this.securityDevicesRepository.deleteSessionById(sessionId);
+    await this.securityDevicesRepository.deleteDevice(session.devicesId);
   }
 }

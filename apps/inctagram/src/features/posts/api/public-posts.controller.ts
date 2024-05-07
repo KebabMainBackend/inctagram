@@ -16,7 +16,7 @@ import {
   SortDirectionQueryOptions,
   UserIdQueryOptions,
 } from '../../../utils/constants/swagger-constants';
-import { GetDefaultUriDto } from '../../../utils/default-get-query.uri.dto';
+import { GetDefaultUriDtoWithCursor } from '../../../utils/default-get-query.uri.dto';
 import { GetRequestPostsViewExample } from './swagger-examples/response-examples';
 import { DefaultUserIdQueryUriDto } from '../../../utils/default-user-id-query.uri.dto';
 
@@ -42,7 +42,7 @@ export class PublicPostsController {
   @ApiQuery(SortByQueryOptions)
   @ApiQuery(PageSizeQueryOptions)
   async getUserPosts(
-    @Query() queryPost: GetDefaultUriDto,
+    @Query() queryPost: GetDefaultUriDtoWithCursor,
     @Param('userId', ParseIntPipe) userId: number,
   ) {
     const data = await this.postsQueryRepository.findPosts(queryPost, userId);
@@ -66,7 +66,7 @@ export class PublicPostsController {
   @ApiQuery(SortDirectionQueryOptions)
   @ApiQuery(SortByQueryOptions)
   @ApiQuery(PageSizeQueryOptions)
-  async getAllPublicPosts(@Query() queryPost: GetDefaultUriDto) {
+  async getAllPublicPosts(@Query() queryPost: GetDefaultUriDtoWithCursor) {
     return await this.postsQueryRepository.findPosts(queryPost);
   }
 

@@ -13,7 +13,6 @@ export class SecurityDevicesQueryRepository {
         device: true,
       },
     });
-    console.log(sessions);
     if (sessions.length) {
       return sessions.map((s) => ({
         deviceId: s.devicesId,
@@ -32,16 +31,15 @@ export class SecurityDevicesQueryRepository {
       },
     });
   }
-  async getDeviceById(deviceId: string) {
-    return this.prisma.devices.findUnique({
+
+  async getSessionByDevice(deviceId: string) {
+    return this.prisma.session.findUnique({
       where: {
-        id: deviceId,
-      },
-      include: {
-        session: true,
+        devicesId: deviceId,
       },
     });
   }
+
   async getBlackList(refresh: string) {
     return this.prisma.blacklist.findUnique({
       where: { refreshToken: refresh },
