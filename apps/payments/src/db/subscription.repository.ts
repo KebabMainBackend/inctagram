@@ -52,13 +52,20 @@ export class SubscriptionRepository {
       where: { userId, autoRenewal: true },
     });
 
-    if (!autoRenewalSubscription.length)
+    const isSubscriptionNotExpired = autoRenewalSubscription.length ?
+      autoRenewalSubscription[0].dateOfNextPayment < new Date()
+      : null
+
+
+    if (!autoRenewalSubscription.length || isSubscriptionNotExpired) {
+
       return await this.prisma.subscription.findMany({
         where: { userId },
         orderBy: {
-          dateOfSubscribe: 'asc',
-        },
+          dateOfSubscribe: "desc"
+        }
       });
+    }
     else return autoRenewalSubscription;
   }
 
