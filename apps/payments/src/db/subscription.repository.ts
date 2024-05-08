@@ -2,6 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { SubscriptionEntity } from './domain/subscription.entity';
 import { PaymentsEntity } from './domain/payments.entity';
+import { GetDefaultUriDtoWithPageNumber } from '../../../inctagram/src/utils/default-get-query.uri.dto';
+import {
+  getRequestQueryMapperWithPageNumber,
+  getRequestReturnMapperWithPageNumber,
+} from '../../../inctagram/src/utils/helpers/get-request-mapper-helper-with.cursor';
 
 @Injectable()
 export class SubscriptionRepository {
@@ -52,29 +57,44 @@ export class SubscriptionRepository {
       where: { userId, autoRenewal: true },
     });
 
-    const isSubscriptionNotExpired = autoRenewalSubscription.length ?
-      autoRenewalSubscription[0].dateOfNextPayment < new Date()
-      : null
-
+    const isSubscriptionNotExpired = autoRenewalSubscription.length
+      ? autoRenewalSubscription[0].dateOfNextPayment < new Date()
+      : null;
 
     if (!autoRenewalSubscription.length || isSubscriptionNotExpired) {
-
-      return await this.prisma.subscription.findMany({
+      return this.prisma.subscription.findMany({
         where: { userId },
         orderBy: {
-          dateOfSubscribe: "desc"
-        }
+          dateOfSubscribe: 'desc',
+        },
       });
-    }
-    else return autoRenewalSubscription;
+    } else return autoRenewalSubscription;
   }
 
-  async getPayments(userId: number, limit, offset) {
-    return await this.prisma.payments.findMany({
+  async getPayments(userId: number, query: GetDefaultUriDtoWithPageNumber) {
+    const { pageSize, pageNumber } = getRequestQueryMapperWithPageNumber(query);
+    const totalCount = await this.prisma.post.count({
+      where: { userId },
+    });
+    const payments = await this.prisma.payments.findMany({
       where: { userId },
       orderBy: { dateOfPayment: 'asc' },
-      take: limit,
-      skip: offset,
+      take: pageSize,
+      skip: pageNumber,
+    });
+    return getRequestReturnMapperWithPageNumber({
+      pageNumber,
+      pageSize,
+      totalCount,
+      items: payments.map((p) => ({
+        id: p.paymentId,
+        userId: p.userId,
+        dateOfPayments: p.dateOfPayment,
+        endDateOfSubscription: p.endDateOfSubscription,
+        price: p.price,
+        subscriptionType: p.interval,
+        paymentType: p.paymentSystem,
+      })),
     });
   }
   async updateStripeCustomerId(userId: number, customerId: string) {

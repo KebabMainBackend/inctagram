@@ -8,15 +8,10 @@ import {
   Post,
   Put,
   Query,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { BearerAuthGuard } from '../../../auth/guards/bearer-auth.guard';
-import {
-  GetUserPaymentsQueryDto,
-  PurchaseSubscriptionDto,
-  UpdateAutoRenewalStatusDto,
-} from './dto/dto';
+import { PurchaseSubscriptionDto, UpdateAutoRenewalStatusDto } from './dto/dto';
 
 import { ClientProxy } from '@nestjs/microservices';
 
@@ -26,7 +21,6 @@ import { UserTypes } from '../../../types';
 import {
   ApiBearerAuth,
   ApiNotFoundResponse,
-  ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -42,7 +36,7 @@ import {
   UnauthorizedRequestResponseOptions,
 } from '../../../utils/constants/swagger-constants';
 import { firstValueFrom } from 'rxjs';
-import { GetRequestCurrentSubscriptionViewExample } from '../swagger/swagger.examples';
+import { GetDefaultUriDtoWithPageNumber } from '../../../utils/default-get-query.uri.dto';
 
 @Controller('subscription')
 @ApiTags('Subscription')
@@ -65,15 +59,11 @@ export class SubscriptionsController {
   @SwaggerDecoratorGetPayments()
   async getUserPayments(
     @User() user: UserTypes,
-    @Query() payload: GetUserPaymentsQueryDto,
+    @Query() payload: GetDefaultUriDtoWithPageNumber,
   ) {
-    const { limit, page } = payload;
-
-    const offset = Number(limit) * Number(page) - Number(limit);
-
     return this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.GET_USER_PAYMENTS },
-      { userId: user.id, limit: +limit, offset: +offset },
+      { userId: user.id, query: payload },
     );
   }
 

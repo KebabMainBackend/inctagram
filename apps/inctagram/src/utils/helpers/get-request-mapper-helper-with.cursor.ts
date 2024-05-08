@@ -97,9 +97,11 @@ export const getRequestReturnMapperWithPageNumber = <T>({
   pageSize,
   pageNumber,
   totalCount,
+  items,
 }: GetRequestMapperHelperWithPageNumber<T>) => ({
   pagesCount: Math.ceil(totalCount / pageSize),
   pageNumber,
   pageSize,
   totalCount,
+  items,
 });
