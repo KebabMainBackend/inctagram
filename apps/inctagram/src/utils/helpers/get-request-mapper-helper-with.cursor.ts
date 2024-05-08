@@ -68,7 +68,7 @@ export const getRequestQueryMapperWithPageNumber = ({
     data.pageSize = Number(pageSize);
   }
   if (pageNumber) {
-    data.pageNumber = pageNumber;
+    data.pageNumber = Number(pageNumber);
   }
   if (sortDirection) {
     data.sortDirection = sortDirection.toLowerCase() as SortDirection;
