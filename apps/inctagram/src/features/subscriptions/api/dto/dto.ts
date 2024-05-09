@@ -38,7 +38,7 @@ export class createPaypalWebhook {
 
 export class GetUserPaymentsQueryDto {
   @IsString()
-  limit: string = '3';
+  limit: string = '10';
   @IsString()
   page: string = '1';
 }

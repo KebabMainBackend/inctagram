@@ -6,6 +6,8 @@ export class ProductQueryRepository {
   constructor(private prisma: PrismaService) {}
 
   async getSubscriptionsTypes() {
-    return this.prisma.product.findMany();
+    return this.prisma.product.findMany({
+      orderBy: {id: 'asc'}
+    });
   }
 }

@@ -23,22 +23,26 @@ export class GetUserPaymentsHandler
   async execute(command: GetUserPaymentsCommand) {
     const { userId, limit, offset } = command;
 
-    const payments = await this.subscriptionRepo.getPayments(
+    const {payments, totalCount, page} = await this.subscriptionRepo.getPayments(
       userId,
       limit,
       offset,
     );
 
-    return payments.map((p) => {
-      return {
-        id: p.paymentId,
-        userId: p.userId,
-        dateOfPayments: p.dateOfPayment,
-        endDateOfSubscription: p.endDateOfSubscription,
-        price: p.price,
-        subscriptionType: p.interval,
-        paymentType: p.paymentSystem,
-      };
-    });
+    return {
+      payments: payments.map((p) => {
+        return {
+          id: p.paymentId,
+          userId: p.userId,
+          dateOfPayments: p.dateOfPayment,
+          endDateOfSubscription: p.endDateOfSubscription,
+          price: p.price,
+          subscriptionType: p.interval,
+          paymentType: p.paymentSystem
+        };
+      }),
+      totalCount,
+      page
+    }
   }
 }

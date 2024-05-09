@@ -70,12 +70,17 @@ export class SubscriptionRepository {
   }
 
   async getPayments(userId: number, limit, offset) {
-    return await this.prisma.payments.findMany({
+
+    const totalCount = await this.prisma.payments.count({where: {userId}})
+
+    const payments = await this.prisma.payments.findMany({
       where: { userId },
       orderBy: { dateOfPayment: 'asc' },
       take: limit,
       skip: offset,
-    });
+    })
+
+    return {payments, totalCount, page: offset / limit + 1}
   }
   async updateStripeCustomerId(userId: number, customerId: string) {
     await this.prisma.currentSubscription.update({
@@ -92,11 +97,15 @@ export class SubscriptionRepository {
     await this.prisma.payments.create({ data: payment });
   }
 
-  async updatePayment(endDateOfSubscription, paypalSubscriptionId) {
-    await this.prisma.payments.updateMany({
-      where: { endDateOfSubscription },
-      data: { paypalSubscriptionId },
-    });
+  async updateSubscriptionInfo(subscriptionId: number,
+                               stripeSubscriptionId: string | null,
+                               paypalSubscriptionId: string | null,
+                               autoRenewal: boolean) {
+
+    await this.prisma.subscription.update({
+      where: { subscriptionId: subscriptionId },
+      data: { stripeSubscriptionId, paypalSubscriptionId, autoRenewal },
+    })
   }
 
   async updateCurrentSubscription({

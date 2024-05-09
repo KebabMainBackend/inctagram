@@ -11,8 +11,8 @@ import { PrismaService } from '../../prisma.service';
 import { BadRequestException } from '@nestjs/common';
 import {
   existedAutoRenewalStatus,
-  incorrectSubscriptionId,
-} from '../../errorsMessages';
+  incorrectSubscriptionId, wrongEntityOwner
+} from "../../errorsMessages";
 import { PaypalAdapter } from '../../common/adapters/paypal.adapter';
 import { SubscriptionEntity } from '../../db/domain/subscription.entity';
 
@@ -32,51 +32,61 @@ export class UpdateAutoRenewalStatusHandler
     private stripeAdapter: StripeAdapter,
     private paypalAdapter: PaypalAdapter,
     private commandBus: CommandBus,
-    private prisma: PrismaService,
   ) {}
-
-  // если ауто реневал может быт ьтолько один
-  // то можно отменять предыдущую подписку и создавать новую на план с автопродлением
 
   async execute({ payload, userId }: UpdateAutoRenewalStatusCommand) {
     const { subscriptionId, autoRenewal } = payload;
-    const subscription: SubscriptionEntity =
+
+    const subscription =
       await this.subscriptionRepository.getSubscriptionByID(subscriptionId);
 
-    if (!subscription) throw new BadRequestException(incorrectSubscriptionId);
+    const currentSubscription =
+      await this.subscriptionRepository.getCurrentSubscription(userId)
 
-    if (subscription.autoRenewal === autoRenewal)
+    if(!subscription)
+      throw new BadRequestException(incorrectSubscriptionId);
+    if(subscription.userId !== userId)
+      throw new BadRequestException(wrongEntityOwner)
+    if(subscription.autoRenewal === autoRenewal)
       throw new BadRequestException(existedAutoRenewalStatus);
 
-    if (subscription.paymentSystem === 'Stripe')
-      await this.updateAutoRenewalStatus(subscription, autoRenewal, userId);
-    else if (subscription.paymentSystem === 'Paypal') {
-      const paypalSubscriptionId = subscription.paypalSubscriptionId;
+    let stripeSubscriptionId: string | null = null
+    let paypalSubscriptionId: string | null = null
 
-      const cancelledSubscription = await this.paypalAdapter.cancelSubscription(
-        paypalSubscriptionId,
+    if (subscription.paymentSystem === 'Stripe') {
+      const customer = await this.commandBus.execute(
+        new CreateStripeCustomerCommand(
+          userId,
+          subscription.profile.user.email,
+        ),
       );
 
-      const newPaypalSubscription = await this.paypalAdapter.subscribeUser(
-        userId,
-        cancelledSubscription.plan_id,
-        autoRenewal,
-      );
-
-      // надо добавить trial периоды для подписок с auto renewal на основе expireAt
-
-      const subscriptionDto =
-        CreateSubscriptionDto.createSubscriptionDtoByOldSubscription(
+      stripeSubscriptionId =
+        await this.stripeAdapter.updateAutoRenewalStatus(
           subscription,
-        );
-
-      const newDbSubscription = SubscriptionEntity.create(
-        subscriptionDto,
-        autoRenewal,
-      );
-
-      await this.subscriptionRepository.addSubscriptionToDB(newDbSubscription);
+          autoRenewal,
+          customer
+        )
     }
+    else if (subscription.paymentSystem === 'Paypal') {
+      const startTime = autoRenewal ?
+          currentSubscription.expireAt
+        : null
+
+      paypalSubscriptionId =
+        await this.paypalAdapter.updateAutoRenewalStatus(
+          subscription,
+          autoRenewal,
+          startTime
+        )
+    }
+
+    await this.subscriptionRepository.updateSubscriptionInfo(
+      subscriptionId,
+      stripeSubscriptionId,
+      paypalSubscriptionId,
+      autoRenewal
+      )
 
     await this.subscriptionRepository.updateCurrentSubscriptionHasAutoRenewalStatus(
       userId,
@@ -84,47 +94,5 @@ export class UpdateAutoRenewalStatusHandler
     );
 
     return 'Auto renewal status was updated successfully!';
-  }
-
-  async updateAutoRenewalStatus(
-    dbSubscription,
-    autoRenewal: boolean,
-    userId: number,
-  ) {
-    const stripe = new Stripe(process.env.STRIPE_API_KEY);
-
-    const customer = await this.commandBus.execute(
-      new CreateStripeCustomerCommand(
-        userId,
-        dbSubscription.profile.user.email,
-      ),
-    );
-
-    if (autoRenewal && !dbSubscription.stripeSubscriptionId) {
-      const subscription = await stripe.subscriptions.create({
-        customer: customer.stripeCustomerId,
-
-        cancel_at_period_end: !autoRenewal,
-        items: [{ price: dbSubscription.subscriptionPriceId }],
-        trial_end: Math.floor(
-          dbSubscription.dateOfNextPayment.getTime() / 1000,
-        ),
-      });
-
-      await this.prisma.subscription.update({
-        where: { subscriptionId: dbSubscription.subscriptionId },
-        data: { stripeSubscriptionId: subscription.id, autoRenewal },
-      });
-    } else {
-      await stripe.subscriptions.update(dbSubscription.stripeSubscriptionId, {
-        cancel_at_period_end: !autoRenewal,
-        metadata: { key: process.env.STRIPE_API_KEY },
-      });
-
-      await this.prisma.subscription.update({
-        where: { subscriptionId: dbSubscription.subscriptionId },
-        data: { autoRenewal },
-      });
-    }
   }
 }

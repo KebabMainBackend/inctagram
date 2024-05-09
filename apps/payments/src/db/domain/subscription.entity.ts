@@ -32,6 +32,8 @@ export class SubscriptionEntity {
       subscriptionPriceId,
       paypalSubscriptionId,
       interval,
+      dateOfNextPayment,
+      dateOfSubscribe
     } = data;
 
     const subscription = new SubscriptionEntity();
@@ -41,9 +43,8 @@ export class SubscriptionEntity {
     subscription.paymentSystem = paymentSystem;
     subscription.autoRenewal = autoRenewal;
 
-    subscription.dateOfSubscribe = new Date();
-    //subscription.dateOfNextPayment = new Date()
-    subscription.dateOfNextPayment = addDays(new Date(), period);
+    subscription.dateOfSubscribe = dateOfSubscribe ?? new Date()
+    subscription.dateOfNextPayment = dateOfNextPayment ??  addDays(new Date(), period);
 
     subscription.productPriceId = productPriceId;
     subscription.subscriptionPriceId = subscriptionPriceId;
