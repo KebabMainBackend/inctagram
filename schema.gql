@@ -2,24 +2,72 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type ProfileModel {
-  """user full name"""
-  fullName: String!
+type ImageModel {
+  """file id"""
+  id: String!
 
-  """birthDate"""
-  birthDate: String!
+  """file url"""
+  url: String!
+
+  """file createdAt"""
+  createdAt: String!
+
+  """file type"""
+  type: String!
+}
+
+type AvatarModel {
+  """file url"""
+  url: String!
+
+  """file width"""
+  width: Int!
+
+  """file height"""
+  height: Int!
+
+  """file fileSize"""
+  fileSize: Int!
+}
+
+type AvatarsModel {
+  """file url"""
+  thumbnail: AvatarModel!
+
+  """file url"""
+  medium: AvatarModel!
+}
+
+type ProfileModel {
+  """user id"""
+  id: Int!
+
+  """user firstname"""
+  firstname: String
+
+  """user firstname"""
+  lastname: String
+
+  """username"""
+  username: String!
 
   """user createdAt"""
   createdAt: String!
 
+  """birthDate"""
+  birthDate: String
+
   """user city"""
-  city: String!
+  city: String
 
   """about user"""
-  aboutMe: String!
+  aboutMe: String
+
+  """accountType user"""
+  accountType: String!
 
   """user avatar"""
-  avatar: String!
+  avatars: AvatarsModel
 }
 
 type UserModel {
@@ -32,9 +80,14 @@ type UserModel {
   """username"""
   username: String!
 
+  """user email"""
+  email: String!
+
   """user createdAt"""
   createdAt: String!
-  profile: ProfileModel!
+
+  """user profile"""
+  profile: ProfileModel
 }
 
 type PaginationModel {
@@ -44,17 +97,52 @@ type PaginationModel {
   totalCount: Int!
 }
 
+type PaymentModel {
+  """payment id"""
+  id: Int!
+
+  """payment userId"""
+  userId: Int!
+
+  """payment price"""
+  price: Int!
+
+  """payment dateOfPayments"""
+  dateOfPayments: String!
+
+  """payment endDateOfSubscription"""
+  endDateOfSubscription: String!
+
+  """subscription Type"""
+  subscriptionType: String!
+
+  """Payment Types"""
+  paymentType: String!
+}
+
 type UserPaginationModel {
   """users"""
   users: [UserModel!]!
   pagination: PaginationModel!
 }
 
+type UserPaymentsPaginationModel {
+  pagesCount: Int!
+  pageNumber: Int!
+  pageSize: Int!
+  totalCount: Int!
+
+  """user payments"""
+  items: [PaymentModel!]!
+}
+
 type Query {
-  getUsers(pageSize: Int = 10, pageNumber: Int = 1, sortBy: String = "createdAt", sortDirection: String = "desc", searchTerm: String): UserPaginationModel!
-  getUser(id: Int!): UserModel!
+  getUsers(pageSize: Int = 10, pageNumber: Int = 1, sortBy: String = "createdAt", sortDirection: String = "desc", searchTerm: String = ""): UserPaginationModel!
+  getUser(id: Int!): ProfileModel!
+  getPaymentsOfUser(pageSize: Int = 10, pageNumber: Int = 1, id: Int!): UserPaymentsPaginationModel!
+  getPhotosOfUser(id: Int!): [ImageModel]
 }
 
 type Mutation {
-  removeAdmin(id: Int!): UserModel!
+  deleteUser(userId: Int!): String!
 }

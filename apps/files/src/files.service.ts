@@ -100,4 +100,20 @@ export class FilesService {
       type: image.type,
     }));
   }
+  async getAllImagesOfUser(userId: number) {
+    const images = await this.fileImageModel.find({
+      ownerId: userId,
+    });
+    return images.map((i) => ({
+      id: i._id,
+      url: 'https://storage.yandexcloud.net/kebab-inctagram/' + i.url,
+      createdAt: i.createdAt,
+      type: i.type,
+    }));
+  }
+  async deleteAllImagesOfUser(userId: number) {
+    await this.fileImageModel.deleteMany({
+      ownerId: userId,
+    });
+  }
 }

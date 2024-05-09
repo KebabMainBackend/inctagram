@@ -12,18 +12,18 @@ export class PaymentModel {
   @Field(() => Int, { description: 'payment userId' })
   userId: number;
 
-  @Field(() => Int, { description: 'payment amount' })
-  amount: string;
+  @Field(() => Int, { description: 'payment price' })
+  price: string;
 
-  @Field({ description: 'payment dateOfPayment' })
-  dateOfPayment: string;
+  @Field({ description: 'payment dateOfPayments' })
+  dateOfPayments: string;
 
-  @Field({ description: 'payment dateOfNextPayment' })
-  dateOfNextPayment: string;
+  @Field({ description: 'payment endDateOfSubscription' })
+  endDateOfSubscription: string;
 
-  @Field(() => SubscriptionEnumTypes, { description: 'subscription Type' })
-  subscriptionType: SubscriptionEnumTypes;
+  @Field({ description: 'subscription Type' })
+  subscriptionType: string;
 
-  @Field(() => PaymentEnumTypes, { description: 'Payment Types' })
-  paymentType: PaymentEnumTypes;
+  @Field({ description: 'Payment Types' })
+  paymentType: string;
 }

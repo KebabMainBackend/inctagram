@@ -44,13 +44,12 @@ export class CreatePaypalWebhookHandler
             event_types: [
               {
                 name: 'PAYMENT.SALE.COMPLETED',
-              }
-            ]
+              },
+            ],
           }),
         },
       );
       const webhook = await webhookResponse.json();
-      console.log(webhook);
       return webhook;
     } catch (e) {
       console.log(e);

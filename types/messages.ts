@@ -6,6 +6,8 @@ export enum FilesMicroserviceMessagesEnum {
   UPLOAD_POST_IMAGES = 'upload-post-images',
   DELETE_POST_IMAGE = 'delete-post-image',
   GET_USER_THUMBNAIL_AVATAR = 'get-user-thumbnail-avatar',
+  GET_USER_ALL_PHOTOS = 'get-user-all-photos',
+  DELETE_USER_ALL_PHOTOS = 'delete-user-all-photos',
 }
 
 export enum PaymentsMicroserviceMessagesEnum {

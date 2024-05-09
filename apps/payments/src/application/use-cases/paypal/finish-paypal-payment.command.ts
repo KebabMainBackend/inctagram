@@ -1,13 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { SubscriptionRepository } from '../../../db/subscription.repository';
-import { StripeAdapter } from '../../../common/adapters/stripe.adapter';
 import { PaypalAdapter } from '../../../common/adapters/paypal.adapter';
 import { SubscriptionEntity } from '../../../db/domain/subscription.entity';
-import { getPaypalRequestHeaders } from '../../dto/paypal.dto';
 import { ConfigService } from '@nestjs/config';
 import { CreateSubscriptionDto } from '../../../api/dto/subscription.dto';
 import { PaymentsEntity } from '../../../db/domain/payments.entity';
-import { login } from "../../../../../inctagram/test/managers/login";
 
 export class FinishPaypalPaymentCommand {
   constructor(public body: any) {}
@@ -35,7 +32,7 @@ export class FinishPaypalPaymentHandler
       console.log('вебхук сработал');
       const data = payload.body.payload.resource;
 
-      if(payload.body.payload.event_type === 'BILLING.PLAN.CREATED') {
+      if (payload.body.payload.event_type === 'BILLING.PLAN.CREATED') {
         console.log(data);
       }
 
