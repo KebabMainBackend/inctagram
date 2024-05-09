@@ -1,6 +1,5 @@
 import { IsBoolean, IsNumber, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { DefaultValuePipe } from '@nestjs/common';
 
 export class PurchaseSubscriptionDto {
   @IsString()
@@ -38,7 +37,7 @@ export class createPaypalWebhook {
 
 export class GetUserPaymentsQueryDto {
   @IsString()
-  limit: string = '10';
+  pageSize: number = 8;
   @IsString()
   page: string = '1';
 }
