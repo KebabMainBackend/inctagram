@@ -73,14 +73,14 @@ export class SubscriptionRepository {
 
   async getPayments(userId: number, query: GetDefaultUriDtoWithPageNumber) {
     const { pageSize, pageNumber } = getRequestQueryMapperWithPageNumber(query);
-    const totalCount = await this.prisma.post.count({
+    const totalCount = await this.prisma.payments.count({
       where: { userId },
     });
     const payments = await this.prisma.payments.findMany({
       where: { userId },
       orderBy: { dateOfPayment: 'asc' },
       take: pageSize,
-      skip: pageNumber,
+      skip: (pageNumber - 1) * pageSize,
     });
     return getRequestReturnMapperWithPageNumber({
       pageNumber,
