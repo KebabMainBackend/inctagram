@@ -1,4 +1,4 @@
-import { IsBoolean, IsInt, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsInt, IsString } from "class-validator";
 import { ApiProperty } from '@nestjs/swagger';
 import { Optional } from '@nestjs/common';
 import { ProductEntity } from '../../db/domain/product.entity';
@@ -56,6 +56,13 @@ export class CreateSubscriptionDto {
   @IsString()
   @Optional()
   subscriptionPriceId: string | null;
+  @IsDate()
+  @Optional()
+  dateOfNextPayment?: Date | null
+  @IsDate()
+  @Optional()
+  dateOfSubscribe?: Date | null
+
   constructor() {}
 
   static createSubscriptionDto(
@@ -73,6 +80,8 @@ export class CreateSubscriptionDto {
       paypalSubscriptionId,
       paymentSystem,
       userId,
+      dateOfNextPayment: null,
+      dateOfSubscribe: null
     };
   }
 
@@ -87,6 +96,8 @@ export class CreateSubscriptionDto {
       paypalSubscriptionId: oldSubscription.paypalSubscriptionId,
       paymentSystem: 'Paypal',
       userId: oldSubscription.userId,
+      dateOfNextPayment: oldSubscription.dateOfNextPayment,
+      dateOfSubscribe: oldSubscription.dateOfSubscribe
     };
   }
 }

@@ -167,4 +167,14 @@ export class SubscriptionRepository {
       data: { hasAutoRenewal: autoRenewal },
     });
   }
+
+  async updateSubscriptionInfo(subscriptionId,
+                               stripeSubscriptionId,
+                               paypalSubscriptionId,
+                               autoRenewal) {
+    await this.prisma.subscription.update({
+      where: {subscriptionId},
+      data: { stripeSubscriptionId, paypalSubscriptionId, autoRenewal}
+    })
+  }
 }
