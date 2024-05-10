@@ -12,3 +12,8 @@ export const existedAutoRenewalStatus = {
   message: 'You are trying to set the same status for the current subscription',
   field: 'autoRenewal',
 };
+
+export const wrongEntityOwner = {
+  message: 'You are trying to update the entity that you are not the owner',
+  field: 'userId',
+}

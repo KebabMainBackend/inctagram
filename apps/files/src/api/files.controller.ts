@@ -45,6 +45,20 @@ export class FilesController {
     return await this.fileService.getImageById(data.imageId);
   }
 
+  @MessagePattern({
+    cmd: FilesMicroserviceMessagesEnum.GET_USER_ALL_PHOTOS,
+  })
+  async getUserAllPhotos(data: { ownerId: number }) {
+    return await this.fileService.getAllImagesOfUser(data.ownerId);
+  }
+
+  @MessagePattern({
+    cmd: FilesMicroserviceMessagesEnum.DELETE_USER_ALL_PHOTOS,
+  })
+  async deleteUserAllPhotos(data: { ownerId: number }) {
+    return await this.fileService.deleteAllImagesOfUser(data.ownerId);
+  }
+
   @MessagePattern({ cmd: 'hello-world' })
   hello() {
     return 'hello world from files';

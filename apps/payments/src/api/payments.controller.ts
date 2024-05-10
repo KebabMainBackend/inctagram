@@ -13,6 +13,7 @@ import { UpdateAutoRenewalStatusCommand } from '../application/use-cases/update-
 import { GetUserPaymentsCommand } from '../application/use-cases/get-user-payments.command';
 import { CreatePaypalWebhookCommand } from '../application/use-cases/paypal/create-paypal-webhook.command';
 import { createPaypalWebhook } from '../../../inctagram/src/features/subscriptions/api/dto/dto';
+import { GetDefaultUriDtoWithPageNumber } from '../../../inctagram/src/utils/default-get-query.uri.dto';
 
 @Controller()
 export class PaymentsController {
@@ -25,7 +26,6 @@ export class PaymentsController {
     cmd: 'hello',
   })
   async hello() {
-    console.log('yeet');
     return 'hello';
   }
 
@@ -80,11 +80,10 @@ export class PaymentsController {
   })
   async getUserPayments(data: {
     userId: number;
-    limit: number;
-    offset: number;
+    query: GetDefaultUriDtoWithPageNumber;
   }) {
     return this.commandBus.execute(
-      new GetUserPaymentsCommand(data.userId, data.limit, data.offset),
+      new GetUserPaymentsCommand(data.userId, data.query),
     );
   }
 

@@ -25,7 +25,6 @@ export class CreatePaypalProductHandler
 
   async execute({ payload }: CreatePaypalProductCommand) {
     try {
-      console.log(payload);
       const product = await this.paypalAdapter.createProduct(
         payload.productName,
         payload.description,

@@ -12,6 +12,9 @@ export class UserModel {
   @Field({ description: 'username' })
   username: string;
 
+  @Field({ description: 'user email' })
+  email: string;
+
   @Field({ description: 'user createdAt' })
   createdAt: string;
 

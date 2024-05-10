@@ -32,7 +32,7 @@ export const getPlanDto = (product, interval, price, currency) => {
   };
 };
 
-export const getPaypalRequestHeaders = (paypalReqId, token) => {
+export const getPaypalRequestHeaders = (token) => {
   return {
     'X-PAYPAL-SECURITY-CONTEXT':
       '{' +
@@ -45,7 +45,6 @@ export const getPaypalRequestHeaders = (paypalReqId, token) => {
       ']}',
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'PayPal-Request-Id': `${paypalReqId}`,
     Prefer: 'return=representation',
     Authorization: `Basic ${token}`,
   };
@@ -74,10 +73,14 @@ export const getSubscriptionDto = (
   return_url,
   cancel_url,
   autoRenewal,
+  startTime: Date | null
 ) => {
+
+  startTime = startTime ?? addMinutes(new Date(), 2)
+
   return {
     plan_id: `${planId}`,
-    start_time: `${addMinutes(new Date(), 10).toISOString()}`,
+    start_time: `${startTime.toISOString()}`,
     auto_renewal: `${autoRenewal}`,
     custom_id: `${userId}`,
     application_context: {

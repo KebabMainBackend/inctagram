@@ -1,7 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { StripeAdapter } from '../../../common/adapters/stripe.adapter';
 import { SubscriptionRepository } from '../../../db/subscription.repository';
-import { PrismaService } from '../../../prisma.service';
 import { CreateSubscriptionDto } from '../../../api/dto/subscription.dto';
 import { SubscriptionEntity } from '../../../db/domain/subscription.entity';
 import { PaymentsEntity } from '../../../db/domain/payments.entity';

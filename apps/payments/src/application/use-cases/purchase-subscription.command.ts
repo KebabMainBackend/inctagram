@@ -27,7 +27,6 @@ export class PurchaseSubscriptionHandler
   ) {}
 
   async execute({ userId, payload }: PurchaseSubscriptionCommand) {
-    // get stripeProductId and stripePriceId
     const productInfo = await this.productRepository.getProductInfo(
       payload.productPriceId,
     );

@@ -1,5 +1,4 @@
-import { ObjectType, Field } from '@nestjs/graphql';
-import { FileImageTypeEnum } from '../../../../../../../types/file-image-enum.types';
+import { ObjectType, Field, Int } from '@nestjs/graphql';
 
 @ObjectType()
 export class ImageModel {
@@ -12,6 +11,28 @@ export class ImageModel {
   @Field({ description: 'file createdAt' })
   createdAt: string;
 
-  @Field(() => FileImageTypeEnum, { description: 'user createdAt' })
-  type: FileImageTypeEnum;
+  @Field({ description: 'file type' })
+  type: string;
+}
+
+@ObjectType()
+export class AvatarModel {
+  @Field({ description: 'file url' })
+  url: string;
+
+  @Field(() => Int, { description: 'file width' })
+  width: number;
+  @Field(() => Int, { description: 'file height' })
+  height: number;
+
+  @Field(() => Int, { description: 'file fileSize' })
+  fileSize: number;
+}
+
+@ObjectType()
+export class AvatarsModel {
+  @Field(() => AvatarModel, { description: 'file url' })
+  thumbnail: AvatarModel;
+  @Field(() => AvatarModel, { description: 'file url' })
+  medium: AvatarModel;
 }

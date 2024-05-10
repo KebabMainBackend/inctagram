@@ -68,7 +68,7 @@ export const getRequestQueryMapperWithPageNumber = ({
     data.pageSize = Number(pageSize);
   }
   if (pageNumber) {
-    data.pageNumber = pageNumber;
+    data.pageNumber = Number(pageNumber);
   }
   if (sortDirection) {
     data.sortDirection = sortDirection.toLowerCase() as SortDirection;
@@ -97,9 +97,11 @@ export const getRequestReturnMapperWithPageNumber = <T>({
   pageSize,
   pageNumber,
   totalCount,
+  items,
 }: GetRequestMapperHelperWithPageNumber<T>) => ({
   pagesCount: Math.ceil(totalCount / pageSize),
   pageNumber,
   pageSize,
   totalCount,
+  items,
 });

@@ -1,18 +1,15 @@
-import {
-  Resolver,
-  Query,
-  Mutation,
-  Args,
-  Int,
-  ResolveField,
-  Parent,
-} from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { UserModel } from '../db/entities/user.model';
 import { CommandBus } from '@nestjs/cqrs';
 import { ProfileModel } from '../db/entities/profile.model';
-import { GetUsersQueryDto } from './dto/get-users.dto';
+import { GetUserPaymentsQueryDto, GetUsersQueryDto } from './dto/get-users.dto';
 import { UsersQueryRepository } from '../db/users.query-repository';
-import { UserPaginationModel } from '../db/entities/return.model';
+import {
+  UserPaginationModel,
+  UserPaymentsPaginationModel,
+} from '../db/entities/return.model';
+import { ImageModel } from '../db/entities/file.model';
+import { DeleteUserCommand } from '../application/delete-user.command';
 
 @Resolver(() => UserModel)
 export class AdminResolver {
@@ -26,26 +23,36 @@ export class AdminResolver {
     return this.userQueryRepo.getAllUsers(args);
   }
 
-  @Query(() => UserModel, { name: 'getUser' })
+  @Query(() => ProfileModel, { name: 'getUser' })
   findOne(@Args('id', { type: () => Int }) id: number) {
-    return id;
+    return this.userQueryRepo.getUser(id);
     // return this.adminService.findOne(id);
   }
 
-  @ResolveField('profile', () => ProfileModel)
-  async posts(@Parent() user: UserModel) {
-    const { id } = user;
-    console.log(id);
-    // return this.postsService.findAll({ authorId: id });
+  @Query(() => UserPaymentsPaginationModel, { name: 'getPaymentsOfUser' })
+  findOnePayments(
+    @Args() args: GetUserPaymentsQueryDto,
+    @Args('id', { type: () => Int }) id: number,
+  ): Promise<any> {
+    return this.userQueryRepo.getUserPayments(id, args);
   }
 
-  // @Mutation(() => User)
-  // updateAdmin(@Args('updateAdminInput') updateAdminInput: CreateAdminInput) {
-  //   return this.adminService.update(updateAdminInput.id, updateAdminInput);
-  // }
+  @Query(() => [ImageModel], {
+    name: 'getPhotosOfUser',
+    nullable: 'itemsAndList',
+  })
+  findOnePosts(@Args('id', { type: () => Int }) id: number): Promise<any> {
+    return this.userQueryRepo.getUserPhotos(id);
+  }
 
-  @Mutation(() => UserModel)
-  removeAdmin(@Args('id', { type: () => Int }) id: number) {
-    // return this.adminService.remove(id);
+  @Mutation(() => String)
+  async deleteUser(@Args('userId', { type: () => Int }) userId: number) {
+    const isDeleted = await this.commandBus.execute(
+      new DeleteUserCommand(userId),
+    );
+    if (isDeleted) {
+      return 'deleted';
+    }
+    return 'not deleted';
   }
 }
