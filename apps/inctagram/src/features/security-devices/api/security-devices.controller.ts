@@ -31,6 +31,7 @@ export class SecurityDevicesController {
     if (data) {
       return this.securityDevicesQueryRepository.getAllDevicesOfUser(
         data.userId,
+        data.sessionId,
       );
     }
     throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
