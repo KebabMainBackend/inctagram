@@ -5,5 +5,5 @@ export const cookieOptions = (domain: string): CookieOptions => ({
   secure: true,
   sameSite: 'none',
   maxAge: 60 * 60 * 1000,
-  // domain,
+  domain,
 });
