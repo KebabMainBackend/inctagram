@@ -12,6 +12,7 @@ describe('AuthController', () => {
   let app: INestApplication;
   let httpServer;
   let accesstoken;
+  let refreshToken;
   // let user: { id: number; email: string };
   // const imagesIds = ['65f56c5702f9adf761f516d1', '65f56c5702f9adf761f516d3'];
 
@@ -41,11 +42,14 @@ describe('AuthController', () => {
     it('login user and get tokens', async () => {
       const data = await login(request(httpServer));
       accesstoken = data.body.accessToken;
+      refreshToken = data.headers['set-cookie'][0];
     });
     it('should get current user from token', async () => {
       await request(httpServer)
         .get('/auth/me')
         .set('Authorization', 'Bearer ' + accesstoken)
+        .set('Cookie', refreshToken)
+
         .expect(HttpStatus.OK);
     });
   });
