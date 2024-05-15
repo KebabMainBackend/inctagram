@@ -32,31 +32,32 @@ export class GetCurrentSubscriptionInfoHandler
         current.profile.user.email,
       );
     }
-    const daysLeft = differenceInDays(new Date(current.expireAt), new Date());
 
     const subscriptions = await this.subscriptionRepo.getSubscriptions(userId);
+    if (subscriptions.length) {
+      const expireAtFormatted = format(
+        parseISO(current.expireAt.toISOString()),
+        'dd.MM.yyyy',
+      );
+      const nextPaymentFormatted = format(
+        parseISO(subscriptions[0].dateOfNextPayment.toISOString()),
+        'dd.MM.yyyy',
+      );
 
-    const expireAtFormatted = format(
-      parseISO(current.expireAt.toISOString()),
-      'dd.MM.yyyy',
-    );
-    const nextPaymentFormatted = format(
-      parseISO(subscriptions[0].dateOfNextPayment.toISOString()),
-      'dd.MM.yyyy',
-    );
-
-    if (!current.hasAutoRenewal) {
-      return {
-        subscription: subscriptions[0],
-        expireAt: expireAtFormatted,
-      };
-    } else if (current.hasAutoRenewal) {
-      return {
-        subscription: subscriptions[0],
-        expireAt: expireAtFormatted,
-        nextPayment: nextPaymentFormatted,
-      };
+      if (!current.hasAutoRenewal) {
+        return {
+          subscription: subscriptions[0],
+          expireAt: expireAtFormatted,
+        };
+      } else if (current.hasAutoRenewal) {
+        return {
+          subscription: subscriptions[0],
+          expireAt: expireAtFormatted,
+          nextPayment: nextPaymentFormatted,
+        };
+      }
     }
+    return null;
   }
 
   async subscriptionHasExpired(userId: number, userEmail: string) {
