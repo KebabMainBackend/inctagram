@@ -23,7 +23,7 @@ COPY --chown=node package*.json ./
 COPY --chown=node yarn.lock ./
 
 
-RUN yarn install
+#RUN #yarn install
 
 # Bundle app source code
 COPY --chown=node . .
