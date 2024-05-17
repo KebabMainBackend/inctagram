@@ -13,7 +13,6 @@ import { SubscriptionsModule } from './features/subscriptions/subscriptions.modu
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AdminModule } from './features/admin/admin.module';
-import { formatError } from 'graphql/error';
 
 @Module({
   imports: [
@@ -41,6 +40,7 @@ import { formatError } from 'graphql/error';
     SubscriptionsModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
+      path: 'api/v1/graphql',
       playground: true,
       autoSchemaFile: 'schema.gql',
       include: [AdminModule],
