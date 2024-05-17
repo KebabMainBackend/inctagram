@@ -42,7 +42,7 @@ import { AdminModule } from './features/admin/admin.module';
       driver: ApolloDriver,
       path: 'api/v1/graphql',
       playground: true,
-      autoSchemaFile: 'schema.gql',
+      autoSchemaFile: true,
       include: [AdminModule],
       formatError: (err) => {
         return { message: err.message, path: err.path };

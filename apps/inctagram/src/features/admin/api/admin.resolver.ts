@@ -26,7 +26,6 @@ export class AdminResolver {
   @Query(() => ProfileModel, { name: 'getUser' })
   findOne(@Args('id', { type: () => Int }) id: number) {
     return this.userQueryRepo.getUser(id);
-    // return this.adminService.findOne(id);
   }
 
   @Query(() => UserPaymentsPaginationModel, { name: 'getPaymentsOfUser' })

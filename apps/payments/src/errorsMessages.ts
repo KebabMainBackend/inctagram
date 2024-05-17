@@ -16,4 +16,4 @@ export const existedAutoRenewalStatus = {
 export const wrongEntityOwner = {
   message: 'You are trying to update the entity that you are not the owner',
   field: 'userId',
-}
+};

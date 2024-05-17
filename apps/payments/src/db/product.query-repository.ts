@@ -7,7 +7,7 @@ export class ProductQueryRepository {
 
   async getSubscriptionsTypes() {
     return this.prisma.product.findMany({
-      orderBy: {id: 'asc'}
+      orderBy: { id: 'asc' },
     });
   }
 }

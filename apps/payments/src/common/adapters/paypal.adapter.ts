@@ -7,9 +7,9 @@ import {
   getSubscriptionDto,
 } from '../../application/dto/paypal.dto';
 import { ProductRepository } from '../../db/product.repository';
-import { CreateSubscriptionDto } from "../../api/dto/subscription.dto";
-import { SubscriptionEntity } from "../../db/domain/subscription.entity";
-import { SubscriptionRepository } from "../../db/subscription.repository";
+import { CreateSubscriptionDto } from '../../api/dto/subscription.dto';
+import { SubscriptionEntity } from '../../db/domain/subscription.entity';
+import { SubscriptionRepository } from '../../db/subscription.repository';
 
 @Injectable()
 export class PaypalAdapter {
@@ -67,14 +67,14 @@ export class PaypalAdapter {
     return plan;
   }
 
-  async subscribeUser(userId, planId, autoRenewal, startTime?: Date | null ) {
+  async subscribeUser(userId, planId, autoRenewal, startTime?: Date | null) {
     const subscriptionDto = getSubscriptionDto(
       planId,
       userId,
       this.configService.get('PAYMENT_SUCCESS_URL'),
       this.configService.get('PAYMENT_ERROR_URL'),
       autoRenewal,
-      startTime
+      startTime,
     );
 
     const result = await fetch(
@@ -88,7 +88,7 @@ export class PaypalAdapter {
 
     const subscription = await result.json();
 
-    return subscription
+    return subscription;
   }
 
   async cancelSubscription(paypalSubscriptionId) {
@@ -118,26 +118,32 @@ export class PaypalAdapter {
       subscription.plan_id,
     );
 
-    return { plan, userId: subscription.custom_id, paypalSubscriptionInfo: subscription };
+    return {
+      plan,
+      userId: subscription.custom_id,
+      paypalSubscriptionInfo: subscription,
+    };
   }
 
-  async updateAutoRenewalStatus(subscription, autoRenewal, startTime: Date | null = null) {
+  async updateAutoRenewalStatus(
+    subscription,
+    autoRenewal,
+    startTime: Date | null = null,
+  ) {
     const paypalSubscriptionId = subscription.paypalSubscriptionId;
 
     const { userId, paypalSubscriptionInfo } =
-      await this.getPaypalSubscriptionInfo(
-        paypalSubscriptionId,
-      );
+      await this.getPaypalSubscriptionInfo(paypalSubscriptionId);
 
-    await this.cancelSubscription(paypalSubscriptionId)
+    await this.cancelSubscription(paypalSubscriptionId);
 
     const newSubscription = await this.subscribeUser(
       userId,
       paypalSubscriptionInfo.plan_id,
       autoRenewal,
-      startTime
+      startTime,
     );
 
-    return newSubscription.id
+    return newSubscription.id;
   }
 }

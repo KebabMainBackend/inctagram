@@ -11,8 +11,9 @@ import { PrismaService } from '../../prisma.service';
 import { BadRequestException } from '@nestjs/common';
 import {
   existedAutoRenewalStatus,
-  incorrectSubscriptionId, wrongEntityOwner
-} from "../../errorsMessages";
+  incorrectSubscriptionId,
+  wrongEntityOwner,
+} from '../../errorsMessages';
 import { PaypalAdapter } from '../../common/adapters/paypal.adapter';
 import { SubscriptionEntity } from '../../db/domain/subscription.entity';
 
@@ -37,21 +38,21 @@ export class UpdateAutoRenewalStatusHandler
   async execute({ payload, userId }: UpdateAutoRenewalStatusCommand) {
     const { subscriptionId, autoRenewal } = payload;
 
-    const subscription =
-      await this.subscriptionRepository.getSubscriptionByID(subscriptionId);
+    const subscription = await this.subscriptionRepository.getSubscriptionByID(
+      subscriptionId,
+    );
 
     const currentSubscription =
-      await this.subscriptionRepository.getCurrentSubscription(userId)
+      await this.subscriptionRepository.getCurrentSubscription(userId);
 
-    if(!subscription)
-      throw new BadRequestException(incorrectSubscriptionId);
-    if(subscription.userId !== userId)
-      throw new BadRequestException(wrongEntityOwner)
-    if(subscription.autoRenewal === autoRenewal)
+    if (!subscription) throw new BadRequestException(incorrectSubscriptionId);
+    if (subscription.userId !== userId)
+      throw new BadRequestException(wrongEntityOwner);
+    if (subscription.autoRenewal === autoRenewal)
       throw new BadRequestException(existedAutoRenewalStatus);
 
-    let stripeSubscriptionId: string | null = null
-    let paypalSubscriptionId: string | null = null
+    let stripeSubscriptionId: string | null = null;
+    let paypalSubscriptionId: string | null = null;
 
     if (subscription.paymentSystem === 'Stripe') {
       const customer = await this.commandBus.execute(
@@ -61,32 +62,27 @@ export class UpdateAutoRenewalStatusHandler
         ),
       );
 
-      stripeSubscriptionId =
-        await this.stripeAdapter.updateAutoRenewalStatus(
-          subscription,
-          autoRenewal,
-          customer
-        )
-    }
-    else if (subscription.paymentSystem === 'Paypal') {
-      const startTime = autoRenewal ?
-          currentSubscription.expireAt
-        : null
+      stripeSubscriptionId = await this.stripeAdapter.updateAutoRenewalStatus(
+        subscription,
+        autoRenewal,
+        customer,
+      );
+    } else if (subscription.paymentSystem === 'Paypal') {
+      const startTime = autoRenewal ? currentSubscription.expireAt : null;
 
-      paypalSubscriptionId =
-        await this.paypalAdapter.updateAutoRenewalStatus(
-          subscription,
-          autoRenewal,
-          startTime
-        )
+      paypalSubscriptionId = await this.paypalAdapter.updateAutoRenewalStatus(
+        subscription,
+        autoRenewal,
+        startTime,
+      );
     }
 
     await this.subscriptionRepository.updateSubscriptionInfo(
       subscriptionId,
       stripeSubscriptionId,
       paypalSubscriptionId,
-      autoRenewal
-      )
+      autoRenewal,
+    );
 
     await this.subscriptionRepository.updateCurrentSubscriptionHasAutoRenewalStatus(
       userId,
