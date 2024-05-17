@@ -43,10 +43,23 @@ import { AdminModule } from './features/admin/admin.module';
       path: 'api/v1/graphql',
       playground: true,
       autoSchemaFile: true,
+
       include: [AdminModule],
       formatError: (err) => {
         return { message: err.message, path: err.path };
       },
+      // context: ({ req, res, connection }) => {
+      //   if (connection) {
+      //     // If this WebSocket connection
+      //     // Return context for WebSocket connection
+      //     return {
+      //       req: connection.context,
+      //     };
+      //   }
+      //
+      //   return { req, res };
+      // },
+      // Сетевые проблемы: Может быть проблема с сетью или DNS на вашем сервере, что делает сервер недоступным для playground. Проверьте настройки сети и доступность сервера.
     }),
     AdminModule,
   ],

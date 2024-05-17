@@ -23,17 +23,17 @@ export class GetCurrentSubscriptionInfoHandler
     const { userId } = command;
 
     const current = await this.subscriptionRepo.getCurrentSubscription(userId);
-
     if (!current) return { errorCode: HttpStatus.NOT_FOUND };
 
     if (current.expireAt < new Date()) {
-      return await this.subscriptionHasExpired(
-        userId,
-        current.profile.user.email,
-      );
+      await this.subscriptionHasExpired(userId, current.profile.user.email);
+      return {
+        errorCode: HttpStatus.NOT_FOUND,
+        message: 'Subscription expired',
+      };
     }
-
     const subscriptions = await this.subscriptionRepo.getSubscriptions(userId);
+    console.log(subscriptions, '4');
     if (subscriptions.length) {
       const expireAtFormatted = format(
         parseISO(current.expireAt.toISOString()),
@@ -45,11 +45,13 @@ export class GetCurrentSubscriptionInfoHandler
       );
 
       if (!current.hasAutoRenewal) {
+        console.log(subscriptions[0], 1);
         return {
           subscription: subscriptions[0],
           expireAt: expireAtFormatted,
         };
       } else if (current.hasAutoRenewal) {
+        console.log(subscriptions[0], 2);
         return {
           subscription: subscriptions[0],
           expireAt: expireAtFormatted,
@@ -67,7 +69,6 @@ export class GetCurrentSubscriptionInfoHandler
         accountType: 'PERSONAL',
       },
     });
-
-    return await this.emailService.sendSubscriptionHasExpiredEmail(userEmail);
+    await this.emailService.sendSubscriptionHasExpiredEmail(userEmail);
   }
 }
