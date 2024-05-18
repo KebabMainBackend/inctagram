@@ -41,6 +41,7 @@ import { AdminModule } from './features/admin/admin.module';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       path: 'api/v1/graphql',
+      introspection: true,
       playground: true,
       autoSchemaFile: true,
 
