@@ -5,10 +5,10 @@ import { PaymentModel } from './payment.model';
 
 @ObjectType()
 export class UserPaginationModel {
-  @Field(() => [UserModel], { description: 'users' })
+  @Field(() => [UserModel], { description: 'users', nullable: true })
   users: UserModel[];
 
-  @Field(() => PaginationModel)
+  @Field(() => PaginationModel, { description: 'users', nullable: true })
   pagination: PaginationModel;
 }
 

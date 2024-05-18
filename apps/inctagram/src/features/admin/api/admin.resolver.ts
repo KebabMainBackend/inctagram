@@ -10,6 +10,8 @@ import {
 } from '../db/entities/return.model';
 import { ImageModel } from '../db/entities/file.model';
 import { DeleteUserCommand } from '../application/delete-user.command';
+import { UseGuards } from '@nestjs/common';
+import { BasicAuthGuard } from '../../../auth/guards/basic-auth.guard';
 
 @Resolver(() => UserModel)
 export class AdminResolver {
@@ -18,17 +20,23 @@ export class AdminResolver {
     private userQueryRepo: UsersQueryRepository,
   ) {}
 
-  @Query(() => UserPaginationModel, { name: 'getUsers' })
+  @Query(() => UserPaginationModel, {
+    name: 'getUsers',
+    nullable: true,
+  })
+  @UseGuards(BasicAuthGuard)
   async findAll(@Args() args: GetUsersQueryDto): Promise<UserPaginationModel> {
     return this.userQueryRepo.getAllUsers(args);
   }
 
   @Query(() => ProfileModel, { name: 'getUser' })
+  @UseGuards(BasicAuthGuard)
   findOne(@Args('id', { type: () => Int }) id: number) {
     return this.userQueryRepo.getUser(id);
   }
 
   @Query(() => UserPaymentsPaginationModel, { name: 'getPaymentsOfUser' })
+  @UseGuards(BasicAuthGuard)
   findOnePayments(
     @Args() args: GetUserPaymentsQueryDto,
     @Args('id', { type: () => Int }) id: number,
@@ -40,11 +48,15 @@ export class AdminResolver {
     name: 'getPhotosOfUser',
     nullable: 'itemsAndList',
   })
+  @UseGuards(BasicAuthGuard)
   findOnePosts(@Args('id', { type: () => Int }) id: number): Promise<any> {
     return this.userQueryRepo.getUserPhotos(id);
   }
 
-  @Mutation(() => String)
+  @Mutation(() => String, {
+    name: 'deleteUser',
+  })
+  @UseGuards(BasicAuthGuard)
   async deleteUser(@Args('userId', { type: () => Int }) userId: number) {
     const isDeleted = await this.commandBus.execute(
       new DeleteUserCommand(userId),
@@ -53,5 +65,12 @@ export class AdminResolver {
       return 'deleted';
     }
     return 'not deleted';
+  }
+  @Query(() => Boolean, {
+    name: 'checkAdmin',
+  })
+  @UseGuards(BasicAuthGuard)
+  checkAdmin() {
+    return true;
   }
 }
