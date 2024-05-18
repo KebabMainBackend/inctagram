@@ -44,7 +44,6 @@ import { AdminModule } from './features/admin/admin.module';
       introspection: true,
       playground: true,
       autoSchemaFile: true,
-
       include: [AdminModule],
       formatError: (err) => {
         return { message: err.message, path: err.path };
