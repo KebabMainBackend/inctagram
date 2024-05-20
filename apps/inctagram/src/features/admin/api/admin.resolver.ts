@@ -66,11 +66,16 @@ export class AdminResolver {
     }
     return 'not deleted';
   }
-  @Query(() => Boolean, {
+  @Mutation(() => Boolean, {
     name: 'checkAdmin',
   })
-  @UseGuards(BasicAuthGuard)
-  checkAdmin() {
-    return true;
+  async checkAdmin(
+    @Args('login') login: string,
+    @Args('password') password: string,
+  ) {
+    return (
+      login === process.env.ADMIN_LOGIN &&
+      password === process.env.ADMIN_PASSWORD
+    );
   }
 }
