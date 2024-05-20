@@ -1,8 +1,4 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import {
-  PaymentEnumTypes,
-  SubscriptionEnumTypes,
-} from '../../../../../../../types/subscription-enum.types';
 
 @ObjectType()
 export class PaymentModel {
