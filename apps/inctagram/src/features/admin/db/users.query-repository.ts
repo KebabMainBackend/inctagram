@@ -38,7 +38,7 @@ export class UsersQueryRepository {
         contains: query.searchTerm,
       };
     }
-    const totalCount = await this.prismaClient.post.count({
+    const totalCount = await this.prismaClient.user.count({
       where: filterOptions,
     });
 
