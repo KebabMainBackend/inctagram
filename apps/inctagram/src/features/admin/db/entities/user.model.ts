@@ -6,7 +6,7 @@ export class UserModel {
   @Field(() => Int, { description: 'user id' })
   id: number;
 
-  @Field({ description: 'user full name' })
+  @Field({ description: 'user full name', nullable: true })
   fullName: string;
 
   @Field({ description: 'username' })

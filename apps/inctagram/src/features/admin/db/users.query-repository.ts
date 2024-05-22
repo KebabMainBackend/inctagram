@@ -102,7 +102,9 @@ export class UsersQueryRepository {
     return {
       id: user.id,
       username: user.username,
-      fullName: user.profile.firstname + ' ' + user.profile.lastname,
+      fullName: user.profile.firstname
+        ? user.profile.firstname + ' ' + user.profile.lastname
+        : null,
       createdAt: user.createdAt,
       email: user.email,
     };
