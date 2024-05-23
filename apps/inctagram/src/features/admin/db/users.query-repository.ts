@@ -15,7 +15,7 @@ import {
 } from '../../../../../../types/messages';
 import { firstValueFrom } from 'rxjs';
 
-const availableQueryParams = ['createdAt', 'username'];
+const availableQueryParams = ['createdAt', 'username', 'fullName'];
 
 @Injectable()
 export class UsersQueryRepository {
@@ -31,11 +31,27 @@ export class UsersQueryRepository {
     let { sortBy } = getRequestQueryMapperWithPageNumber(query);
     const filterOptions: any = {};
     if (!availableQueryParams.includes(sortBy)) {
-      sortBy = 'createdAt';
+      sortBy = 'id';
     }
+    let orderBy: any = { [sortBy]: sortDirection };
+    if (sortBy === 'fullName') {
+      orderBy = {
+        profile: {
+          firstname: sortDirection,
+        },
+      };
+    }
+    console.log(sortBy);
     if (query.searchTerm) {
-      filterOptions.username = {
-        contains: query.searchTerm,
+      filterOptions.profile = {
+        OR: [
+          {
+            firstname: {
+              contains: query.searchTerm,
+            },
+          },
+          { lastname: { contains: query.searchTerm } },
+        ],
       };
     }
     const totalCount = await this.prismaClient.user.count({
@@ -47,9 +63,9 @@ export class UsersQueryRepository {
       include: {
         profile: true,
       },
+      orderBy: orderBy,
       take: pageSize,
       skip: (pageNumber - 1) * pageSize,
-      orderBy: { [sortBy]: sortDirection },
     });
 
     return {
