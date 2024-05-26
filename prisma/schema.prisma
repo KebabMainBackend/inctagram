@@ -31,6 +31,7 @@ model User {
   isConfirmed      Boolean           @default(false)
   isDeleted        Boolean           @default(false)
   providerId       String?
+  banStatus        Boolean           @default(false)
   providers        OAuthProvider[]
   posts            Post[]
   profile          Profile?
@@ -71,9 +72,9 @@ model Session {
   userId         Int
   lastActiveDate DateTime
   aliveTill      DateTime
-  devicesId      String   @unique
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  devicesId      String   @unique
   device         Devices? @relation(fields: [devicesId], references: [id], onDelete: Cascade)
   User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -150,7 +151,7 @@ model CurrentSubscription {
   hasAutoRenewal    Boolean  @default(false)
   paypalCustomerId  String?
   stripeCustomerId  String?
-  profile           Profile  @relation(fields: [userId], references: [userId])
+  profile           Profile  @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
 enum PostStatus {

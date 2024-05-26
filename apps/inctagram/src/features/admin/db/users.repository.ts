@@ -5,11 +5,32 @@ import { PrismaService } from '../../../prisma.service';
 export class UsersRepository {
   constructor(private prisma: PrismaService) {}
   async deleteUserById(userId: number) {
-    await this.prisma.profile.delete({
+    await this.prisma.subscription.deleteMany({
+      where: { userId },
+    });
+    await this.prisma.payments.deleteMany({
+      where: { userId },
+    });
+    await this.prisma.post.deleteMany({
+      where: { userId },
+    });
+    await this.prisma.oAuthProvider.deleteMany({
       where: { userId },
     });
     await this.prisma.user.delete({
       where: { id: userId },
+    });
+    await this.prisma.session.deleteMany({
+      where: { userId },
+    });
+    await this.prisma.userConfirmation.delete({
+      where: { userId },
+    });
+    await this.prisma.currentSubscription.delete({
+      where: { userId },
+    });
+    await this.prisma.profile.delete({
+      where: { userId },
     });
   }
   getUserById(id: number) {
