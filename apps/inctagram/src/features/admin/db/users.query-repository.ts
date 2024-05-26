@@ -41,7 +41,6 @@ export class UsersQueryRepository {
         },
       };
     }
-    console.log(sortBy);
     if (query.searchTerm) {
       filterOptions.profile = {
         OR: [
@@ -118,7 +117,7 @@ export class UsersQueryRepository {
     return {
       id: user.id,
       username: user.username,
-      fullName: user.profile.firstname
+      fullName: user.profile?.firstname
         ? user.profile.firstname + ' ' + user.profile.lastname
         : null,
       createdAt: user.createdAt,
