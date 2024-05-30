@@ -15,8 +15,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const type = host.getType().toString();
+    console.log(exception);
     try {
       if (type === 'http') {
+        console.log(type);
         this.handleHttpException(exception, response);
       } else if (type === 'graphql') {
         return this.handleGqlException(exception);

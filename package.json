@@ -54,6 +54,7 @@
     "date-fns": "3.3.1",
     "google-auth-library": "9.6.3",
     "graphql": "16.8.1",
+    "graphql-subscriptions": "^2.0.0",
     "image-size": "1.1.1",
     "mongoose": "8.2.0",
     "ngrok": "5.0.0-beta.2",

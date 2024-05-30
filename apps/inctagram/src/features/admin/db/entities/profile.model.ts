@@ -2,7 +2,7 @@ import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { AvatarsModel } from './file.model';
 
 @ObjectType()
-export class ProfileModel {
+export class OwnerModel {
   @Field(() => Int, { description: 'user id' })
   id: number;
 
@@ -10,10 +10,9 @@ export class ProfileModel {
   firstname: string;
   @Field({ description: 'user firstname', nullable: true })
   lastname: string;
-
-  @Field({ description: 'username' })
-  username: string;
-
+}
+@ObjectType()
+export class ProfileModel extends OwnerModel {
   @Field({ description: 'user createdAt' })
   createdAt: string;
 
@@ -31,4 +30,7 @@ export class ProfileModel {
 
   @Field(() => AvatarsModel, { nullable: true, description: 'user avatar' })
   avatars: AvatarsModel;
+
+  @Field({ description: 'username' })
+  username: string;
 }

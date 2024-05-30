@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import {
   GetUserPaymentsQueryDto,
+  GetUsersPaymentsQueryDto,
   GetUsersQueryDto,
 } from '../api/dto/get-users.dto';
 import {
@@ -94,7 +95,7 @@ export class UsersQueryRepository {
     });
     return this.mapUser(user);
   }
-  async getUserPayments(id: number, query: GetUserPaymentsQueryDto) {
+  async getUserPayments(query: GetUserPaymentsQueryDto, id: number) {
     const pattern = { cmd: PaymentsMicroserviceMessagesEnum.GET_USER_PAYMENTS };
     const payload = {
       userId: id,
@@ -157,5 +158,66 @@ export class UsersQueryRepository {
       accountType: profile.accountType,
       avatars: obj,
     };
+  }
+
+  async getUsersPayments(query: GetUsersPaymentsQueryDto) {
+    const pattern = {
+      cmd: PaymentsMicroserviceMessagesEnum.GET_USERS_PAYMENTS,
+    };
+    let userIds = [];
+    if (query.searchTerm) {
+      const users = await this.prismaClient.user.findMany({
+        where: {
+          username: {
+            contains: query.searchTerm,
+          },
+        },
+      });
+      userIds = users.map((u) => u.id);
+    }
+    const payload = {
+      userIds,
+      query: {
+        pageSize: query.pageSize,
+        pageNumber: query.pageNumber,
+      },
+    };
+    const data = await firstValueFrom(
+      this.clientPayments.send(pattern, payload),
+    );
+    console.log(2);
+    const newItems = [];
+    for (const user of data.items) {
+      let userAvatar = null;
+      const userEntity = await this.prismaClient.user.findUnique({
+        where: {
+          id: user.userId,
+        },
+        include: {
+          profile: true,
+        },
+      });
+      if (userEntity.profile.avatarId) {
+        const avatar = await firstValueFrom(
+          this.getImageById(userEntity.profile.avatarId),
+        );
+        console.log(3);
+        userAvatar = process.env.FILES_STORAGE_URL + avatar.url;
+      }
+      const obj = user;
+      obj.username = userEntity.username;
+      obj.avatar = userAvatar;
+      newItems.push(obj);
+    }
+    return { ...data, items: newItems };
+  }
+  getImageById(imageId: string) {
+    const pattern = {
+      cmd: FilesMicroserviceMessagesEnum.GET_USER_THUMBNAIL_AVATAR,
+    };
+    const payload = {
+      imageId,
+    };
+    return this.client.send(pattern, payload);
   }
 }

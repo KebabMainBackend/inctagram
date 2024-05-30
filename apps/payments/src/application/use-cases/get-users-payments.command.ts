@@ -3,24 +3,24 @@ import { PrismaService } from '../../prisma.service';
 import { SubscriptionRepository } from '../../db/subscription.repository';
 import { GetDefaultUriDtoWithPageNumber } from '../../../../inctagram/src/utils/default-get-query.uri.dto';
 
-export class GetUserPaymentsCommand {
+export class GetUsersPaymentsCommand {
   constructor(
-    public userId: number,
+    public userIds: number[],
     public query: GetDefaultUriDtoWithPageNumber,
   ) {}
 }
 
-@CommandHandler(GetUserPaymentsCommand)
-export class GetUserPaymentsHandler
-  implements ICommandHandler<GetUserPaymentsCommand>
+@CommandHandler(GetUsersPaymentsCommand)
+export class GetUsersPaymentsHandler
+  implements ICommandHandler<GetUsersPaymentsCommand>
 {
   constructor(
     public prisma: PrismaService,
     public subscriptionRepo: SubscriptionRepository,
   ) {}
 
-  async execute(command: GetUserPaymentsCommand) {
-    const { userId, query } = command;
-    return this.subscriptionRepo.getUserPayments(query, userId);
+  async execute(command: GetUsersPaymentsCommand) {
+    const { userIds, query } = command;
+    return this.subscriptionRepo.getUsersPayments(query, userIds);
   }
 }

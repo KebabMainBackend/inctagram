@@ -44,3 +44,10 @@ export class GetUserPaymentsQueryDto {
   @IsOptional()
   pageNumber: number = PAGE_NUMBER_DEFAULT;
 }
+
+@ArgsType()
+export class GetUsersPaymentsQueryDto extends GetUserPaymentsQueryDto {
+  @Field({ nullable: true })
+  @IsOptional()
+  searchTerm: string;
+}

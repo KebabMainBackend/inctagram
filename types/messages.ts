@@ -22,4 +22,5 @@ export enum PaymentsMicroserviceMessagesEnum {
   PAYPAL_FINISH_PAYMENT = 'paypal-finish-payment',
   PAYPAL_CREATE_WEBHOOK = 'paypal_create_webhook',
   GET_USER_PAYMENTS = 'get-user-payments',
+  GET_USERS_PAYMENTS = 'get-users-payments',
 }

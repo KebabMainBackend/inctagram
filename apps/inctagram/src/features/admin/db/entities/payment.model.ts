@@ -23,3 +23,11 @@ export class PaymentModel {
   @Field({ description: 'Payment Types' })
   paymentType: string;
 }
+@ObjectType()
+export class UsersPaymentsModel extends PaymentModel {
+  @Field({ description: 'user avatar', nullable: true })
+  avatar: string;
+
+  @Field({ description: 'username' })
+  username: string;
+}

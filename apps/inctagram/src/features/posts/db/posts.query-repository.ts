@@ -11,6 +11,7 @@ import { FilesMicroserviceMessagesEnum } from '../../../../../../types/messages'
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { PrismaService } from '../../../prisma.service';
+
 const availableQueryParams = ['createdAt', 'description', 'userId', 'id'];
 @Injectable()
 export class PostsQueryRepository {
@@ -28,6 +29,11 @@ export class PostsQueryRepository {
     let hasMore = false;
     const filterByStatusAndOptionalUserId: any = {
       status: PostStatusEnum.ACTIVE,
+      user: {
+        username: {
+          contains: queryPost.searchTerm,
+        },
+      },
     };
     if (!availableQueryParams.includes(sortBy)) {
       sortBy = 'createdAt';
@@ -47,7 +53,6 @@ export class PostsQueryRepository {
     const totalCount = await this.prismaClient.post.count({
       where: filterByStatusAndOptionalUserId,
     });
-
     const postsNPostImages = await this.prismaClient.post.findMany(filter);
     if (postsNPostImages.length) {
       lastPostId =
@@ -86,7 +91,6 @@ export class PostsQueryRepository {
         items.push(mappedPost);
       }
     }
-
     return getRequestReturnMapperWithCursor<PostView>({
       totalCount,
       items,

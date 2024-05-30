@@ -23,6 +23,7 @@ import { PaypalController } from './api/paypal.controller';
 import { FinishPaypalPaymentHandler } from './application/use-cases/paypal/finish-paypal-payment.command';
 import { GetUserPaymentsHandler } from './application/use-cases/get-user-payments.command';
 import { CreatePaypalWebhookHandler } from './application/use-cases/paypal/create-paypal-webhook.command';
+import { GetUsersPaymentsHandler } from './application/use-cases/get-users-payments.command';
 
 const commandHandlers = [
   CreateStripeCustomerHandler,
@@ -35,6 +36,7 @@ const commandHandlers = [
   FinishPaypalPaymentHandler,
   GetUserPaymentsHandler,
   CreatePaypalWebhookHandler,
+  GetUsersPaymentsHandler,
 ];
 
 const repos = [
