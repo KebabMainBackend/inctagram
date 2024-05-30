@@ -1,9 +1,8 @@
-import { IsBoolean, IsInt, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsInt, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Optional } from "@nestjs/common";
-import { ProductEntity } from "../../db/domain/product.entity";
-import { SubscriptionEntity } from "../../db/domain/subscription.entity";
-
+import { Optional } from '@nestjs/common';
+import { ProductEntity } from '../../db/domain/product.entity';
+import { SubscriptionEntity } from '../../db/domain/subscription.entity';
 
 export class PurchaseSubscriptionDto {
   @IsString()
@@ -38,10 +37,10 @@ export class UpdateAutoRenewalStatusDto {
 
 export class CreateSubscriptionDto {
   @IsInt()
-  userId: number
+  userId: number;
   @Optional()
   @IsInt()
-  price?: number
+  price?: number;
   @IsInt()
   period: number;
   @IsString()
@@ -57,6 +56,13 @@ export class CreateSubscriptionDto {
   @IsString()
   @Optional()
   subscriptionPriceId: string | null;
+  @IsDate()
+  @Optional()
+  dateOfNextPayment?: Date | null;
+  @IsDate()
+  @Optional()
+  dateOfSubscribe?: Date | null;
+
   constructor() {}
 
   static createSubscriptionDto(
@@ -74,12 +80,14 @@ export class CreateSubscriptionDto {
       paypalSubscriptionId,
       paymentSystem,
       userId,
+      dateOfNextPayment: null,
+      dateOfSubscribe: null,
     };
   }
 
   static createSubscriptionDtoByOldSubscription(
-    oldSubscription: SubscriptionEntity
-    ): CreateSubscriptionDto{
+    oldSubscription: SubscriptionEntity,
+  ): CreateSubscriptionDto {
     return {
       period: oldSubscription.period,
       interval: oldSubscription.interval,
@@ -87,7 +95,9 @@ export class CreateSubscriptionDto {
       productPriceId: oldSubscription.productPriceId,
       paypalSubscriptionId: oldSubscription.paypalSubscriptionId,
       paymentSystem: 'Paypal',
-      userId: oldSubscription.userId
-    }
+      userId: oldSubscription.userId,
+      dateOfNextPayment: oldSubscription.dateOfNextPayment,
+      dateOfSubscribe: oldSubscription.dateOfSubscribe,
+    };
   }
 }

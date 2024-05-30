@@ -7,10 +7,14 @@ import {
   getSubscriptionDto,
 } from '../../application/dto/paypal.dto';
 import { ProductRepository } from '../../db/product.repository';
+import { CreateSubscriptionDto } from '../../api/dto/subscription.dto';
+import { SubscriptionEntity } from '../../db/domain/subscription.entity';
+import { SubscriptionRepository } from '../../db/subscription.repository';
 
 @Injectable()
 export class PaypalAdapter {
   public token: string;
+  public headers;
   constructor(
     private configService: ConfigService,
     private productRepository: ProductRepository,
@@ -20,16 +24,16 @@ export class PaypalAdapter {
         'PAYPAL_CLIENT_SECRET',
       )}`,
     ).toString('base64');
+
+    this.headers = getPaypalDefaultHeaders(this.token);
   }
 
   async createProduct(name, description) {
-    const headers = getPaypalRequestHeaders('PRODUCT-18062019-001', this.token);
-
     const result = await fetch(
       'https://api-m.sandbox.paypal.com/v1/catalogs/products',
       {
         method: 'POST',
-        headers,
+        headers: this.headers,
         body: JSON.stringify({
           name: `${name}`,
           description: `${description}`,
@@ -38,112 +42,73 @@ export class PaypalAdapter {
         }),
       },
     );
-    const test = await fetch(
-      'https://api-m.sandbox.paypal.com/v1/catalogs/products',
-      {
-        method: 'POST',
-        headers: {
-          'X-PAYPAL-SECURITY-CONTEXT':
-            '{"consumer":{"accountNumber":1181198218909172527,"merchantId":"5KW8F2FXKX5HA"},"merchant":{"accountNumber":1659371090107732880,"merchantId":"2J6QB8YJQSJRJ"},"apiCaller":{"clientId":"AdtlNBDhgmQWi2xk6edqJVKklPFyDWxtyKuXuyVT-OgdnnKpAVsbKHgvqHHP","appId":"APP-6DV794347V142302B","payerId":"2J6QB8YJQSJRJ","accountNumber":"1659371090107732880"},"scopes":["https://api-m.paypal.com/v1/subscription/.*","https://uri.paypal.com/services/subscription","openid"]}',
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          'PayPal-Request-Id': 'PRODUCT-18062019-001',
-          Prefer: 'return=representation',
-          Authorization: `Basic ${this.token}`,
-        },
-        body: JSON.stringify({
-          name: 'Video Streaming Service',
-          description: 'Video streaming service',
-          type: 'SERVICE',
-          category: 'SOFTWARE',
-          image_url: 'https://example.com/streaming.jpg',
-          home_url: 'https://example.com/home',
-        }),
-      },
-    );
-
-    console.log(await test.json());
 
     const product = await result.json();
-    // console.log(product, 'PRODUCT');
 
     return product;
   }
 
   async createPlan(product, interval, price, currency, period) {
-    const headers = getPaypalRequestHeaders('PLAN-18062019-001', this.token);
-
     const planDto = getPlanDto(product, interval, price, currency);
 
     const result = await fetch(
       'https://api-m.sandbox.paypal.com/v1/billing/plans',
       {
         method: 'POST',
-        headers,
+        headers: this.headers,
         body: JSON.stringify(planDto),
       },
     );
 
     const plan = await result.json();
-    console.log(plan, 'PLAN');
 
     await this.productRepository.updateProduct(period, plan.id);
 
     return plan;
   }
 
-  async subscribeUser(userId, planId, autoRenewal) {
-    const headers = getPaypalRequestHeaders(
-      'SUBSCRIPTION-21092019-001',
-      this.token,
-    );
-
+  async subscribeUser(userId, planId, autoRenewal, startTime?: Date | null) {
     const subscriptionDto = getSubscriptionDto(
       planId,
       userId,
       this.configService.get('PAYMENT_SUCCESS_URL'),
       this.configService.get('PAYMENT_ERROR_URL'),
       autoRenewal,
+      startTime,
     );
 
     const result = await fetch(
       'https://api-m.sandbox.paypal.com/v1/billing/subscriptions',
       {
         method: 'POST',
-        headers,
+        headers: this.headers,
         body: JSON.stringify(subscriptionDto),
       },
     );
 
-    return result.json();
+    const subscription = await result.json();
+
+    return subscription;
   }
 
   async cancelSubscription(paypalSubscriptionId) {
-    const headers = getPaypalDefaultHeaders(this.token);
-
-    const result = await fetch(
+    await fetch(
       `https://api-m.sandbox.paypal.com/v1/billing/subscriptions/${paypalSubscriptionId}/cancel`,
       {
         method: 'POST',
-        headers,
+        headers: this.headers,
         body: JSON.stringify({
           reason: `Subscription was cancelled due to updating auto renewal status`,
         }),
       },
     );
-
-    const cancelledSubscription = await result.json();
-    console.log(cancelledSubscription);
-    return cancelledSubscription;
   }
 
-  async getPaypalSubscriptionInfo(token, paypalSubscriptionId) {
-    const headers = getPaypalDefaultHeaders(token);
-
+  async getPaypalSubscriptionInfo(paypalSubscriptionId) {
     const paypalSubscriptionInfo = await fetch(
       `https://api-m.sandbox.paypal.com/v1/billing/subscriptions/${paypalSubscriptionId}`,
       {
-        headers,
+        headers: this.headers,
       },
     );
 
@@ -153,6 +118,32 @@ export class PaypalAdapter {
       subscription.plan_id,
     );
 
-    return { plan, userId: subscription.custom_id };
+    return {
+      plan,
+      userId: subscription.custom_id,
+      paypalSubscriptionInfo: subscription,
+    };
+  }
+
+  async updateAutoRenewalStatus(
+    subscription,
+    autoRenewal,
+    startTime: Date | null = null,
+  ) {
+    const paypalSubscriptionId = subscription.paypalSubscriptionId;
+
+    const { userId, paypalSubscriptionInfo } =
+      await this.getPaypalSubscriptionInfo(paypalSubscriptionId);
+
+    await this.cancelSubscription(paypalSubscriptionId);
+
+    const newSubscription = await this.subscribeUser(
+      userId,
+      paypalSubscriptionInfo.plan_id,
+      autoRenewal,
+      startTime,
+    );
+
+    return newSubscription.id;
   }
 }

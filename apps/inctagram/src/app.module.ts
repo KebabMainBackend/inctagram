@@ -10,6 +10,9 @@ import { SecurityDevicesModule } from './features/security-devices/security-devi
 import { ProfileModule } from './features/profile/profile.module';
 import { PostsModule } from './features/posts/posts.module';
 import { SubscriptionsModule } from './features/subscriptions/subscriptions.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { AdminModule } from './features/admin/admin.module';
 
 @Module({
   imports: [
@@ -35,6 +38,28 @@ import { SubscriptionsModule } from './features/subscriptions/subscriptions.modu
     PostsModule,
     ProfileModule,
     SubscriptionsModule,
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      path: 'api/v1/graphql',
+      introspection: true,
+      playground: true,
+      autoSchemaFile: true,
+      include: [AdminModule],
+      formatError: (err) => {
+        return { message: err.message, path: err.path };
+      },
+      context: ({ req, res, connection }) => {
+        if (connection) {
+          // If this WebSocket connection
+          // Return context for WebSocket connection
+          return {
+            req: connection.context,
+          };
+        }
+        return { req, res };
+      },
+    }),
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

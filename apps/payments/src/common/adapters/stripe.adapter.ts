@@ -78,7 +78,6 @@ export class StripeAdapter {
       payload.signature,
       this.configService.get('STRIPE_WEBHOOK_SECRET_S'),
     );
-
     if (event.type === 'checkout.session.completed') {
       const data = event.data.object as Stripe.Checkout.Session;
       const dataPayment = {
@@ -89,5 +88,34 @@ export class StripeAdapter {
       return { data, dataPayment };
     }
     return null;
+  }
+
+  async updateAutoRenewalStatus(
+    dbSubscription,
+    autoRenewal: boolean,
+    customer,
+  ) {
+    const stripe = new Stripe(process.env.STRIPE_API_KEY);
+
+    if (autoRenewal && !dbSubscription.stripeSubscriptionId) {
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.stripeCustomerId,
+
+        cancel_at_period_end: !autoRenewal,
+        items: [{ price: dbSubscription.subscriptionPriceId }],
+        trial_end: Math.floor(
+          dbSubscription.dateOfNextPayment.getTime() / 1000,
+        ),
+      });
+
+      return subscription.id;
+    } else {
+      await stripe.subscriptions.update(dbSubscription.stripeSubscriptionId, {
+        cancel_at_period_end: !autoRenewal,
+        metadata: { key: process.env.STRIPE_API_KEY },
+      });
+
+      return null;
+    }
   }
 }

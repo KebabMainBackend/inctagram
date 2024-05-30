@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { HttpStatus } from '@nestjs/common';
 import { EmailService } from '../../../../inctagram/src/auth/managers/email.manager';
-import { differenceInDays, format, parseISO } from "date-fns";
+import { differenceInDays, format, parseISO } from 'date-fns';
 import { SubscriptionRepository } from '../../db/subscription.repository';
 import { PrismaService } from '../../prisma.service';
 
@@ -23,38 +23,43 @@ export class GetCurrentSubscriptionInfoHandler
     const { userId } = command;
 
     const current = await this.subscriptionRepo.getCurrentSubscription(userId);
-
     if (!current) return { errorCode: HttpStatus.NOT_FOUND };
 
     if (current.expireAt < new Date()) {
-      return await this.subscriptionHasExpired(
-        userId,
-        current.profile.user.email,
-      );
+      await this.subscriptionHasExpired(userId, current.profile.user.email);
+      return {
+        errorCode: HttpStatus.NOT_FOUND,
+        message: 'Subscription expired',
+      };
     }
-    const daysLeft = differenceInDays(new Date(current.expireAt), new Date());
-
     const subscriptions = await this.subscriptionRepo.getSubscriptions(userId);
+    console.log(subscriptions, '4');
+    if (subscriptions.length) {
+      const expireAtFormatted = format(
+        parseISO(current.expireAt.toISOString()),
+        'dd.MM.yyyy',
+      );
+      const nextPaymentFormatted = format(
+        parseISO(subscriptions[0].dateOfNextPayment.toISOString()),
+        'dd.MM.yyyy',
+      );
 
-    const expireAtFormatted =
-      format(parseISO(current.expireAt.toISOString()), "dd.MM.yyyy")
-    const nextPaymentFormatted =
-      format(parseISO(subscriptions[0].dateOfNextPayment.toISOString()), "dd.MM.yyyy")
-
-
-    if (!current.hasAutoRenewal) {
-      return {
-        subscription: subscriptions[0],
-        expireAt: expireAtFormatted,
-
-      };
-    } else if (current.hasAutoRenewal) {
-      return {
-        subscription: subscriptions[0],
-        expireAt: expireAtFormatted,
-        nextPayment: nextPaymentFormatted,
-      };
+      if (!current.hasAutoRenewal) {
+        console.log(subscriptions[0], 1);
+        return {
+          subscription: subscriptions[0],
+          expireAt: expireAtFormatted,
+        };
+      } else if (current.hasAutoRenewal) {
+        console.log(subscriptions[0], 2);
+        return {
+          subscription: subscriptions[0],
+          expireAt: expireAtFormatted,
+          nextPayment: nextPaymentFormatted,
+        };
+      }
     }
+    return null;
   }
 
   async subscriptionHasExpired(userId: number, userEmail: string) {
@@ -64,7 +69,6 @@ export class GetCurrentSubscriptionInfoHandler
         accountType: 'PERSONAL',
       },
     });
-
-    return await this.emailService.sendSubscriptionHasExpiredEmail(userEmail);
+    await this.emailService.sendSubscriptionHasExpiredEmail(userEmail);
   }
 }

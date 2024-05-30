@@ -27,7 +27,6 @@ export class PurchaseSubscriptionHandler
   ) {}
 
   async execute({ userId, payload }: PurchaseSubscriptionCommand) {
-    // get stripeProductId and stripePriceId
     const productInfo = await this.productRepository.getProductInfo(
       payload.productPriceId,
     );
@@ -44,12 +43,12 @@ export class PurchaseSubscriptionHandler
           productInfo,
         });
       return { url: session.url };
-    }
-    else if( payload.paymentSystem === 'Paypal' ) {
-      const session =
-        await this.paypalAdapter.subscribeUser(userId, productInfo.paypalPlanId, false)
-
-
+    } else if (payload.paymentSystem === 'Paypal') {
+      const session = await this.paypalAdapter.subscribeUser(
+        userId,
+        productInfo.paypalPlanId,
+        false,
+      );
 
       const sessionLink = session.links.find((obj) => obj.rel === 'approve');
 

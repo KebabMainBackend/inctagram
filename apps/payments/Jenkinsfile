@@ -3,7 +3,7 @@ pipeline {
     agent any
     environment {
         ENV_TYPE = "production"
-        PORT = 3293
+        PORT = 3412
         NAMESPACE = "inctagram-fun"
         REGISTRY_HOSTNAME = "tazalov"
         PROJECT = "payments-service"
@@ -23,15 +23,25 @@ pipeline {
         stage('Unit tests') {
             steps {
                 script {
-                    sh "npm install"
-                    sh "npm run test"
+                    sh '''
+                       export NVM_DIR="$HOME/.nvm"
+                       [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                       nvm use --lts
+                       yarn install
+                       yarn test
+                    '''
                 }
             }
         }
         stage('e2e tests') {
             steps {
                 script {
-                    sh "npm run test:e2e"
+                    sh '''
+                       export NVM_DIR="$HOME/.nvm"
+                       [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                       nvm use --lts
+                       yarn test:e2e
+                    '''
                 }
             }
         }

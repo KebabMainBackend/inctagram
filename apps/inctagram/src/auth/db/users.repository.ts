@@ -38,12 +38,6 @@ export class UsersRepository {
     });
   }
 
-  async deleteUserConfirmationData(id: number) {
-    await this.prisma.userConfirmation.delete({
-      where: { id },
-    });
-  }
-
   async updateUserPassword(
     userId: number,
     newPasswordSalt: string,

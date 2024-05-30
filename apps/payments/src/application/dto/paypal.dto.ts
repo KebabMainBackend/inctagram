@@ -1,7 +1,5 @@
-import { addMinutes } from "date-fns";
-import { rethrow } from "@nestjs/core/helpers/rethrow";
-
-
+import { addMinutes } from 'date-fns';
+import { rethrow } from '@nestjs/core/helpers/rethrow';
 
 export const getPlanDto = (product, interval, price, currency) => {
   return {
@@ -34,7 +32,7 @@ export const getPlanDto = (product, interval, price, currency) => {
   };
 };
 
-export const getPaypalRequestHeaders = (paypalReqId, token) => {
+export const getPaypalRequestHeaders = (token) => {
   return {
     'X-PAYPAL-SECURITY-CONTEXT':
       '{' +
@@ -47,7 +45,6 @@ export const getPaypalRequestHeaders = (paypalReqId, token) => {
       ']}',
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'PayPal-Request-Id': `${paypalReqId}`,
     Prefer: 'return=representation',
     Authorization: `Basic ${token}`,
   };
@@ -55,7 +52,8 @@ export const getPaypalRequestHeaders = (paypalReqId, token) => {
 
 export const getPaypalDefaultHeaders = (token) => {
   return {
-    'X-PAYPAL-SECURITY-CONTEXT': '{' +
+    'X-PAYPAL-SECURITY-CONTEXT':
+      '{' +
       '"apiCaller":{' +
       '"clientId":"AdtlNBDhgmQWi2xk6edqJVKklPFyDWxtyKuXuyVT-OgdnnKpAVsbKHgvqHHP",' +
       '"scopes":[' +
@@ -64,25 +62,33 @@ export const getPaypalDefaultHeaders = (token) => {
       '"openid"' +
       ']}',
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': `Basic ${token}`
-  }
-}
+    Accept: 'application/json',
+    Authorization: `Basic ${token}`,
+  };
+};
 
-export const getSubscriptionDto = (planId, userId, return_url, cancel_url, autoRenewal) => {
+export const getSubscriptionDto = (
+  planId,
+  userId,
+  return_url,
+  cancel_url,
+  autoRenewal,
+  startTime: Date | null,
+) => {
+  startTime = startTime ?? addMinutes(new Date(), 2);
+
   return {
-    "plan_id": `${planId}`,
-    "start_time": `${addMinutes(new Date(), 10).toISOString()}`,
-    "auto_renewal": `${autoRenewal}`,
-    "custom_id": `${userId}`,
-    "application_context": {
-      "brand_name": "inctagram",
-      "locale": "en-US",
-      "user_action": "SUBSCRIBE_NOW",
-      "payment_method": {
-        "payer_selected": "PAYPAL",
-        "payee_preferred": "IMMEDIATE_PAYMENT_REQUIRED"
-
+    plan_id: `${planId}`,
+    start_time: `${startTime.toISOString()}`,
+    auto_renewal: `${autoRenewal}`,
+    custom_id: `${userId}`,
+    application_context: {
+      brand_name: 'inctagram',
+      locale: 'en-US',
+      user_action: 'SUBSCRIBE_NOW',
+      payment_method: {
+        payer_selected: 'PAYPAL',
+        payee_preferred: 'IMMEDIATE_PAYMENT_REQUIRED',
       },
       return_url: `${return_url}`,
       cancel_url: `${cancel_url}`,

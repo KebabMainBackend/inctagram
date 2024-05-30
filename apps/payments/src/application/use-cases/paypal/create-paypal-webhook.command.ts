@@ -50,7 +50,6 @@ export class CreatePaypalWebhookHandler
         },
       );
       const webhook = await webhookResponse.json();
-      console.log(webhook);
       return webhook;
     } catch (e) {
       console.log(e);

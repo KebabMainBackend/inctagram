@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma.service';
-
+type DeviceType = {
+  deviceId: string;
+  title: string;
+  lastActiveDate: Date;
+  ip: string;
+};
 @Injectable()
 export class SecurityDevicesQueryRepository {
   constructor(private prisma: PrismaService) {}
-  async getAllDevicesOfUser(userId: number) {
+  async getAllDevicesOfUser(userId: number, sessionId: string) {
     const sessions = await this.prisma.session.findMany({
       where: {
         userId,
@@ -13,14 +18,27 @@ export class SecurityDevicesQueryRepository {
         device: true,
       },
     });
-    console.log(sessions);
     if (sessions.length) {
-      return sessions.map((s) => ({
-        deviceId: s.devicesId,
-        title: s.device.title,
-        lastActiveDate: s.lastActiveDate,
-        ip: s.device.ip,
-      }));
+      let currentDevice: DeviceType;
+      const devices: DeviceType[] = [];
+      for (const s of sessions) {
+        if (s.id === sessionId) {
+          currentDevice = {
+            deviceId: s.devicesId,
+            title: s.device.title,
+            lastActiveDate: s.lastActiveDate,
+            ip: s.device.ip,
+          };
+        } else {
+          devices.push({
+            deviceId: s.devicesId,
+            title: s.device.title,
+            lastActiveDate: s.lastActiveDate,
+            ip: s.device.ip,
+          });
+        }
+      }
+      return { current: currentDevice, others: devices };
     }
     return null;
   }
@@ -32,16 +50,15 @@ export class SecurityDevicesQueryRepository {
       },
     });
   }
-  async getDeviceById(deviceId: string) {
-    return this.prisma.devices.findUnique({
+
+  async getSessionByDevice(deviceId: string) {
+    return this.prisma.session.findUnique({
       where: {
-        id: deviceId,
-      },
-      include: {
-        session: true,
+        devicesId: deviceId,
       },
     });
   }
+
   async getBlackList(refresh: string) {
     return this.prisma.blacklist.findUnique({
       where: { refreshToken: refresh },
