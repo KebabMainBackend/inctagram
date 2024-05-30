@@ -31,12 +31,12 @@ model User {
   isConfirmed      Boolean           @default(false)
   isDeleted        Boolean           @default(false)
   providerId       String?
-  banStatus        Boolean           @default(false)
   providers        OAuthProvider[]
   posts            Post[]
   profile          Profile?
   sessions         Session[]
   confirmationData UserConfirmation?
+  ban              Bans?
 }
 
 model Profile {
@@ -154,6 +154,15 @@ model CurrentSubscription {
   profile           Profile  @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
+model Bans {
+  userId    Int       @id @unique
+  banStatus BanStatus @default(UNBANNED)
+  banReason String?
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
 enum PostStatus {
   ACTIVE
   DELETED
@@ -175,4 +184,9 @@ enum PaymentInterval {
   week
   month
   year
+}
+
+enum BanStatus {
+  BANNED
+  UNBANNED
 }

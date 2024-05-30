@@ -53,6 +53,11 @@ export class UsersQueryRepository {
         ],
       };
     }
+    if (query.statusFilter) {
+      filterOptions.ban = {
+        banStatus: query.statusFilter,
+      };
+    }
     const totalCount = await this.prismaClient.user.count({
       where: filterOptions,
     });
@@ -61,6 +66,7 @@ export class UsersQueryRepository {
       where: filterOptions,
       include: {
         profile: true,
+        ban: true,
       },
       orderBy: orderBy,
       take: pageSize,
@@ -122,6 +128,8 @@ export class UsersQueryRepository {
         : null,
       createdAt: user.createdAt,
       email: user.email,
+      reason: user.ban.banReason,
+      status: user.ban.banStatus,
     };
   }
   private async mapUser(profile: any) {

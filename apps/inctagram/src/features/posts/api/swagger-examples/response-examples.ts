@@ -30,8 +30,8 @@ export const PostViewExample = {
   avatarOwner:
     'https://storage.yandexcloud.net/users-inctagram/users/41/avatar/3359612b-cff9-4b6b-8897-fbbd09153d51-images-45x45',
   owner: {
-    firstName: 'firstName',
-    lastName: 'lastName',
+    firstname: 'firstName',
+    lastname: 'lastName',
   },
 };
 export const GetRequestPostsViewExample = {

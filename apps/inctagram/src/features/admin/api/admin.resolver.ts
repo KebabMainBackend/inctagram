@@ -12,6 +12,9 @@ import { ImageModel } from '../db/entities/file.model';
 import { DeleteUserCommand } from '../application/delete-user.command';
 import { UseGuards } from '@nestjs/common';
 import { BasicAuthGuard } from '../../../auth/guards/basic-auth.guard';
+import { ChangeBanStatusOfUserInput } from './dto/change-ban-status-of-user.input';
+import { ChangeBanStatusOfUserCommand } from '../application/ban-user.command';
+import { BanStatus } from '../../../types/ban.types';
 
 @Resolver(() => UserModel)
 export class AdminResolver {
@@ -77,5 +80,22 @@ export class AdminResolver {
       login === process.env.ADMIN_LOGIN &&
       password === process.env.ADMIN_PASSWORD
     );
+  }
+
+  @Mutation(() => String, {
+    name: 'banUser',
+  })
+  @UseGuards(BasicAuthGuard)
+  async banUser(
+    @Args('userId', { type: () => Int }) userId: number,
+    @Args('status', { type: () => BanStatus }) status: BanStatus,
+    @Args('reason') reason: string,
+    // @Args('data') data: ChangeBanStatusOfUserInput,
+  ): Promise<string> {
+    const isChange = await this.commandBus.execute(
+      new ChangeBanStatusOfUserCommand(userId, status, reason),
+    );
+    if (isChange) return 'changed';
+    return 'unchanged';
   }
 }

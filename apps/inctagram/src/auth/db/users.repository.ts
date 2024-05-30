@@ -18,6 +18,12 @@ export class UsersRepository {
             lastname: null,
           },
         },
+        ban: {
+          create: {
+            banStatus: 'UNBANNED',
+            banReason: '',
+          },
+        },
       },
     });
   }

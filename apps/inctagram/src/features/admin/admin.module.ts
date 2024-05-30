@@ -13,9 +13,10 @@ import {
 import { RmqUrl } from '@nestjs/microservices/external/rmq-url.interface';
 import { DeleteUserHandler } from './application/delete-user.command';
 import { UsersRepository } from './db/users.repository';
+import { ChangeBanStatusOfUserHandler } from './application/ban-user.command';
 
 const repos = [UsersQueryRepository, UsersRepository];
-const commandHandler = [DeleteUserHandler];
+const commandHandler = [DeleteUserHandler, ChangeBanStatusOfUserHandler];
 @Module({
   imports: [CqrsModule],
   providers: [
