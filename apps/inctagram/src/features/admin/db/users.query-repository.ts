@@ -161,17 +161,26 @@ export class UsersQueryRepository {
   }
 
   async getUsersPayments(query: GetUsersPaymentsQueryDto) {
+    let sortBy = 'createdAt';
+    const sortDirection = query.sortDirection;
+    const filter: any = {};
     const pattern = {
       cmd: PaymentsMicroserviceMessagesEnum.GET_USERS_PAYMENTS,
     };
     let userIds = [];
     if (query.searchTerm) {
+      filter.username = {
+        contains: query.searchTerm,
+      };
+    }
+    if (query.sortBy === 'username') {
+      sortBy = 'username';
+    }
+    if (query.searchTerm || query.sortBy === 'username') {
+      console.log('worked');
       const users = await this.prismaClient.user.findMany({
-        where: {
-          username: {
-            contains: query.searchTerm,
-          },
-        },
+        where: filter,
+        orderBy: { [sortBy]: sortDirection },
       });
       userIds = users.map((u) => u.id);
     }
@@ -180,7 +189,10 @@ export class UsersQueryRepository {
       query: {
         pageSize: query.pageSize,
         pageNumber: query.pageNumber,
+        sortBy: query.sortBy,
+        sortDirection: query.sortDirection,
       },
+      isAutoUpdate: query.isAutoUpdate,
     };
     const data = await firstValueFrom(
       this.clientPayments.send(pattern, payload),

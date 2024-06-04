@@ -118,6 +118,7 @@ model Subscription {
   subscriptionPriceId  String?
   paypalSubscriptionId String?
   profile              Profile             @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  payment              Payments?
 }
 
 model Payments {
@@ -132,6 +133,8 @@ model Payments {
   paypalSubscriptionId  String?
   interval              PaymentInterval?
   profile               Profile             @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  subscription          Subscription?       @relation(fields: [subscriptionId], references: [subscriptionId])
+  subscriptionId        Int?                @unique
 }
 
 model Product {

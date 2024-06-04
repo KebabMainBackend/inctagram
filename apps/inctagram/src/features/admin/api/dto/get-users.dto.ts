@@ -50,4 +50,22 @@ export class GetUsersPaymentsQueryDto extends GetUserPaymentsQueryDto {
   @Field({ nullable: true })
   @IsOptional()
   searchTerm: string;
+
+  @Field({
+    nullable: true,
+    description: 'price, paymentSystem, dateOfPayment, username',
+  })
+  @IsOptional()
+  sortBy: string;
+
+  @Field(() => SortDirection, {
+    defaultValue: SortDirection.DESC,
+    nullable: true,
+  })
+  @IsOptional()
+  sortDirection: SortDirection;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  isAutoUpdate: boolean;
 }

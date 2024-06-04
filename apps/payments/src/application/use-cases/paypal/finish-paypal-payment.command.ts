@@ -53,14 +53,18 @@ export class FinishPaypalPaymentHandler
         );
 
         const subscription = SubscriptionEntity.create(subscriptionDto);
-        const payment = PaymentsEntity.create(
-          'Paypal',
-          plan,
-          subscription.dateOfNextPayment,
-          +userId,
+        const newSub = await this.subscriptionRepo.addSubscriptionToDB(
+          subscription,
         );
 
-        await this.subscriptionRepo.addSubscriptionToDB(subscription);
+        const payment = PaymentsEntity.create({
+          paymentSystem: 'Paypal',
+          productInfo: plan,
+          endDateOfSubscription: subscription.dateOfNextPayment,
+          userId,
+          subscriptionId: newSub.subscriptionId,
+        });
+
         await this.subscriptionRepo.addPaymentToDB(payment);
 
         const currentSubscription =

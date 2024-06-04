@@ -25,7 +25,6 @@ import { ImageModel } from '../db/entities/file.model';
 import { DeleteUserCommand } from '../application/delete-user.command';
 import { UseGuards } from '@nestjs/common';
 import { BasicAuthGuard } from '../../../auth/guards/basic-auth.guard';
-import { ChangeBanStatusOfUserInput } from './dto/change-ban-status-of-user.input';
 import { ChangeBanStatusOfUserCommand } from '../application/ban-user.command';
 import { BanStatus } from '../../../types/ban.types';
 import { PostModel } from '../db/entities/post.model';
@@ -69,7 +68,6 @@ export class AdminResolver {
   @Query(() => UsersPaymentsPaginationModel, { name: 'getAllPayments' })
   @UseGuards(BasicAuthGuard)
   findAllPayments(@Args() args: GetUsersPaymentsQueryDto) {
-    console.log(1);
     return this.userQueryRepo.getUsersPayments(args);
   }
 

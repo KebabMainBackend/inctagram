@@ -1,4 +1,5 @@
-import { IsDate, IsInt, IsString } from 'class-validator';
+import { IsDate, IsInt, IsNumber, IsString } from 'class-validator';
+import { PaymentInterval } from '@prisma/client';
 
 export class PaymentsEntity {
   @IsInt()
@@ -12,26 +13,40 @@ export class PaymentsEntity {
   @IsString()
   paymentSystem: 'Paypal' | 'Stripe';
   @IsString()
-  interval: 'day' | 'week' | 'month' | 'year';
+  interval: PaymentInterval;
   @IsString()
   productPriceId: string | null;
   @IsString()
   subscriptionPriceId: string | null;
   @IsString()
   paypalSubscriptionId: string | null;
+  @IsNumber()
+  subscriptionId: number;
 
-  static create(paymentSystem, productInfo, endDateOfSubscription, userId) {
+  static create(data: {
+    paymentSystem: 'Paypal' | 'Stripe';
+    productInfo: {
+      price: number;
+      interval: PaymentInterval;
+      productPriceId: string;
+      subscriptionPriceId: string;
+    };
+    endDateOfSubscription: Date;
+    userId: number;
+    subscriptionId: number;
+  }) {
     const payment = new PaymentsEntity();
 
-    payment.userId = userId;
+    payment.userId = data.userId;
     payment.dateOfPayment = new Date();
-    payment.endDateOfSubscription = endDateOfSubscription;
-    payment.price = productInfo.price;
-    payment.paymentSystem = paymentSystem;
-    payment.interval = productInfo.interval;
+    payment.endDateOfSubscription = data.endDateOfSubscription;
+    payment.price = data.productInfo.price;
+    payment.paymentSystem = data.paymentSystem;
+    payment.interval = data.productInfo.interval;
+    payment.subscriptionId = data.subscriptionId;
 
-    payment.productPriceId = productInfo.productPriceId;
-    payment.subscriptionPriceId = productInfo.subscriptionPriceId;
+    payment.productPriceId = data.productInfo.productPriceId;
+    payment.subscriptionPriceId = data.productInfo.subscriptionPriceId;
 
     return payment;
   }

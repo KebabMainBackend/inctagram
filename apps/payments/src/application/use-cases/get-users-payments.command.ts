@@ -7,6 +7,7 @@ export class GetUsersPaymentsCommand {
   constructor(
     public userIds: number[],
     public query: GetDefaultUriDtoWithPageNumber,
+    public isAutoUpdate: boolean,
   ) {}
 }
 
@@ -20,7 +21,7 @@ export class GetUsersPaymentsHandler
   ) {}
 
   async execute(command: GetUsersPaymentsCommand) {
-    const { userIds, query } = command;
-    return this.subscriptionRepo.getUsersPayments(query, userIds);
+    const { userIds, query, isAutoUpdate } = command;
+    return this.subscriptionRepo.getUsersPayments(query, userIds, isAutoUpdate);
   }
 }

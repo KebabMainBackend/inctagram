@@ -7,6 +7,9 @@ import {
   getRequestQueryMapperWithPageNumber,
   getRequestReturnMapperWithPageNumber,
 } from '../../../inctagram/src/utils/helpers/get-request-mapper-helper-with.cursor';
+import { login } from '../../../inctagram/test/managers/login';
+
+const availableSortByOptions = ['price', 'paymentSystem', 'dateOfPayment'];
 
 @Injectable()
 export class SubscriptionRepository {
@@ -92,9 +95,16 @@ export class SubscriptionRepository {
   async getUsersPayments(
     query: GetDefaultUriDtoWithPageNumber,
     userIds: number[],
+    isAutoUpdate: boolean,
   ) {
-    const { pageSize, pageNumber } = getRequestQueryMapperWithPageNumber(query);
-    const filter: any = {};
+    const { pageSize, pageNumber, sortDirection, sortBy } =
+      getRequestQueryMapperWithPageNumber(query);
+    let sortByOption = sortBy;
+    const filter: any = {
+      Subscription: {
+        autoRenewal: isAutoUpdate,
+      },
+    };
     if (userIds.length) {
       filter.userId = {
         in: userIds,
@@ -103,9 +113,12 @@ export class SubscriptionRepository {
     const totalCount = await this.prisma.payments.count({
       where: filter,
     });
+    if (!availableSortByOptions.includes(query.sortBy)) {
+      sortByOption = 'dateOfPayment';
+    }
     const payments = await this.prisma.payments.findMany({
       where: filter,
-      orderBy: { dateOfPayment: 'asc' },
+      orderBy: { [sortByOption]: sortDirection },
       take: pageSize,
       skip: (pageNumber - 1) * pageSize,
     });
@@ -124,7 +137,7 @@ export class SubscriptionRepository {
   }
 
   async addSubscriptionToDB(newSubscription: SubscriptionEntity) {
-    await this.prisma.subscription.create({ data: newSubscription });
+    return this.prisma.subscription.create({ data: newSubscription });
   }
 
   async addPaymentToDB(payment: PaymentsEntity) {

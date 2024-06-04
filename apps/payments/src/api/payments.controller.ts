@@ -91,12 +91,13 @@ export class PaymentsController {
   @MessagePattern({
     cmd: PaymentsMicroserviceMessagesEnum.GET_USERS_PAYMENTS,
   })
-  async getUserSPayments(data: {
+  async getUsersPayments(data: {
     userIds: number[];
     query: GetDefaultUriDtoWithPageNumber;
+    isAutoUpdate: boolean;
   }) {
     return this.commandBus.execute(
-      new GetUsersPaymentsCommand(data.userIds, data.query),
+      new GetUsersPaymentsCommand(data.userIds, data.query, data.isAutoUpdate),
     );
   }
 
