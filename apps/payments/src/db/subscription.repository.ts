@@ -7,7 +7,6 @@ import {
   getRequestQueryMapperWithPageNumber,
   getRequestReturnMapperWithPageNumber,
 } from '../../../inctagram/src/utils/helpers/get-request-mapper-helper-with.cursor';
-import { login } from '../../../inctagram/test/managers/login';
 
 const availableSortByOptions = ['price', 'paymentSystem', 'dateOfPayment'];
 
@@ -101,7 +100,7 @@ export class SubscriptionRepository {
       getRequestQueryMapperWithPageNumber(query);
     let sortByOption = sortBy;
     const filter: any = {
-      Subscription: {
+      subscription: {
         autoRenewal: isAutoUpdate,
       },
     };
