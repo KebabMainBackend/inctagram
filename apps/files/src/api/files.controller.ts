@@ -29,6 +29,11 @@ export class FilesController {
     return await this.fileService.getImagesByIds(data.imagesIds);
   }
 
+  @MessagePattern({ cmd: FilesMicroserviceMessagesEnum.DELETE_POST_IMAGES })
+  async deletePostImages(data: { imagesIds: string[] }) {
+    return await this.fileService.deleteUserPostImages(data.imagesIds);
+  }
+
   @MessagePattern({ cmd: FilesMicroserviceMessagesEnum.UPLOAD_POST_IMAGES })
   async uploadPostImages(data: UploadPostImagesDto) {
     return await this.fileService.uploadPostImages(data);

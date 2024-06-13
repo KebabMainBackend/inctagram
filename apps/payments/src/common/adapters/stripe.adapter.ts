@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { AddNewSubscriptionTypeDto } from '../../api/dto/product.dto';
 import { ConfigService } from '@nestjs/config';
 import { ProductEntity } from '../../db/domain/product.entity';
-import { CreateStripeCustomerCommand } from "../../application/use-cases/stripe/create-stripe-customer.command";
 
 type StripeCheckoutData = {
   productInfo: ProductEntity;
@@ -79,7 +78,6 @@ export class StripeAdapter {
       payload.signature,
       this.configService.get('STRIPE_WEBHOOK_SECRET_S'),
     );
-
     if (event.type === 'checkout.session.completed') {
       const data = event.data.object as Stripe.Checkout.Session;
       const dataPayment = {
@@ -108,17 +106,16 @@ export class StripeAdapter {
         trial_end: Math.floor(
           dbSubscription.dateOfNextPayment.getTime() / 1000,
         ),
-      })
+      });
 
-      return subscription.id
-
+      return subscription.id;
     } else {
       await stripe.subscriptions.update(dbSubscription.stripeSubscriptionId, {
         cancel_at_period_end: !autoRenewal,
         metadata: { key: process.env.STRIPE_API_KEY },
-      })
+      });
 
-      return null
+      return null;
     }
   }
 }

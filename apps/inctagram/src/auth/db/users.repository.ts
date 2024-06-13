@@ -18,14 +18,17 @@ export class UsersRepository {
             lastname: null,
           },
         },
+        ban: {
+          create: {
+            banStatus: 'UNBANNED',
+            banReason: '',
+          },
+        },
       },
     });
   }
 
-  async deleteUserByEmail(email: string, userId: number) {
-    await this.prisma.profile.delete({
-      where: { userId },
-    });
+  async deleteUserByEmail(email: string) {
     await this.prisma.user.delete({
       where: { email },
     });

@@ -70,6 +70,16 @@ export class FilesService {
     }
     return HttpStatus.NOT_FOUND;
   }
+  async deleteUserPostImages(imageIds: string[]) {
+    const images = await this.getImagesByIds(imageIds);
+    if (images && images.length) {
+      for (const image of images) {
+        await this.commandBus.execute(new DeleteFileCommand(image.url));
+      }
+      return 'deleted';
+    }
+    return 'empty post';
+  }
   async getAvatarImagesByOwnerId(ownerId: number) {
     return this.fileImageModel.find({
       ownerId,

@@ -31,8 +31,8 @@ export class AvatarModel {
 
 @ObjectType()
 export class AvatarsModel {
-  @Field(() => AvatarModel, { description: 'file url' })
+  @Field(() => AvatarModel, { description: 'file url', nullable: true })
   thumbnail: AvatarModel;
-  @Field(() => AvatarModel, { description: 'file url' })
+  @Field(() => AvatarModel, { description: 'file url', nullable: true })
   medium: AvatarModel;
 }

@@ -80,7 +80,7 @@ export class SubscriptionsController {
       ),
     );
     if (data.errorCode === HttpStatus.NOT_FOUND) {
-      throw new NotFoundException('Not found');
+      throw new NotFoundException('Expired');
     }
     return data;
   }

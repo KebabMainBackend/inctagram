@@ -32,6 +32,9 @@ export class GetDefaultUriDtoWithCursor {
 
   @IsOptional()
   cursor: string;
+
+  @IsOptional()
+  searchTerm: string;
 }
 
 export class GetDefaultUriDtoWithPageNumber {

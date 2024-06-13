@@ -47,6 +47,11 @@ spec:
                  secretKeyRef:
                    name: payments-service-production-config-secret
                    key: STRIPE_API_KEY
+             - name: STRIPE_WEBHOOK_SECRET_S
+               valueFrom:
+                 secretKeyRef:
+                   name: payments-service-production-config-secret
+                   key: STRIPE_WEBHOOK_SECRET_S
              - name: PAYPAL_CLIENT_ID
                valueFrom:
                  secretKeyRef:

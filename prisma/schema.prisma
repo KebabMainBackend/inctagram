@@ -17,7 +17,7 @@ model Post {
   userId      Int        @map("user_id")
   status      PostStatus @default(ACTIVE)
   images      String[]
-  user        User       @relation(fields: [userId], references: [id])
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
@@ -36,6 +36,7 @@ model User {
   profile          Profile?
   sessions         Session[]
   confirmationData UserConfirmation?
+  ban              Bans?
 }
 
 model Profile {
@@ -52,7 +53,7 @@ model Profile {
   accountType         AccountType          @default(PERSONAL)
   CurrentSubscription CurrentSubscription?
   payments            Payments[]
-  user                User                 @relation(fields: [userId], references: [id])
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   subscription        Subscription[]
 }
 
@@ -71,9 +72,9 @@ model Session {
   userId         Int
   lastActiveDate DateTime
   aliveTill      DateTime
-  devicesId      String   @unique
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  devicesId      String   @unique
   device         Devices? @relation(fields: [devicesId], references: [id], onDelete: Cascade)
   User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -96,7 +97,7 @@ model OAuthProvider {
   userId       Int
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  user         User     @relation(fields: [userId], references: [id])
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Blacklist {
@@ -116,7 +117,8 @@ model Subscription {
   productPriceId       String?
   subscriptionPriceId  String?
   paypalSubscriptionId String?
-  profile              Profile             @relation(fields: [userId], references: [userId])
+  profile              Profile             @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  payment              Payments?
 }
 
 model Payments {
@@ -130,7 +132,9 @@ model Payments {
   subscriptionPriceId   String?
   paypalSubscriptionId  String?
   interval              PaymentInterval?
-  profile               Profile             @relation(fields: [userId], references: [userId])
+  profile               Profile             @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  subscription          Subscription?       @relation(fields: [subscriptionId], references: [subscriptionId])
+  subscriptionId        Int?                @unique
 }
 
 model Product {
@@ -150,7 +154,16 @@ model CurrentSubscription {
   hasAutoRenewal    Boolean  @default(false)
   paypalCustomerId  String?
   stripeCustomerId  String?
-  profile           Profile  @relation(fields: [userId], references: [userId])
+  profile           Profile  @relation(fields: [userId], references: [userId], onDelete: Cascade)
+}
+
+model Bans {
+  userId    Int       @id @unique
+  banStatus BanStatus @default(UNBANNED)
+  banReason String?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 enum PostStatus {
@@ -174,4 +187,9 @@ enum PaymentInterval {
   week
   month
   year
+}
+
+enum BanStatus {
+  BANNED
+  UNBANNED
 }

@@ -41,12 +41,16 @@ export class FinishStripePaymentHandler
       );
 
       const subscription = SubscriptionEntity.create(subscriptionDto);
-      const payment = PaymentsEntity.create(
-        'Stripe',
-        productInfo,
-        subscription.dateOfNextPayment,
-        userId,
+      const newSub = await this.subscriptionRepo.addSubscriptionToDB(
+        subscription,
       );
+      const payment = PaymentsEntity.create({
+        paymentSystem: 'Stripe',
+        productInfo,
+        endDateOfSubscription: subscription.dateOfNextPayment,
+        userId,
+        subscriptionId: newSub.subscriptionId,
+      });
 
       const renewSubscription = SubscriptionEntity.renewSubscription(
         currentSubscription
@@ -55,7 +59,6 @@ export class FinishStripePaymentHandler
         productInfo.period,
       );
 
-      await this.subscriptionRepo.addSubscriptionToDB(subscription);
       await this.subscriptionRepo.addPaymentToDB(payment);
 
       await this.subscriptionRepo.updateCurrentSubscription({

@@ -137,6 +137,16 @@ spec:
                  secretKeyRef:
                    name: main-service-production-config-secret
                    key: QUEUE_NAME
+             - name: ADMIN_LOGIN
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: ADMIN_LOGIN
+             - name: ADMIN_PASSWORD
+               valueFrom:
+                 secretKeyRef:
+                   name: main-service-production-config-secret
+                   key: ADMIN_PASSWORD
              - name: DATABASE_URL
                valueFrom:
                  secretKeyRef:

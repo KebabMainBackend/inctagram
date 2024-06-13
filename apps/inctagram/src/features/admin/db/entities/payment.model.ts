@@ -1,8 +1,4 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import {
-  PaymentEnumTypes,
-  SubscriptionEnumTypes,
-} from '../../../../../../../types/subscription-enum.types';
 
 @ObjectType()
 export class PaymentModel {
@@ -26,4 +22,12 @@ export class PaymentModel {
 
   @Field({ description: 'Payment Types' })
   paymentType: string;
+}
+@ObjectType()
+export class UsersPaymentsModel extends PaymentModel {
+  @Field({ description: 'user avatar', nullable: true })
+  avatar: string;
+
+  @Field({ description: 'username' })
+  username: string;
 }

@@ -15,6 +15,8 @@ import { UpdatePostHandler } from './application/use-cases/update-post.command';
 import { UsersRepository } from '../../auth/db/users.repository';
 import { TcpClientOptions } from '@nestjs/microservices/interfaces/client-metadata.interface';
 import { PublicPostsController } from './api/public-posts.controller';
+import { PubSubModule } from '../../modules/pubsub.module';
+import { PubSub } from 'graphql-subscriptions';
 
 const CommandHandlers = [
   UploadPostImagesHandler,
@@ -31,7 +33,7 @@ const Repos = [
 ];
 
 @Module({
-  imports: [CqrsModule, ConfigModule],
+  imports: [CqrsModule, ConfigModule, PubSubModule],
   controllers: [PostsController, PublicPostsController],
   providers: [
     {
@@ -50,6 +52,7 @@ const Repos = [
     },
     PrismaService,
     JwtService,
+    PubSub,
     ...CommandHandlers,
     ...Repos,
   ],

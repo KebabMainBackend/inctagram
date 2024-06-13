@@ -13,9 +13,12 @@ import {
 import { RmqUrl } from '@nestjs/microservices/external/rmq-url.interface';
 import { DeleteUserHandler } from './application/delete-user.command';
 import { UsersRepository } from './db/users.repository';
+import { ChangeBanStatusOfUserHandler } from './application/ban-user.command';
+import { PubSub } from 'graphql-subscriptions';
+import { PostsQueryRepository } from '../posts/db/posts.query-repository';
 
-const repos = [UsersQueryRepository, UsersRepository];
-const commandHandler = [DeleteUserHandler];
+const repos = [UsersQueryRepository, UsersRepository, PostsQueryRepository];
+const commandHandler = [DeleteUserHandler, ChangeBanStatusOfUserHandler];
 @Module({
   imports: [CqrsModule],
   providers: [
@@ -49,6 +52,7 @@ const commandHandler = [DeleteUserHandler];
     },
     PrismaService,
     AdminResolver,
+    PubSub,
     ...repos,
     ...commandHandler,
   ],

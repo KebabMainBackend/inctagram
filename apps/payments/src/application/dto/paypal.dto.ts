@@ -73,10 +73,9 @@ export const getSubscriptionDto = (
   return_url,
   cancel_url,
   autoRenewal,
-  startTime: Date | null
+  startTime: Date | null,
 ) => {
-
-  startTime = startTime ?? addMinutes(new Date(), 2)
+  startTime = startTime ?? addMinutes(new Date(), 2);
 
   return {
     plan_id: `${planId}`,

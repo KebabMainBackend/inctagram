@@ -293,11 +293,19 @@ export class AuthController {
       new ResendRecoveryCodeCommand(body.email, headers),
     );
   }
+
   @Get('me')
   @ApiBearerAuth()
   @UseGuards(BearerAuthGuard)
-  async getMe(@User() user: UserTypes) {
-    return user;
+  async getMe(@User() user: UserTypes, @Req() req: Request) {
+    const refreshToken = req.cookies.refreshToken;
+    const data = await this.commandBus.execute(
+      new DecodeRefreshTokenCommand(refreshToken),
+    );
+    if (data) {
+      return user;
+    }
+    throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
   }
 
   @ApiExcludeEndpoint()

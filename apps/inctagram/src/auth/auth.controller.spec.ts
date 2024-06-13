@@ -135,6 +135,7 @@ describe('AuthController', () => {
       await request(httpServer)
         .get(URL + '/me')
         .auth(accesstoken, { type: 'bearer' })
+        .set('Cookie', refreshToken)
         .expect(HttpStatus.OK);
     });
   });

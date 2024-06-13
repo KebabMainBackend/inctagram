@@ -13,7 +13,7 @@ import { SubscriptionsModule } from './features/subscriptions/subscriptions.modu
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AdminModule } from './features/admin/admin.module';
-import { formatError } from 'graphql/error';
+import { PubSubModule } from './modules/pubsub.module';
 
 @Module({
   imports: [
@@ -41,11 +41,26 @@ import { formatError } from 'graphql/error';
     SubscriptionsModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
+      path: 'api/v1/graphql',
+      introspection: true,
       playground: true,
-      autoSchemaFile: 'schema.gql',
+      autoSchemaFile: true,
       include: [AdminModule],
+      subscriptions: {
+        'graphql-ws': true,
+      },
       formatError: (err) => {
         return { message: err.message, path: err.path };
+      },
+      context: ({ req, res, connection }) => {
+        if (connection) {
+          // If this WebSocket connection
+          // Return context for WebSocket connection
+          return {
+            req: connection.context,
+          };
+        }
+        return { req, res };
       },
     }),
     AdminModule,

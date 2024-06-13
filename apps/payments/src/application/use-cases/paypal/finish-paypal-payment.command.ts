@@ -33,11 +33,17 @@ export class FinishPaypalPaymentHandler
       const data = payload.body.payload.resource;
       if (payload.body.payload.event_type === 'PAYMENT.SALE.COMPLETED') {
         const paypalSubscriptionId = data.billing_agreement_id;
-        if (await this.subscriptionRepo
-          .getSubscriptionByPaypalSubId(paypalSubscriptionId)) return
+        if (
+          await this.subscriptionRepo.getSubscriptionByPaypalSubId(
+            paypalSubscriptionId,
+          )
+        )
+          return;
 
         const { plan, userId } =
-          await this.paypalAdapter.getPaypalSubscriptionInfo(paypalSubscriptionId,)
+          await this.paypalAdapter.getPaypalSubscriptionInfo(
+            paypalSubscriptionId,
+          );
 
         const subscriptionDto = CreateSubscriptionDto.createSubscriptionDto(
           plan,
@@ -47,14 +53,18 @@ export class FinishPaypalPaymentHandler
         );
 
         const subscription = SubscriptionEntity.create(subscriptionDto);
-        const payment = PaymentsEntity.create(
-          'Paypal',
-          plan,
-          subscription.dateOfNextPayment,
-          +userId,
+        const newSub = await this.subscriptionRepo.addSubscriptionToDB(
+          subscription,
         );
 
-        await this.subscriptionRepo.addSubscriptionToDB(subscription);
+        const payment = PaymentsEntity.create({
+          paymentSystem: 'Paypal',
+          productInfo: plan,
+          endDateOfSubscription: subscription.dateOfNextPayment,
+          userId,
+          subscriptionId: newSub.subscriptionId,
+        });
+
         await this.subscriptionRepo.addPaymentToDB(payment);
 
         const currentSubscription =
@@ -70,7 +80,7 @@ export class FinishPaypalPaymentHandler
           currentSubscription,
           dateOfNextPayment: newExpirationDate,
           expireAt: newExpirationDate,
-        })
+        });
 
         return {
           userId: +userId,

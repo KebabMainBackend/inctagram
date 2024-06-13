@@ -8,6 +8,7 @@ export enum FilesMicroserviceMessagesEnum {
   GET_USER_THUMBNAIL_AVATAR = 'get-user-thumbnail-avatar',
   GET_USER_ALL_PHOTOS = 'get-user-all-photos',
   DELETE_USER_ALL_PHOTOS = 'delete-user-all-photos',
+  DELETE_POST_IMAGES = 'delete-post-images',
 }
 
 export enum PaymentsMicroserviceMessagesEnum {
@@ -21,4 +22,5 @@ export enum PaymentsMicroserviceMessagesEnum {
   PAYPAL_FINISH_PAYMENT = 'paypal-finish-payment',
   PAYPAL_CREATE_WEBHOOK = 'paypal_create_webhook',
   GET_USER_PAYMENTS = 'get-user-payments',
+  GET_USERS_PAYMENTS = 'get-users-payments',
 }
