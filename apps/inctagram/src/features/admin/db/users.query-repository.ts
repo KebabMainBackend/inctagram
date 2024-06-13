@@ -197,7 +197,6 @@ export class UsersQueryRepository {
     const data = await firstValueFrom(
       this.clientPayments.send(pattern, payload),
     );
-    console.log(2);
     const newItems = [];
     for (const user of data.items) {
       let userAvatar = null;
@@ -213,7 +212,6 @@ export class UsersQueryRepository {
         const avatar = await firstValueFrom(
           this.getImageById(userEntity.profile.avatarId),
         );
-        console.log(3);
         userAvatar = process.env.FILES_STORAGE_URL + avatar.url;
       }
       const obj = user;

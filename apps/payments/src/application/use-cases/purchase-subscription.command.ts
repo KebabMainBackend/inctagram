@@ -27,6 +27,7 @@ export class PurchaseSubscriptionHandler
   ) {}
 
   async execute({ userId, payload }: PurchaseSubscriptionCommand) {
+    console.log('dedee');
     const productInfo = await this.productRepository.getProductInfo(
       payload.productPriceId,
     );

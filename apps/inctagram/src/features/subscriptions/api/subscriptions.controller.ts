@@ -92,6 +92,7 @@ export class SubscriptionsController {
   ) {
     const userId = user.id;
     const email = user.email;
+    console.log(userId, email);
     return this.clientProxy.send(
       { cmd: PaymentsMicroserviceMessagesEnum.PURCHASE_SUBSCRIPTION },
       { userId, email, payload },

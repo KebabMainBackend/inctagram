@@ -48,6 +48,7 @@ export class PaymentsController {
   async paymentInfo(@Req() req: RawBodyRequest<Request>) {
     const signature = req.headers['stripe-signature'];
     const rawBody = req.rawBody;
+    console.log('web hook worked, stripe/webhook');
     const data = await firstValueFrom(
       this.clientProxy.send(
         { cmd: PaymentsMicroserviceMessagesEnum.STRIPE_FINISH_PAYMENT },

@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { HttpStatus } from '@nestjs/common';
 import { EmailService } from '../../../../inctagram/src/auth/managers/email.manager';
-import { differenceInDays, format, parseISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { SubscriptionRepository } from '../../db/subscription.repository';
 import { PrismaService } from '../../prisma.service';
 
@@ -33,7 +33,6 @@ export class GetCurrentSubscriptionInfoHandler
       };
     }
     const subscriptions = await this.subscriptionRepo.getSubscriptions(userId);
-    console.log(subscriptions, '4');
     if (subscriptions.length) {
       const expireAtFormatted = format(
         parseISO(current.expireAt.toISOString()),
@@ -45,13 +44,11 @@ export class GetCurrentSubscriptionInfoHandler
       );
 
       if (!current.hasAutoRenewal) {
-        console.log(subscriptions[0], 1);
         return {
           subscription: subscriptions[0],
           expireAt: expireAtFormatted,
         };
       } else if (current.hasAutoRenewal) {
-        console.log(subscriptions[0], 2);
         return {
           subscription: subscriptions[0],
           expireAt: expireAtFormatted,
