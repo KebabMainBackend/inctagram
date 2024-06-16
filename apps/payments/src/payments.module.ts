@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { PaymentsController } from './api/payments.controller';
-import { PaymentsService } from './payments.service';
 import { CqrsModule } from '@nestjs/cqrs';
 import { ConfigModule } from '@nestjs/config';
 import { StripeController } from './api/stripe.controller';
@@ -58,7 +57,6 @@ const repos = [
   providers: [
     StripeAdapter,
     PrismaService,
-    PaymentsService,
     EmailService,
     PaypalAdapter,
     ...commandHandlers,

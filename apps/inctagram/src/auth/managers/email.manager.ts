@@ -130,7 +130,7 @@ your account type to business
     const options = {
       from: 'Johnny <johnny178917@gmail.com>',
       to: userEmail,
-      subject: 'Successful registration',
+      subject: 'Successful payment',
       html: messageTemplate,
     };
     try {

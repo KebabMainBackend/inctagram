@@ -32,7 +32,6 @@ export class FinishStripePaymentHandler
 
       const currentSubscription =
         await this.subscriptionRepo.getCurrentSubscription(userId);
-      console.log(currentSubscription, 'currentSubsctiprion');
 
       const subscriptionDto = CreateSubscriptionDto.createSubscriptionDto(
         productInfo,

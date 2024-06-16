@@ -8,6 +8,7 @@ import {
   RawBodyRequest,
   Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { AddNewSubscriptionTypeDto } from '../../../../../payments/src/api/dto/product.dto';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { ClientProxy } from '@nestjs/microservices';
@@ -48,7 +49,6 @@ export class PaymentsController {
   async paymentInfo(@Req() req: RawBodyRequest<Request>) {
     const signature = req.headers['stripe-signature'];
     const rawBody = req.rawBody;
-    console.log('web hook worked, stripe/webhook');
     const data = await firstValueFrom(
       this.clientProxy.send(
         { cmd: PaymentsMicroserviceMessagesEnum.STRIPE_FINISH_PAYMENT },
