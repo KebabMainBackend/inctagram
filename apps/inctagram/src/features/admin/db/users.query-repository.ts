@@ -177,7 +177,6 @@ export class UsersQueryRepository {
       sortBy = 'username';
     }
     if (query.searchTerm || query.sortBy === 'username') {
-      console.log('worked');
       const users = await this.prismaClient.user.findMany({
         where: filter,
         orderBy: { [sortBy]: sortDirection },
@@ -194,32 +193,36 @@ export class UsersQueryRepository {
       },
       isAutoUpdate: query.isAutoUpdate,
     };
-    const data = await firstValueFrom(
-      this.clientPayments.send(pattern, payload),
-    );
-    const newItems = [];
-    for (const user of data.items) {
-      let userAvatar = null;
-      const userEntity = await this.prismaClient.user.findUnique({
-        where: {
-          id: user.userId,
-        },
-        include: {
-          profile: true,
-        },
-      });
-      if (userEntity.profile.avatarId) {
-        const avatar = await firstValueFrom(
-          this.getImageById(userEntity.profile.avatarId),
-        );
-        userAvatar = process.env.FILES_STORAGE_URL + avatar.url;
+    try {
+      const data = await firstValueFrom(
+        this.clientPayments.send(pattern, payload),
+      );
+      const newItems = [];
+      for (const user of data.items) {
+        let userAvatar = null;
+        const userEntity = await this.prismaClient.user.findUnique({
+          where: {
+            id: user.userId,
+          },
+          include: {
+            profile: true,
+          },
+        });
+        if (userEntity.profile.avatarId) {
+          const avatar = await firstValueFrom(
+            this.getImageById(userEntity.profile.avatarId),
+          );
+          userAvatar = process.env.FILES_STORAGE_URL + avatar.url;
+        }
+        const obj = user;
+        obj.username = userEntity.username;
+        obj.avatar = userAvatar;
+        newItems.push(obj);
       }
-      const obj = user;
-      obj.username = userEntity.username;
-      obj.avatar = userAvatar;
-      newItems.push(obj);
+      return { ...data, items: newItems };
+    } catch (e) {
+      console.log(e, 'error');
     }
-    return { ...data, items: newItems };
   }
   getImageById(imageId: string) {
     const pattern = {

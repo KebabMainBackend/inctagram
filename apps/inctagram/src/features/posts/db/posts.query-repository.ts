@@ -71,7 +71,6 @@ export class PostsQueryRepository {
         hasMore = true;
         postsNPostImages.pop(); // Remove the extra post used to check for more
       }
-
       for (const post of postsNPostImages) {
         if (!userId) {
           userProfile = await this.getUserProfile(post.userId);

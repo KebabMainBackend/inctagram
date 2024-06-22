@@ -64,6 +64,7 @@ export class SubscriptionEntity {
   }
 
   static getNewExpireAt(previousExpireAt: Date, period: number) {
+    console.log(previousExpireAt, period, 'getNewExpireAt');
     return addDays(previousExpireAt, Number(period));
   }
 }

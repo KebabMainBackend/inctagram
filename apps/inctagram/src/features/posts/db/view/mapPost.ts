@@ -38,5 +38,6 @@ export const mapPostImages = (images: DBPostImageType[]) => {
     height: image.height,
     fileSize: image.fileSize,
     uploadId: image.fileId,
+    type: image.type,
   }));
 };

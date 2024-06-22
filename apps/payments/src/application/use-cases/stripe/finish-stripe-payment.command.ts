@@ -51,7 +51,6 @@ export class FinishStripePaymentHandler
         userId,
         subscriptionId: newSub.subscriptionId,
       });
-      console.log(payment, 'payment');
 
       const renewSubscription = SubscriptionEntity.renewSubscription(
         currentSubscription
