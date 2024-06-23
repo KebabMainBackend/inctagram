@@ -105,8 +105,8 @@ export class PostsQueryRepository {
       },
       include: {
         user: {
-          select: {
-            username: true,
+          include: {
+            ban: true,
           },
         },
       },
@@ -134,6 +134,7 @@ export class PostsQueryRepository {
     });
     if (post) {
       const userProfile = await this.getUserProfile(post.userId);
+      console.log(userProfile);
       const userAvatar = await firstValueFrom(
         this.getUserThumbnailAvatar(userProfile?.thumbnailId),
       );

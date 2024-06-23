@@ -28,6 +28,7 @@ export const mapPostsWithImages = ({
       lastname: profile.lastname,
       firstname: profile.firstname,
     },
+    status: profile.user.ban.banStatus,
   };
 };
 

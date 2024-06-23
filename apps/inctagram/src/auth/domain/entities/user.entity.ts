@@ -3,6 +3,7 @@ import { SessionEntity } from './session.entity';
 import { OauthProviderEntity } from './oauth-provider.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
+import { BanStatus } from '../../../types/ban.types';
 
 export class UserEntity extends BaseEntity {
   id: number;
@@ -17,6 +18,13 @@ export class UserEntity extends BaseEntity {
   sessionId: string;
   sessions: SessionEntity[];
   confirmationData: UserConfirmationEntity | null;
+  ban: {
+    userId: number;
+    banStatus: BanStatus;
+    banReason: string;
+    createdAt: Date;
+    updatedAt: Date;
+  };
 
   static create(data: {
     email: string;

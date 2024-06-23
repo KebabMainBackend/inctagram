@@ -1,6 +1,7 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { OwnerModel } from './profile.model';
 import { AvatarsModel, ImageModel } from './file.model';
+import { BanStatus } from '../../../../types/ban.types';
 
 @ObjectType()
 export class PostModel {
@@ -24,6 +25,8 @@ export class PostModel {
 
   @Field(() => OwnerModel, { description: 'post owner' })
   owner: OwnerModel;
+  @Field(() => BanStatus, { description: 'user ban status' })
+  status: BanStatus;
 
   @Field({ nullable: true, description: 'user avatar' })
   avatarOwner: string;

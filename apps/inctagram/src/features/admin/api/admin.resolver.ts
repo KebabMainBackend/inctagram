@@ -123,7 +123,7 @@ export class AdminResolver {
     return 'unchanged';
   }
 
-  @Query(() => PostsPaginationModel)
+  @Query(() => PostsPaginationModel, { name: 'getAllPosts' })
   async getAllPosts(@Args() args: GetPostsQueryDto) {
     return this.postsQueryRepo.findPosts(args);
   }
