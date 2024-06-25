@@ -8,6 +8,7 @@ import {
   RawBodyRequest,
   Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { AddNewSubscriptionTypeDto } from '../../../../../payments/src/api/dto/product.dto';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { ClientProxy } from '@nestjs/microservices';

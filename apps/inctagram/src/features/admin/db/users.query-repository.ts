@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import {
   GetUserPaymentsQueryDto,
+  GetUsersPaymentsQueryDto,
   GetUsersQueryDto,
 } from '../api/dto/get-users.dto';
 import {
@@ -15,7 +16,7 @@ import {
 } from '../../../../../../types/messages';
 import { firstValueFrom } from 'rxjs';
 
-const availableQueryParams = ['createdAt', 'username'];
+const availableQueryParams = ['createdAt', 'username', 'fullName'];
 
 @Injectable()
 export class UsersQueryRepository {
@@ -31,11 +32,31 @@ export class UsersQueryRepository {
     let { sortBy } = getRequestQueryMapperWithPageNumber(query);
     const filterOptions: any = {};
     if (!availableQueryParams.includes(sortBy)) {
-      sortBy = 'createdAt';
+      sortBy = 'id';
+    }
+    let orderBy: any = { [sortBy]: sortDirection };
+    if (sortBy === 'fullName') {
+      orderBy = {
+        profile: {
+          firstname: sortDirection,
+        },
+      };
     }
     if (query.searchTerm) {
-      filterOptions.username = {
-        contains: query.searchTerm,
+      filterOptions.profile = {
+        OR: [
+          {
+            firstname: {
+              contains: query.searchTerm,
+            },
+          },
+          { lastname: { contains: query.searchTerm } },
+        ],
+      };
+    }
+    if (query.statusFilter) {
+      filterOptions.ban = {
+        banStatus: query.statusFilter,
       };
     }
     const totalCount = await this.prismaClient.user.count({
@@ -46,10 +67,11 @@ export class UsersQueryRepository {
       where: filterOptions,
       include: {
         profile: true,
+        ban: true,
       },
+      orderBy: orderBy,
       take: pageSize,
       skip: (pageNumber - 1) * pageSize,
-      orderBy: { [sortBy]: sortDirection },
     });
 
     return {
@@ -73,7 +95,7 @@ export class UsersQueryRepository {
     });
     return this.mapUser(user);
   }
-  async getUserPayments(id: number, query: GetUserPaymentsQueryDto) {
+  async getUserPayments(query: GetUserPaymentsQueryDto, id: number) {
     const pattern = { cmd: PaymentsMicroserviceMessagesEnum.GET_USER_PAYMENTS };
     const payload = {
       userId: id,
@@ -102,9 +124,13 @@ export class UsersQueryRepository {
     return {
       id: user.id,
       username: user.username,
-      fullName: user.profile.firstname + ' ' + user.profile.lastname,
+      fullName: user.profile?.firstname
+        ? user.profile.firstname + ' ' + user.profile.lastname
+        : null,
       createdAt: user.createdAt,
       email: user.email,
+      reason: user.ban.banReason,
+      status: user.ban.banStatus,
     };
   }
   private async mapUser(profile: any) {
@@ -132,5 +158,79 @@ export class UsersQueryRepository {
       accountType: profile.accountType,
       avatars: obj,
     };
+  }
+
+  async getUsersPayments(query: GetUsersPaymentsQueryDto) {
+    let sortBy = 'createdAt';
+    const sortDirection = query.sortDirection;
+    const filter: any = {};
+    const pattern = {
+      cmd: PaymentsMicroserviceMessagesEnum.GET_USERS_PAYMENTS,
+    };
+    let userIds = [];
+    if (query.searchTerm) {
+      filter.username = {
+        contains: query.searchTerm,
+      };
+    }
+    if (query.sortBy === 'username') {
+      sortBy = 'username';
+    }
+    if (query.searchTerm || query.sortBy === 'username') {
+      const users = await this.prismaClient.user.findMany({
+        where: filter,
+        orderBy: { [sortBy]: sortDirection },
+      });
+      userIds = users.map((u) => u.id);
+    }
+    const payload = {
+      userIds,
+      query: {
+        pageSize: query.pageSize,
+        pageNumber: query.pageNumber,
+        sortBy: query.sortBy,
+        sortDirection: query.sortDirection,
+      },
+      isAutoUpdate: query.isAutoUpdate,
+    };
+    try {
+      const data = await firstValueFrom(
+        this.clientPayments.send(pattern, payload),
+      );
+      const newItems = [];
+      for (const user of data.items) {
+        let userAvatar = null;
+        const userEntity = await this.prismaClient.user.findUnique({
+          where: {
+            id: user.userId,
+          },
+          include: {
+            profile: true,
+          },
+        });
+        if (userEntity.profile.avatarId) {
+          const avatar = await firstValueFrom(
+            this.getImageById(userEntity.profile.avatarId),
+          );
+          userAvatar = process.env.FILES_STORAGE_URL + avatar.url;
+        }
+        const obj = user;
+        obj.username = userEntity.username;
+        obj.avatar = userAvatar;
+        newItems.push(obj);
+      }
+      return { ...data, items: newItems };
+    } catch (e) {
+      console.log(e, 'error');
+    }
+  }
+  getImageById(imageId: string) {
+    const pattern = {
+      cmd: FilesMicroserviceMessagesEnum.GET_USER_THUMBNAIL_AVATAR,
+    };
+    const payload = {
+      imageId,
+    };
+    return this.client.send(pattern, payload);
   }
 }

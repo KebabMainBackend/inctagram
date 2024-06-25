@@ -21,7 +21,6 @@ export class GetUserPaymentsHandler
 
   async execute(command: GetUserPaymentsCommand) {
     const { userId, query } = command;
-
-    return this.subscriptionRepo.getPayments(userId, query);
+    return this.subscriptionRepo.getUserPayments(query, userId);
   }
 }

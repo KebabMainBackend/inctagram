@@ -37,6 +37,7 @@ export const appSettings = (app: INestApplication) => {
   app.enableCors({
     origin: [
       'https://inctagram.fun',
+      'https://admin.inctagram.fun',
       'http://localhost:3000',
       'http://localhost:5173',
       'http://localhost:3001',

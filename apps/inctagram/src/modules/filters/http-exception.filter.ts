@@ -19,7 +19,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       if (type === 'http') {
         this.handleHttpException(exception, response);
       } else if (type === 'graphql') {
-        return this.handleGqlException(exception);
+        this.handleGqlException(exception);
       }
     } catch (error) {
       console.log('All EXCEPTIONS CATCH:', error);
@@ -30,7 +30,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         );
     }
   }
-  private handleGqlException(exception: unknown) {
+  private handleGqlException(exception: HttpException) {
     if (exception instanceof HttpException) {
       const response = exception.getResponse();
       throw new UserInputError(exception?.message, {});

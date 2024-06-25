@@ -18,7 +18,6 @@ export class StripeAdapter {
     productInfo,
   }: StripeCheckoutData): Promise<any> {
     const stripe = new Stripe(this.configService.get('STRIPE_API_KEY'));
-    console.log(this.configService.get('PAYMENT_SUCCESS_URL'));
     return await stripe.checkout.sessions.create({
       success_url: this.configService.get('PAYMENT_SUCCESS_URL'),
       cancel_url: this.configService.get('PAYMENT_ERROR_URL'),
@@ -62,6 +61,7 @@ export class StripeAdapter {
       },
       product: product.id,
     });
+    console.log(subscriptionPrice);
     //2
     const productPrice = await stripe.prices.create({
       unit_amount: payload.price * 100,

@@ -14,6 +14,7 @@ import { GetUserPaymentsCommand } from '../application/use-cases/get-user-paymen
 import { CreatePaypalWebhookCommand } from '../application/use-cases/paypal/create-paypal-webhook.command';
 import { createPaypalWebhook } from '../../../inctagram/src/features/subscriptions/api/dto/dto';
 import { GetDefaultUriDtoWithPageNumber } from '../../../inctagram/src/utils/default-get-query.uri.dto';
+import { GetUsersPaymentsCommand } from '../application/use-cases/get-users-payments.command';
 
 @Controller()
 export class PaymentsController {
@@ -53,6 +54,7 @@ export class PaymentsController {
     email: string;
     payload: PurchaseSubscriptionDto;
   }) {
+    console.log(2, data.userId);
     return this.commandBus.execute(
       new PurchaseSubscriptionCommand(
         data.userId,
@@ -84,6 +86,19 @@ export class PaymentsController {
   }) {
     return this.commandBus.execute(
       new GetUserPaymentsCommand(data.userId, data.query),
+    );
+  }
+
+  @MessagePattern({
+    cmd: PaymentsMicroserviceMessagesEnum.GET_USERS_PAYMENTS,
+  })
+  async getUsersPayments(data: {
+    userIds: number[];
+    query: GetDefaultUriDtoWithPageNumber;
+    isAutoUpdate: boolean;
+  }) {
+    return this.commandBus.execute(
+      new GetUsersPaymentsCommand(data.userIds, data.query, data.isAutoUpdate),
     );
   }
 

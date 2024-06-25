@@ -8,6 +8,8 @@ import {
   getRequestReturnMapperWithPageNumber,
 } from '../../../inctagram/src/utils/helpers/get-request-mapper-helper-with.cursor';
 
+const availableSortByOptions = ['price', 'paymentSystem', 'dateOfPayment'];
+
 @Injectable()
 export class SubscriptionRepository {
   constructor(private prisma: PrismaService) {}
@@ -71,7 +73,7 @@ export class SubscriptionRepository {
     } else return autoRenewalSubscription;
   }
 
-  async getPayments(userId: number, query: GetDefaultUriDtoWithPageNumber) {
+  async getUserPayments(query: GetDefaultUriDtoWithPageNumber, userId: number) {
     const { pageSize, pageNumber } = getRequestQueryMapperWithPageNumber(query);
     const totalCount = await this.prisma.payments.count({
       where: { userId },
@@ -86,15 +88,44 @@ export class SubscriptionRepository {
       pageNumber,
       pageSize,
       totalCount,
-      items: payments.map((p) => ({
-        id: p.paymentId,
-        userId: p.userId,
-        dateOfPayments: p.dateOfPayment,
-        endDateOfSubscription: p.endDateOfSubscription,
-        price: p.price,
-        subscriptionType: p.interval,
-        paymentType: p.paymentSystem,
-      })),
+      items: payments.map((p) => this.mapPayments(p)),
+    });
+  }
+  async getUsersPayments(
+    query: GetDefaultUriDtoWithPageNumber,
+    userIds: number[],
+    isAutoUpdate: boolean,
+  ) {
+    const { pageSize, pageNumber, sortDirection, sortBy } =
+      getRequestQueryMapperWithPageNumber(query);
+    let sortByOption = sortBy;
+    const filter: any = {
+      subscription: {
+        autoRenewal: isAutoUpdate,
+      },
+    };
+    if (userIds.length) {
+      filter.userId = {
+        in: userIds,
+      };
+    }
+    const totalCount = await this.prisma.payments.count({
+      where: filter,
+    });
+    if (!availableSortByOptions.includes(query.sortBy)) {
+      sortByOption = 'dateOfPayment';
+    }
+    const payments = await this.prisma.payments.findMany({
+      where: filter,
+      orderBy: { [sortByOption]: sortDirection },
+      take: pageSize,
+      skip: (pageNumber - 1) * pageSize,
+    });
+    return getRequestReturnMapperWithPageNumber({
+      pageNumber,
+      pageSize,
+      totalCount,
+      items: payments.map((p) => this.mapPayments(p)),
     });
   }
   async updateStripeCustomerId(userId: number, customerId: string) {
@@ -105,19 +136,19 @@ export class SubscriptionRepository {
   }
 
   async addSubscriptionToDB(newSubscription: SubscriptionEntity) {
-    await this.prisma.subscription.create({ data: newSubscription });
+    return this.prisma.subscription.create({ data: newSubscription });
   }
 
   async addPaymentToDB(payment: PaymentsEntity) {
     await this.prisma.payments.create({ data: payment });
   }
 
-  async updatePayment(endDateOfSubscription, paypalSubscriptionId) {
-    await this.prisma.payments.updateMany({
-      where: { endDateOfSubscription },
-      data: { paypalSubscriptionId },
-    });
-  }
+  // async updatePayment(endDateOfSubscription, paypalSubscriptionId) {
+  //   await this.prisma.payments.updateMany({
+  //     where: { endDateOfSubscription },
+  //     data: { paypalSubscriptionId },
+  //   });
+  // }
 
   async updateCurrentSubscription({
     userId,
@@ -131,7 +162,7 @@ export class SubscriptionRepository {
         dateOfNextPayment,
       );
 
-      return await this.prisma.currentSubscription.create({
+      return this.prisma.currentSubscription.create({
         data: { userId, expireAt: newExpireAt, dateOfNextPayment },
       });
     } else if (currentSubscription) {
@@ -178,5 +209,16 @@ export class SubscriptionRepository {
       where: { subscriptionId },
       data: { stripeSubscriptionId, paypalSubscriptionId, autoRenewal },
     });
+  }
+  mapPayments(p: any) {
+    return {
+      id: p.paymentId,
+      userId: p.userId,
+      dateOfPayments: p.dateOfPayment,
+      endDateOfSubscription: p.endDateOfSubscription,
+      price: p.price,
+      subscriptionType: p.interval,
+      paymentType: p.paymentSystem,
+    };
   }
 }

@@ -13,6 +13,8 @@ import { SubscriptionsModule } from './features/subscriptions/subscriptions.modu
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AdminModule } from './features/admin/admin.module';
+import { PubSubModule } from './modules/pubsub.module';
+import { NotificationsModule } from './features/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -45,6 +47,9 @@ import { AdminModule } from './features/admin/admin.module';
       playground: true,
       autoSchemaFile: true,
       include: [AdminModule],
+      subscriptions: {
+        'graphql-ws': true,
+      },
       formatError: (err) => {
         return { message: err.message, path: err.path };
       },
@@ -60,6 +65,7 @@ import { AdminModule } from './features/admin/admin.module';
       },
     }),
     AdminModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -11,6 +11,7 @@ import { FilesMicroserviceMessagesEnum } from '../../../../../../types/messages'
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { PrismaService } from '../../../prisma.service';
+
 const availableQueryParams = ['createdAt', 'description', 'userId', 'id'];
 @Injectable()
 export class PostsQueryRepository {
@@ -28,6 +29,11 @@ export class PostsQueryRepository {
     let hasMore = false;
     const filterByStatusAndOptionalUserId: any = {
       status: PostStatusEnum.ACTIVE,
+      user: {
+        username: {
+          contains: queryPost.searchTerm,
+        },
+      },
     };
     if (!availableQueryParams.includes(sortBy)) {
       sortBy = 'createdAt';
@@ -47,7 +53,6 @@ export class PostsQueryRepository {
     const totalCount = await this.prismaClient.post.count({
       where: filterByStatusAndOptionalUserId,
     });
-
     const postsNPostImages = await this.prismaClient.post.findMany(filter);
     if (postsNPostImages.length) {
       lastPostId =
@@ -66,7 +71,6 @@ export class PostsQueryRepository {
         hasMore = true;
         postsNPostImages.pop(); // Remove the extra post used to check for more
       }
-
       for (const post of postsNPostImages) {
         if (!userId) {
           userProfile = await this.getUserProfile(post.userId);
@@ -86,7 +90,6 @@ export class PostsQueryRepository {
         items.push(mappedPost);
       }
     }
-
     return getRequestReturnMapperWithCursor<PostView>({
       totalCount,
       items,
@@ -102,8 +105,8 @@ export class PostsQueryRepository {
       },
       include: {
         user: {
-          select: {
-            username: true,
+          include: {
+            ban: true,
           },
         },
       },
@@ -131,6 +134,7 @@ export class PostsQueryRepository {
     });
     if (post) {
       const userProfile = await this.getUserProfile(post.userId);
+      console.log(userProfile);
       const userAvatar = await firstValueFrom(
         this.getUserThumbnailAvatar(userProfile?.thumbnailId),
       );

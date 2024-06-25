@@ -5,8 +5,10 @@ import {
   SortDirection,
 } from '../../../../utils/constants/default-query-params';
 import { IsOptional, Min } from 'class-validator';
+import { BanStatus } from '../../../../types/ban.types';
 
 registerEnumType(SortDirection, { name: 'SortDirection' });
+registerEnumType(BanStatus, { name: 'BanStatus' });
 @ArgsType()
 export class GetUsersQueryDto {
   @Field(() => Int, { defaultValue: PAGE_NUMBER_DEFAULT, nullable: true })
@@ -27,11 +29,12 @@ export class GetUsersQueryDto {
   @Field({ nullable: true })
   @IsOptional()
   searchTerm: string;
-}
-// @Field(() => statusFilter, { defaultValue: 1 })
-// statusFilter: number;
 
-// statusFilter: UserBlockStatus = ALL;
+  @Field(() => BanStatus, { nullable: true })
+  @IsOptional()
+  statusFilter: BanStatus;
+}
+
 @ArgsType()
 export class GetUserPaymentsQueryDto {
   @Field(() => Int, { defaultValue: PAGE_SIZE_DEFAULT__LARGE, nullable: true })
@@ -40,4 +43,29 @@ export class GetUserPaymentsQueryDto {
   @Field(() => Int, { defaultValue: PAGE_NUMBER_DEFAULT, nullable: true })
   @IsOptional()
   pageNumber: number = PAGE_NUMBER_DEFAULT;
+}
+
+@ArgsType()
+export class GetUsersPaymentsQueryDto extends GetUserPaymentsQueryDto {
+  @Field({ nullable: true })
+  @IsOptional()
+  searchTerm: string;
+
+  @Field({
+    nullable: true,
+    description: 'price, paymentSystem, dateOfPayment, username',
+  })
+  @IsOptional()
+  sortBy: string;
+
+  @Field(() => SortDirection, {
+    defaultValue: SortDirection.DESC,
+    nullable: true,
+  })
+  @IsOptional()
+  sortDirection: SortDirection;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  isAutoUpdate: boolean;
 }

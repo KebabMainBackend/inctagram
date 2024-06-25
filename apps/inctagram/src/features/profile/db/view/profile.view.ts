@@ -1,5 +1,6 @@
 import { FileImageTypeEnum } from '../../../../../../../types/file-image-enum.types';
 import { AccountType } from '@prisma/client';
+import { UserEntity } from '../../../../auth/domain/entities/user.entity';
 
 export type DBProfileView = {
   userId: number;
@@ -10,9 +11,7 @@ export type DBProfileView = {
   city: string | null;
   createdAt: Date;
   updatedAt: Date;
-  user: {
-    username: string;
-  };
+  user: any;
   accountType: AccountType;
 };
 

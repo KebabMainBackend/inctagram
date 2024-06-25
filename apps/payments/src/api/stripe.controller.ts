@@ -22,7 +22,7 @@ export class StripeController {
   @MessagePattern({
     cmd: PaymentsMicroserviceMessagesEnum.STRIPE_FINISH_PAYMENT,
   })
-  async finishPayment(data: { signature: string; rawBody: Buffer }) {
+  async finishPayment(data: { signature: string; rawBody: any }) {
     return await this.commandBus.execute(
       new FinishStripePaymentCommand(data.signature, data.rawBody),
     );

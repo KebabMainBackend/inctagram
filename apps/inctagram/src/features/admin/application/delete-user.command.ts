@@ -26,7 +26,7 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
       };
       await this.usersRepo.deleteUserById(userId);
       this.client.send(pattern, payload);
-      return;
+      return true;
     }
     return null;
   }

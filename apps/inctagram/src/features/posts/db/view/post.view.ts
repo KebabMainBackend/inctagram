@@ -1,4 +1,5 @@
 import { PostStatus } from '@prisma/client';
+import { BanStatus } from '../../../../types/ban.types';
 
 export type DBPostType = {
   id: number;
@@ -24,6 +25,7 @@ export type PostView = {
     firstname: string;
     lastname: string;
   };
+  status: BanStatus;
 };
 
 export type DBPostImageType = {

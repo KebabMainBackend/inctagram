@@ -13,7 +13,7 @@ export class TestDeleteUserHandler
   async execute() {
     const me = await this.usersRepo.getUserByEmail('default@gmail.com');
     if (me) {
-      await this.usersRepo.deleteUserByEmail('default@gmail.com', me.id);
+      await this.usersRepo.deleteUserByEmail('default@gmail.com');
     }
   }
 }

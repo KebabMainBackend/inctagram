@@ -2,16 +2,13 @@ import { ObjectType, Field, Int } from '@nestjs/graphql';
 
 @ObjectType()
 export class ImageModel {
-  @Field({ description: 'file id' })
-  id: string;
+  @Field({ description: 'file id', nullable: true })
+  uploadId: string;
 
   @Field({ description: 'file url' })
   url: string;
 
-  @Field({ description: 'file createdAt' })
-  createdAt: string;
-
-  @Field({ description: 'file type' })
+  @Field({ description: 'file type', nullable: true })
   type: string;
 }
 
