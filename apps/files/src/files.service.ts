@@ -115,7 +115,7 @@ export class FilesService {
       ownerId: userId,
     });
     return images.map((i) => ({
-      id: i._id,
+      uploadId: i._id,
       url: 'https://storage.yandexcloud.net/kebab-inctagram/' + i.url,
       createdAt: i.createdAt,
       type: i.type,
