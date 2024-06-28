@@ -113,6 +113,7 @@ export class FilesService {
   async getAllImagesOfUser(userId: number) {
     const images = await this.fileImageModel.find({
       ownerId: userId,
+      type: 'post-image',
     });
     return images.map((i) => ({
       uploadId: i._id,

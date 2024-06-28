@@ -34,10 +34,11 @@ export class GetCurrentSubscriptionInfoHandler
     }
     const subscriptions = await this.subscriptionRepo.getSubscriptions(userId);
     if (subscriptions.length) {
-      const expireAtFormatted = format(
-        parseISO(current.expireAt.toISOString()),
-        'dd.MM.yyyy',
-      );
+      // const expireAtFormatted = format(
+      //   parseISO(current.expireAt.toISOString()),
+      //   'dd.MM.yyyy',
+      // );
+      const expireAtFormatted = current.expireAt;
       const nextPaymentFormatted = format(
         parseISO(subscriptions[0].dateOfNextPayment.toISOString()),
         'dd.MM.yyyy',
