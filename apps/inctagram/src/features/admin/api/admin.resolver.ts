@@ -128,8 +128,11 @@ export class AdminResolver {
     return this.postsQueryRepo.findPosts(args);
   }
 
-  @Subscription(() => PostModel)
+  @Subscription(() => PostModel, {
+    resolve: (payload) => payload.postAdded,
+  })
   postAdded() {
+    console.log('what');
     return this.pubSub.asyncIterator('postAdded');
   }
 }

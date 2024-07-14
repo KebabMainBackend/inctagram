@@ -10,8 +10,8 @@ export class ProfileRepository {
       where: { userId },
       include: {
         user: {
-          select: {
-            username: true,
+          include: {
+            ban: true,
           },
         },
       },

@@ -16,11 +16,12 @@ import { UsersRepository } from './db/users.repository';
 import { ChangeBanStatusOfUserHandler } from './application/ban-user.command';
 import { PubSub } from 'graphql-subscriptions';
 import { PostsQueryRepository } from '../posts/db/posts.query-repository';
+import { PubSubModule } from '../../modules/pubsub.module';
 
 const repos = [UsersQueryRepository, UsersRepository, PostsQueryRepository];
 const commandHandler = [DeleteUserHandler, ChangeBanStatusOfUserHandler];
 @Module({
-  imports: [CqrsModule],
+  imports: [CqrsModule, PubSubModule],
   providers: [
     {
       provide: 'FILES_SERVICE',

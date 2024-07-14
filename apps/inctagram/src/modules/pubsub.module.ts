@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
+import { AmqpPubSub } from 'graphql-rabbitmq-subscriptions';
 
 @Module({
   providers: [
@@ -11,3 +12,22 @@ import { PubSub } from 'graphql-subscriptions';
   exports: ['PUB_SUB'],
 })
 export class PubSubModule {}
+
+// const triggerTransform = (trigger, { path }) => [trigger, ...path].join('.');
+// const pubsub = new AmqpPubSub({
+//   config: {
+//     host: RABBITMQ_DOMAIN_NAME,
+//     port: PORT_NUMBER,
+//   },
+// });
+// const subscriptionManager = new SubscriptionManager({
+//   schema,
+//   setupFunctions: {
+//     commentsAdded: (options, { repoName }) => ({
+//       'comments.added': {
+//         channelOptions: { path: [repoName] },
+//       },
+//     }),
+//   },
+//   pubsub,
+// });

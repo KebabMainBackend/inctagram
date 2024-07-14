@@ -32,7 +32,6 @@ export class CreatePostHandler implements ICommandHandler<CreatePostCommand> {
     const userAvatar: string | null = await this.getUserThumbnailAvatar(
       userProfile.thumbnailId,
     );
-
     return mapPostsWithImages({
       post: res,
       postImages: images,
