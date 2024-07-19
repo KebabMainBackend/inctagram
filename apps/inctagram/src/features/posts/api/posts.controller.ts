@@ -72,6 +72,7 @@ import { UploadPostImageDto } from './dto/upload-image.dto';
 import { firstValueFrom } from 'rxjs';
 import { ObjectIdValidationPipe } from '../../../utils/pipes/is-object-id.pipe';
 import { PubSub } from 'graphql-subscriptions';
+import { createPost } from '../../../utils/constants/graphql-triggers';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -81,6 +82,7 @@ import { PubSub } from 'graphql-subscriptions';
 export class PostsController {
   constructor(
     protected commandBus: CommandBus,
+    @Inject('PUB_SUB')
     private pubSub: PubSub,
     protected postsQueryRepository: PostsQueryRepository,
     @Inject('FILES_SERVICE') private clientProxy: ClientProxy,
@@ -130,7 +132,7 @@ export class PostsController {
     if (createResult === HttpStatus.NOT_FOUND) {
       throw new UnauthorizedException();
     }
-    await this.pubSub.publish('postAdded', { postAdded: createResult });
+    await this.pubSub.publish(createPost, { postAdded: createResult });
     return createResult;
   }
 

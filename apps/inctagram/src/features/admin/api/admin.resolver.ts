@@ -23,7 +23,7 @@ import {
 } from '../db/entities/return.model';
 import { ImageModel } from '../db/entities/file.model';
 import { DeleteUserCommand } from '../application/delete-user.command';
-import { UseGuards } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import { BasicAuthGuard } from '../../../auth/guards/basic-auth.guard';
 import { ChangeBanStatusOfUserCommand } from '../application/ban-user.command';
 import { BanStatus } from '../../../types/ban.types';
@@ -31,14 +31,16 @@ import { PostModel } from '../db/entities/post.model';
 import { PostsQueryRepository } from '../../posts/db/posts.query-repository';
 import { GetPostsQueryDto } from './dto/get-posts.dto';
 import { PubSub } from 'graphql-subscriptions';
+import { createPost } from '../../../utils/constants/graphql-triggers';
 
 @Resolver(() => UserModel)
 export class AdminResolver {
   constructor(
     private readonly commandBus: CommandBus,
-    private pubSub: PubSub,
     private userQueryRepo: UsersQueryRepository,
     private postsQueryRepo: PostsQueryRepository,
+    @Inject('PUB_SUB')
+    private pubSub: PubSub,
   ) {}
 
   @Query(() => UserPaginationModel, {
@@ -128,11 +130,10 @@ export class AdminResolver {
     return this.postsQueryRepo.findPosts(args);
   }
 
-  @Subscription(() => PostModel, {
-    resolve: (payload) => payload.postAdded,
-  })
+  @Subscription(() => PostModel)
   postAdded() {
-    console.log('what');
-    return this.pubSub.asyncIterator('postAdded');
+    const newPost = this.pubSub.asyncIterator(createPost);
+    console.log(newPost, 'newPost');
+    return newPost;
   }
 }

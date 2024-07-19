@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
-import { AmqpPubSub } from 'graphql-rabbitmq-subscriptions';
 
+@Global()
 @Module({
   providers: [
     {
