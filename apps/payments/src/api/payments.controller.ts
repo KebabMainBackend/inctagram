@@ -54,7 +54,6 @@ export class PaymentsController {
     email: string;
     payload: PurchaseSubscriptionDto;
   }) {
-    console.log(2, data.userId);
     return this.commandBus.execute(
       new PurchaseSubscriptionCommand(
         data.userId,

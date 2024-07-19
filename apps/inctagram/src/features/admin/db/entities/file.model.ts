@@ -10,6 +10,8 @@ export class ImageModel {
 
   @Field({ description: 'file type', nullable: true })
   type: string;
+  @Field({ description: 'file created at date', nullable: true })
+  createdAt: string;
 }
 
 @ObjectType()

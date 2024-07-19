@@ -113,9 +113,10 @@ export class FilesService {
   async getAllImagesOfUser(userId: number) {
     const images = await this.fileImageModel.find({
       ownerId: userId,
+      type: 'post-image',
     });
     return images.map((i) => ({
-      id: i._id,
+      uploadId: i._id,
       url: 'https://storage.yandexcloud.net/kebab-inctagram/' + i.url,
       createdAt: i.createdAt,
       type: i.type,

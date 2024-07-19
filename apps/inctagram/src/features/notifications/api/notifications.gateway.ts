@@ -11,6 +11,11 @@ import {
 import { NotificationsService } from '../application/notifications.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { Socket, Server } from 'socket.io';
+import { UseFilters, UseGuards } from '@nestjs/common';
+import { WsBearerAuthGuard } from '../../../auth/guards/ws-bearer-auth.guard';
+import { UserTypes } from '../../../types';
+import { WsUser } from '../../../utils/decorators/ws-user.decorator';
+import { WsExceptionFilter } from '../../../modules/filters/ws-exception.filter';
 
 @WebSocketGateway({
   cors: {
@@ -18,6 +23,8 @@ import { Socket, Server } from 'socket.io';
     credentials: true,
   },
 })
+@UseFilters(WsExceptionFilter)
+@UseGuards(WsBearerAuthGuard)
 export class NotificationsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -26,11 +33,12 @@ export class NotificationsGateway
   server: Server;
   private clients = new Set();
 
-  afterInit(server: Server) {
+  afterInit() {
     console.log('WebSocket Gateway initialized');
   }
 
-  handleConnection(client: any) {
+  @UseGuards(WsBearerAuthGuard)
+  async handleConnection(client: any) {
     console.log(`Client connected: ${client.id}`);
     this.clients.add(client);
   }
@@ -43,13 +51,11 @@ export class NotificationsGateway
   @SubscribeMessage('createNotification')
   create(@MessageBody() createNotificationDto: CreateNotificationDto) {
     console.log(createNotificationDto);
-    return this.notificationsService.create(createNotificationDto);
   }
 
   @SubscribeMessage('findAllNotifications')
-  findAll(@MessageBody() data: any) {
-    return 'hello';
-    return this.notificationsService.findAll();
+  findAll(@ConnectedSocket() client: Socket, @WsUser() user: UserTypes) {
+    return this.notificationsService.findAll(user.id);
   }
 
   @SubscribeMessage('findOneNotification')
@@ -57,16 +63,18 @@ export class NotificationsGateway
     return this.notificationsService.findOne(id);
   }
 
-  @SubscribeMessage('updateNotification')
-  update(@MessageBody() updateNotificationDto: CreateNotificationDto) {
-    return this.notificationsService.update(2, updateNotificationDto);
-  }
-
   @SubscribeMessage('events')
-  check(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
-    this.server.emit('dede', 'whatsapp');
-    client.emit('dede', 'eade');
-    setInterval(() => {}, 1000);
+  check(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+    @WsUser() user: UserTypes,
+  ) {
+    console.log(user);
+    // this.server.sockets.emit('dede', 'ererere');
+    setInterval(() => {
+      client.emit('dede', 'eade');
+    }, 1000);
+
     return 'this.notificationsService.update(2, updateNotificationDto)';
   }
 }
