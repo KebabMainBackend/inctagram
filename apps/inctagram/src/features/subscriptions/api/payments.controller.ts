@@ -31,7 +31,6 @@ export class PaymentsController {
       { cmd: PaymentsMicroserviceMessagesEnum.STRIPE_CREATE_PRODUCT },
       { payload },
     );
-    console.log(data);
     return data;
   }
 

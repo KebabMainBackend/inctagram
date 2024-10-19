@@ -1,0 +1,259 @@
+#./public/docs
+asyncapi: 3.0.0
+info:
+  title: Inctagram WebSocket API
+  version: 1.0.0
+  description: AsyncAPI documentation for chat-related WebSocket events.
+servers:
+  websocket:
+    host: api.inctagram.com
+    pathname: /ws
+    protocol: wss
+    description: WebSocket server
+channels:
+  get-one-chat:
+    address: get-one-chat
+    messages:
+      getOneChat.message:
+        contentType: application/json
+        headers:
+          type: object
+          properties:
+            cookie:
+              type: string
+              description: 'Token must be passed in cookies (e.g., "token=your-token-here").'
+              example: >-
+                eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIyNSwiaWF0IjoxNzI4NzU2MTc3LCJleHAiOjE3Mjg3NTc5Nzd9.gJYCV2t9ZwDRcY3v91il6ZPXd7b-GMCz6M4JFMH7klA
+        payload:
+          type: object
+          properties:
+            chatId:
+              type: number
+              description: ID of the chat to retrieve.
+              example: 116
+        x-response:
+          channelName: 'get-one-chat-response-{chatId}'
+          description: >-
+            This defines the response channel that the server will send the
+            response on.
+    description: Client sends a request to get messages from a specific chat.
+  'get-one-chat-response-{chatId}':
+    address: 'get-one-chat-response-{chatId}'
+    messages:
+      getOneChatResponse.message:
+        contentType: application/json
+        headers:
+          type: object
+          properties:
+            cookie:
+              type: string
+              description: 'Token must be passed in cookies (e.g., "token=your-token-here").'
+              example: >-
+                eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIyNSwiaWF0IjoxNzI4NzU2MTc3LCJleHAiOjE3Mjg3NTc5Nzd9.gJYCV2t9ZwDRcY3v91il6ZPXd7b-GMCz6M4JFMH7klA
+        payload:
+          type: object
+          properties:
+            data:
+              type: object
+              properties:
+                chatId:
+                  type: number
+                  description: ID of the chat
+                  example: 116
+                members:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      userId:
+                        type: number
+                        example: 225
+                      username:
+                        type: string
+                        example: Julija
+                messages:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                        description: Message ID
+                        example: 211
+                      userId:
+                        type: number
+                        description: ID of the user who sent the message
+                        example: 225
+                      message:
+                        type: string
+                        description: The content of the message
+                        example: Здарова чо как
+                      imgUrl:
+                        type: string
+                        nullable: true
+                        description: URL to an image (if any)
+                        example: null
+                      voiceUrl:
+                        type: string
+                        nullable: true
+                        description: URL to a voice recording (if any)
+                        example: null
+                      createdAt:
+                        type: string
+                        format: date-time
+                        description: Timestamp of the message
+                        example: '2024-10-03T08:03:28.851Z'
+    description: Server sends the messages and chat details for the requested chat.
+  send-message:
+    address: send-message
+    messages:
+      sendMessage.message:
+        contentType: application/json
+        headers:
+          type: object
+          properties:
+            cookie:
+              type: string
+              description: 'Token must be passed in cookies (e.g., "token=your-token-here").'
+              example:  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIyNSwiaWF0IjoxNzI4NzU2MTc3LCJleHAiOjE3Mjg3NTc5Nzd9.gJYCV2t9ZwDRcY3v91il6ZPXd7b-GMCz6M4JFMH7klA
+        payload:
+          type: object
+          required:
+            - recipientId
+          properties:
+            recipientId:
+              type: number
+              description: ID of the recipient (required).
+              example: 226
+            message:
+              type: string
+              nullable: true
+              description: The text message content (optional, but required if image or voice is not provided).
+              example: "Hello!"
+            image:
+              type: string
+              nullable: true
+              description: Base64-encoded image (must start with '/').
+              pattern: '^/.*'
+              example: "/9j/4AAQSkZJRgABAQEAYABgAAD//gA7Q1JFQV"
+            voice:
+              type: string
+              nullable: true
+              description: Base64-encoded audio (must start with a letter).
+              pattern: '^[A-Za-z].*'
+              example: "T2dnUwACAAAAAAAAAADF0Bj3AAAAAHFqy3cBE"
+    description: Client sends a message to a specific user.
+  get-all-chats:
+    address: get-all-chats
+    parameters:
+      username:
+        description: The optional piece of username.
+    messages:
+      getAllChats.message:
+        contentType: application/json
+        headers:
+          type: object
+          properties:
+            cookie:
+              type: string
+              description: 'Token must be passed in cookies.'
+              example: "token=your-token-here"
+
+  'get-all-chats-response':
+    address: get-all-chats-response
+    messages:
+      getAllChatsResponse.message:
+        contentType: application/json
+        headers:
+          type: object
+          properties:
+            cookie:
+              type: string
+              description: 'Token must be passed in cookies.'
+              example: "token=your-token-here"
+        payload:
+          type: array
+          items:
+            type: object
+            properties:
+              chatId:
+                type: number
+                description: 'ID of the chat.'
+                example: 116
+              companion:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    description: 'ID of the chat companion.'
+                    example: 226
+                  username:
+                    type: string
+                    description: 'Username of the chat companion.'
+                    example: "Andrey"
+              message:
+                type: object
+                properties:
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: 'Timestamp of the last message.'
+                    example: '2024-10-12T18:28:40.870Z'
+                  textMessage:
+                    type: string
+                    nullable: true
+                    description: 'The text content of the last message.'
+                    example: null
+                  voiceUrl:
+                    type: string
+                    nullable: true
+                    description: 'URL to the voice message, if any.'
+                    example: "https://storage.yandexcloud.net/kebab-inctagram/media/users/225/chats-messages-voices/225-1728757720059.ogg"
+                  imgUrl:
+                    type: string
+                    nullable: true
+                    description: 'URL to the image message, if any.'
+                    example: "https://storage.yandexcloud.net/kebab-inctagram/media/users/229/chats-messages-images/229-1727942732822.webp"
+                  username:
+                    type: string
+                    description: 'Username of the person who sent the last message.'
+                    example: "Julija"
+operations:
+  getOneChat:
+    action: send
+    channel:
+      $ref: '#/channels/get-one-chat'
+    summary: Request messages for a specific chat
+    messages:
+      - $ref: '#/channels/get-one-chat/messages/getOneChat.message'
+
+  getOneChatResponse:
+    action: receive
+    channel:
+      $ref: '#/channels/get-one-chat-response-{chatId}'
+    summary: Chat details response
+    messages:
+      - $ref: '#/channels/get-one-chat-response-{chatId}/messages/getOneChatResponse.message'
+
+  sendMessage:
+    action: send
+    channel:
+      $ref: '#/channels/send-message'
+    summary: Send a message to another user.
+    messages:
+      - $ref: '#/channels/send-message/messages/sendMessage.message'
+  getAllChats:
+    action: send
+    channel:
+      $ref: '#/channels/get-all-chats'
+    summary: Request a list of all chats.
+    messages:
+      - $ref: '#/channels/get-all-chats/messages/getAllChats.message'
+
+  getAllChatsResponse:
+    action: receive
+    channel:
+      $ref: '#/channels/get-all-chats-response'
+    summary: Receive a list of all chats.
+    messages:
+      - $ref: '#/channels/get-all-chats-response/messages/getAllChatsResponse.message'

@@ -1,6 +1,5 @@
-import { FileImageTypeEnum } from '../../../../../../../types/file-image-enum.types';
 import { AccountType } from '@prisma/client';
-import { UserEntity } from '../../../../auth/domain/entities/user.entity';
+import { FileCommandTypesEnum } from '../../../../../../../types/file-image-enum.types';
 
 export type DBProfileView = {
   userId: number;
@@ -22,5 +21,5 @@ export type DBProfileImageView = {
   width: number;
   height: number;
   fileSize: number;
-  type: FileImageTypeEnum;
+  type: FileCommandTypesEnum;
 };

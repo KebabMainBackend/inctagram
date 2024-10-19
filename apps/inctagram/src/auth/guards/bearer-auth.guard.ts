@@ -28,7 +28,7 @@ export class BearerAuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get('JWT_SECRET_KEY'),
       });
-
+      console.log(1);
       if (payload.userId) {
         const user = await this.usersRepo.getUserById(payload.userId);
         if (user) {
@@ -37,6 +37,7 @@ export class BearerAuthGuard implements CanActivate {
             email: user.email,
           };
         }
+        console.log(2);
         return true;
       }
     } catch {

@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { NotificationsService } from './application/notifications.service';
-import { NotificationsGateway } from './api/notifications.gateway';
 import { JwtService } from '@nestjs/jwt';
 import { UsersRepository } from '../../auth/db/users.repository';
 import { PrismaService } from '../../prisma.service';
@@ -15,7 +14,7 @@ import { RmqUrl } from '@nestjs/microservices/external/rmq-url.interface';
 @Module({
   imports: [ConfigModule],
   providers: [
-    NotificationsGateway,
+    //NotificationsGateway,
     NotificationsService,
     JwtService,
     UsersRepository,

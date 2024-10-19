@@ -5,7 +5,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { FilesMicroserviceMessagesEnum } from '../../../../../../../types/messages';
 import { firstValueFrom } from 'rxjs';
 import { mapUserImages } from '../../db/view/mapUserProfile';
-import { FileImageTypeEnum } from '../../../../../../../types/file-image-enum.types';
+import { FileCommandTypesEnum } from '../../../../../../../types/file-image-enum.types';
 
 export class UploadAvatarCommand {
   constructor(
@@ -32,10 +32,10 @@ export class UploadAvatarHandler
       await this.createFileImage(buffer, userId),
     );
     const avatarId = data.avatars.find(
-      (x) => x.type === FileImageTypeEnum.AVATAR_MEDIUM,
+      (x) => x.type === FileCommandTypesEnum.AVATAR_MEDIUM,
     ).fileId;
     const thumbnailId = data.avatars.find(
-      (x) => x.type === FileImageTypeEnum.AVATAR_THUMBNAIL,
+      (x) => x.type === FileCommandTypesEnum.AVATAR_THUMBNAIL,
     ).fileId;
     await this.profileRepo.addAvatarToProfile(avatarId, thumbnailId, userId);
     return mapUserImages(data.avatars);

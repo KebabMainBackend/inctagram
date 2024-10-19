@@ -29,7 +29,6 @@ export class FinishPaypalPaymentHandler
 
   async execute(payload: FinishPaypalPaymentCommand) {
     try {
-      console.log('вебхук сработал');
       const data = payload.body.payload.resource;
       if (payload.body.payload.event_type === 'PAYMENT.SALE.COMPLETED') {
         const paypalSubscriptionId = data.billing_agreement_id;

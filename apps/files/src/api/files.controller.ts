@@ -4,6 +4,7 @@ import { FilesService } from '../files.service';
 import { UploadAvatarDto } from './dto/upload-avatar.dto';
 import { UploadPostImagesDto } from './dto/upload-post-images.dto';
 import { FilesMicroserviceMessagesEnum } from '../../../../types/messages';
+import { UploadVoiceDto } from './dto/upload-voice.dto';
 
 @Controller()
 export class FilesController {
@@ -41,6 +42,18 @@ export class FilesController {
   @MessagePattern({ cmd: FilesMicroserviceMessagesEnum.DELETE_POST_IMAGE })
   async deletePostImage(data: { imageId: string; userId: number }) {
     return await this.fileService.deletePostImage(data.imageId, data.userId);
+  }
+
+  @MessagePattern({ cmd: FilesMicroserviceMessagesEnum.UPLOAD_MESSENGER_IMAGE })
+  async uploadMessageImage(data: UploadAvatarDto) {
+    console.log('data.buffer' + data.buffer);
+    return await this.fileService.uploadMessageImage(data);
+  }
+
+  @MessagePattern({ cmd: FilesMicroserviceMessagesEnum.UPLOAD_MESSENGER_VOICE })
+  async uploadMessageVoice(data: UploadVoiceDto) {
+    console.log('uploadMessageVoice f con 1');
+    return await this.fileService.uploadMessageVoice(data);
   }
 
   @MessagePattern({

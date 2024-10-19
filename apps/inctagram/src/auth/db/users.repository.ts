@@ -41,6 +41,13 @@ export class UsersRepository {
     });
   }
 
+  async updateUsersConfirmationStatusByEmail(email: string) {
+    await this.prisma.user.update({
+      where: { email },
+      data: { isConfirmed: true },
+    });
+  }
+
   async updateUserPassword(
     userId: number,
     newPasswordSalt: string,
@@ -126,6 +133,17 @@ export class UsersRepository {
       },
     });
   }
+
+  getUserByIds(ids: number[]) {
+    return this.prisma.user.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+  }
+
   getUserProviderByIdAndType(providerId: string, providerType: string) {
     return this.prisma.oAuthProvider.findFirst({
       where: {
@@ -136,5 +154,15 @@ export class UsersRepository {
   }
   getUsersTotalCount() {
     return this.prisma.user.count();
+  }
+
+  async deleteByIds(userIds: number[]) {
+    await this.prisma.user.deleteMany({
+      where: {
+        id: {
+          in: userIds,
+        },
+      },
+    });
   }
 }

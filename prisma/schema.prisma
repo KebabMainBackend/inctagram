@@ -38,6 +38,7 @@ model User {
   confirmationData UserConfirmation?
   ban              Bans?
   Notifications    Notifications[]
+  Messages         Message[]
 }
 
 model Profile {
@@ -175,6 +176,32 @@ model Notifications {
   isRead    Boolean   @default(false)
   createdAt DateTime  @default(now())
   notifyAt  DateTime?
+}
+
+model Chat {
+  id         Int          @id @unique @default(autoincrement())
+  chatMember ChatMember[]
+  messages   Message[]
+}
+
+model ChatMember {
+  id             Int    @unique @default(autoincrement())
+  chatId         Int
+  chat           Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  memberId       Int
+  memberUsername String
+}
+
+model Message {
+  id        Int      @id @unique @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String?
+  imgUrl    String?
+  voiceUrl  String?
+  createdAt DateTime @default(now())
+  chatId    Int
+  chat      Chat     @relation(fields: [chatId], references: [id])
 }
 
 enum PostStatus {

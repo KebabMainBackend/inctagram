@@ -66,11 +66,11 @@ const TestHandlers = [TestDeleteUserHandler];
   ],
   controllers: [AuthController, GithubController, GoogleController],
   providers: [
+    PrismaService,
     GoogleStrategy,
     GithubStrategy,
     UsersRepository,
     UsersQueryRepository,
-    PrismaService,
     UserHashingManager,
     EmailService,
     SecurityDevicesRepository,

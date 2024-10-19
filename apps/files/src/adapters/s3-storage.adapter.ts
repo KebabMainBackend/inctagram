@@ -22,7 +22,7 @@ export class S3StorageManager {
     });
     this.bucketName = this.configService.get('YANDEX_BUCKET');
   }
-  async saveImage(buffer: Buffer, url: string) {
+  async saveFile(buffer: Buffer, url: string) {
     const options = {
       Bucket: this.bucketName,
       Key: url,

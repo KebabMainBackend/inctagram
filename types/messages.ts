@@ -9,6 +9,9 @@ export enum FilesMicroserviceMessagesEnum {
   GET_USER_ALL_PHOTOS = 'get-user-all-photos',
   DELETE_USER_ALL_PHOTOS = 'delete-user-all-photos',
   DELETE_POST_IMAGES = 'delete-post-images',
+  UPLOAD_MESSENGER_IMAGE = 'upload-messenger-image',
+  UPLOAD_MESSENGER_VOICE = 'upload-messenger-voice',
+  GET_MESSENGER_IMAGE = 'get-messenger-image',
 }
 
 export enum PaymentsMicroserviceMessagesEnum {
@@ -24,3 +27,19 @@ export enum PaymentsMicroserviceMessagesEnum {
   GET_USER_PAYMENTS = 'get-user-payments',
   GET_USERS_PAYMENTS = 'get-users-payments',
 }
+
+export enum MessagesMicroserviceMessagesEnum {
+  GET_CHAT = 'get-chat',
+  GET_ALL_CHATS = 'get-all-chats',
+  SEND_MESSAGE = 'send-message',
+  EDIT_MESSAGE = 'edit-message',
+  DELETE_MESSAGE = 'delete-message',
+}
+
+// Создание чата - без участия пользователя
+// Получение чата - endpoint с query username
+// Отправка смс пользователю - endpoint
+// Отправка фотки пользователю - endpoint
+// Отправка гс пользователю - endpoint
+// Редактирование сообщения - endpoint с body id: uuid
+// Удаление сообщения - endpoint с body forAll: boolean

@@ -15,15 +15,15 @@ export class WsBearerAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const client = context.switchToWs().getClient();
-
     const cookies = client.handshake.headers.cookie;
     const token = getCookieValue(cookies, 'refreshToken');
     if (!token) {
       throw new WsException('Unauthorized');
     }
+
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get('JWT_REFRESH_KEY'),
+        secret: this.configService.get('JWT_SECRET_KEY'),
       });
       if (payload.userId) {
         const user = await this.usersRepo.getUserById(payload.userId);
@@ -33,11 +33,11 @@ export class WsBearerAuthGuard implements CanActivate {
             id: user.id,
             email: user.email,
           };
-
           return true;
         }
       }
-    } catch {
+    } catch (err) {
+      console.error('Error in JWT verification:', err); // Логируем ошибку
       throw new WsException('Unauthorized');
     }
   }

@@ -15,13 +15,14 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AdminModule } from './features/admin/admin.module';
 import { NotificationsModule } from './features/notifications/notifications.module';
 import { PubSubModule } from './modules/pubsub.module';
+import { MessengerModule } from './features/messenger/messenger.module';
 
 @Module({
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(
-        // 'C:\\Projects\\inctagram\\apps\\inctagram\\swagger-static',
-        'D:\\job\\inctagram\\apps\\inctagram\\swagger-static',
+        'C:\\Projects\\inctagram\\apps\\inctagram\\swagger-static',
+        //'D:\\job\\inctagram\\apps\\inctagram\\swagger-static',
       ),
       serveRoot: process.env.NODE_ENV === 'development' ? '/' : '/swagger',
     }),
@@ -40,6 +41,7 @@ import { PubSubModule } from './modules/pubsub.module';
     PostsModule,
     ProfileModule,
     SubscriptionsModule,
+    MessengerModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       path: 'api/v1/graphql',

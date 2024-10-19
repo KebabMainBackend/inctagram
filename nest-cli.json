@@ -36,6 +36,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/payments/tsconfig.app.json"
       }
+    },
+    "messenger": {
+      "type": "application",
+      "root": "apps/messenger",
+      "entryFile": "main",
+      "sourceRoot": "apps/messenger/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/messenger/tsconfig.app.json"
+      }
     }
   }
 }

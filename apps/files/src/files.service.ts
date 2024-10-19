@@ -3,11 +3,12 @@ import { UploadAvatarDto } from './api/dto/upload-avatar.dto';
 import { Model, Types } from 'mongoose';
 import { FileImageInterface } from './db/interfaces/file-image.interface';
 import { CommandBus } from '@nestjs/cqrs';
-import { FileImageTypeEnum } from '../../../types/file-image-enum.types';
+import { FileCommandTypesEnum } from '../../../types/file-image-enum.types';
 import { UploadPostImagesDto } from './api/dto/upload-post-images.dto';
 import { FILE_IMAGE_SIZE } from './utils/constants';
 import { DeleteFileCommand } from './application/use-cases/delete-file.command';
 import { UploadFileCommand } from './application/use-cases/upload-file.command';
+import { UploadVoiceDto } from './api/dto/upload-voice.dto';
 
 @Injectable()
 export class FilesService {
@@ -21,16 +22,18 @@ export class FilesService {
       new UploadFileCommand({
         buffer,
         userId,
-        imageType: FileImageTypeEnum.AVATAR_MEDIUM,
-        imageSize: FILE_IMAGE_SIZE.mediumAvatar,
+        commandName: FileCommandTypesEnum.AVATAR_MEDIUM,
+        fileSize: FILE_IMAGE_SIZE.mediumAvatar,
+        fileExtension: null,
       }),
     );
     const thumbnailImage = await this.commandBus.execute(
       new UploadFileCommand({
         buffer,
         userId,
-        imageType: FileImageTypeEnum.AVATAR_THUMBNAIL,
-        imageSize: FILE_IMAGE_SIZE.thumbnailAvatar,
+        commandName: FileCommandTypesEnum.AVATAR_THUMBNAIL,
+        fileSize: FILE_IMAGE_SIZE.thumbnailAvatar,
+        fileExtension: null,
       }),
     );
     return { avatars: [avatarImage, thumbnailImage] };
@@ -42,14 +45,45 @@ export class FilesService {
         new UploadFileCommand({
           buffer,
           userId,
-          imageType: FileImageTypeEnum.POST_IMAGE,
-          imageSize: FILE_IMAGE_SIZE.postImage,
+          commandName: FileCommandTypesEnum.POST_IMAGE,
+          fileSize: FILE_IMAGE_SIZE.postImage,
+          fileExtension: null,
         }),
       );
       postImages.push(postImage);
     }
     return { postImages };
   }
+
+  async uploadMessageImage({ userId, buffer }: UploadAvatarDto) {
+    console.log(buffer);
+    const messageImage = await this.commandBus.execute(
+      new UploadFileCommand({
+        buffer,
+        userId,
+        commandName: FileCommandTypesEnum.MESSENGER_IMAGE,
+        fileSize: FILE_IMAGE_SIZE.mediumAvatar,
+        fileExtension: null,
+      }),
+    );
+
+    return messageImage;
+  }
+  async uploadMessageVoice({ userId, buffer, extension }: UploadVoiceDto) {
+    console.log('uploadMessageVoice f service 2', buffer, extension);
+    const messageVoice = await this.commandBus.execute(
+      new UploadFileCommand({
+        buffer,
+        userId,
+        commandName: FileCommandTypesEnum.MESSENGER_VOICE,
+        fileSize: FILE_IMAGE_SIZE.mediumAvatar,
+        fileExtension: extension,
+      }),
+    );
+
+    return messageVoice;
+  }
+
   async deleteUserAvatars(userId: number) {
     const images = await this.getAvatarImagesByOwnerId(userId);
     if (images && images.length) {
@@ -85,7 +119,7 @@ export class FilesService {
       ownerId,
       $nor: [
         {
-          type: FileImageTypeEnum.POST_IMAGE,
+          type: FileCommandTypesEnum.POST_IMAGE,
         },
       ],
     });
@@ -99,7 +133,7 @@ export class FilesService {
       _id: {
         $in: imageIds.map((i) => new Types.ObjectId(i)),
       },
-      type: FileImageTypeEnum.POST_IMAGE,
+      type: FileCommandTypesEnum.POST_IMAGE,
     });
     return images.map((image) => ({
       fileId: image._id,
